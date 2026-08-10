@@ -3,7 +3,7 @@
 Repositório do projeto da disciplina **ECAA08 - Automática (2026.2)**.
 
 ## Objetivo do Projeto
-Desenvolver um motor computacional de supervisão, controle e diagnóstico para uma planta química automatizada, aplicando lógica formal, grafos, árvores e relações para resolver problemas reais de segurança, roteamento e operação.
+Desenvolver um motor computacional de supervisão, controle e diagnóstico para uma planta automatizada, aplicando lógica formal, grafos, árvores e relações para resolver problemas reais de segurança, roteamento e operação.
 
 ## Estrutura Obrigatória do Repositório
 Conforme o enunciado, o projeto foi organizado em subpastas por etapa:
