@@ -44,9 +44,7 @@ Magazine de copos
 [E5] Ejeção ──> Esteira de saída ──> Contagem de produção
 
 A mesa é movimentada por motor elétrico servocontrolado, com encoder integrado para garantir a precisão do giro e o posicionamento dos alojamentos. Entre estações de trabalho há um espaço intermediário para copo, conforme a concepção descrita no relatório.
-
----
-
+```
 ## 4. Arquitetura da aplicação
 
 A arquitetura do sistema baseia-se no modelo **Cliente-Servidor**, estabelecendo um fluxo bidirecional de dados entre a interface de supervisão e o controle do processo. 
