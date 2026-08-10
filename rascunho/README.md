@@ -23,51 +23,49 @@ O sistema deve permitir que o operador compreenda, em tempo de execução:
 
 ## 3. Conceito de operação
 
-A mesa giratória possui cinco posições de trabalho associadas às estações do processo. A cada ciclo, o sistema executa as operações permitidas pelos seus intertravamentos e, após as confirmações requeridas, a mesa avança uma posição para levar cada copo ao estágio seguinte.
+## 3. Processo supervisionado
+
+A máquina opera sobre uma mesa giratória indexada. Cada avanço da mesa posiciona os copos para a próxima operação e depende da conclusão segura do estágio anterior.
 
 ```text
-                 Magazine vertical de copos
-                           │
-                           ▼
- ┌──────────────────────────────────────────────────────────────────┐
- │                  MESA GIRATÓRIA INDEXADA                          │
- │                                                                  │
- │ [E1] Dispensa ──► [E2] Envase ──► [E3] Tampa ──► [E4] Selagem   │
- │                                                                  │
- │                         [E5] Ejeção ──► Esteira de saída         │
- └──────────────────────────────────────────────────────────────────┘
-```
+Magazine de copos
+       |
+       v
+[E1] Dispensa do copo
+       |
+       v
+[E2] Envase e dosagem
+       |
+       v
+[E3] Captura e posicionamento da tampa
+       |
+       v
+[E4] Termosselagem
+       |
+       v
+[E5] Ejeção ──> Esteira de saída ──> Contagem de produção
 
 A mesa é movimentada por motor elétrico servocontrolado, com encoder integrado para garantir a precisão do giro e o posicionamento dos alojamentos. Entre estações de trabalho há um espaço intermediário para copo, conforme a concepção descrita no relatório.
 
-### Parâmetros nominais de processo
-
-| Parâmetro | Valor previsto |
-| --- | ---: |
-| Dimensões aproximadas da máquina (L x P x A) | 1.500 x 1.500 x 1.800 mm |
-| Número de estações de trabalho | 5 |
-| Pressão de alimentação pneumática | 6 bar (600 kPa) |
-| Volume nominal por copo | 150 mL |
-| Tolerância volumétrica | ±3 mL |
-| Tempo de ciclo por copo | 2,2 s |
-| Capacidade produtiva | 27 copos/min |
-| Diâmetro do copo | 70 mm |
-| Diâmetro da tampa | 75 mm |
-| Temperatura de selagem | 180 °C |
-| Tempo de selagem | 2 s |
-
 ---
 
-## 4. Arquitetura funcional por estágio
+## 4. Arquitetura da aplicação
 
-| Estágio | Função | Atuadores e elementos principais | Condição de saída |
-| --- | --- | --- | --- |
-| E1 | Dispensar um copo da pilha | Cilindro A, sensor magnético e sensor óptico | Copo presente no alojamento e mecanismo novamente em condição de bloqueio |
-| E2 | Dosar e envasar água | Cilindros B, C e Bico; válvula de processo; medidor de fluxo; sensor ultrassônico | Dose entregue e bico fechado |
-| E3 | Capturar e posicionar tampa | Cilindros D e E; ejetor Venturi; ventosa; pressostato | Tampa depositada sobre o copo e manipulador retornado |
-| E4 | Selar tampa por calor e pressão | Cilindro F, cabeçote aquecido, resistência cartucho, mola e termopar | Tempo de selagem concluído e prensa recuada |
-| E5 | Remover produto finalizado | Cilindros G e H; sensor de saída | Copo transferido à esteira e atuadores na condição inicial |
+A arquitetura do sistema baseia-se no modelo **Cliente-Servidor**, estabelecendo um fluxo bidirecional de dados entre a interface de supervisão e o controle do processo. 
 
+Como a planta física da máquina foi desenvolvida e simulada dentro do software **Automation Studio**, a nossa aplicação precisará estabelecer uma comunicação de rede direta com este ambiente de simulação.
+
+A estrutura define-se da seguinte forma:
+
+### 4.1. SCADA (Cliente)
+É a ferramenta visual que faz a interface com o operador. Suas atribuições principais são divididas nos seguintes fluxos:
+*   **Monitorar (Sentido: Servidor -> Cliente):** *O que vamos monitorar?* O SCADA lê continuamente os dados do processo para apresentar a realidade da máquina na tela. Isso engloba o estado atual da máquina de estados (FSM), sinais dos sensores ópticos e magnéticos, e a contagem das garrafas/copos envasados.
+*   **Atuar (Sentido: Cliente -> Servidor):** *Onde o nosso SCADA pode atuar?* A aplicação tem o poder de intervir no processo enviando comandos diretos. Isso inclui atuar nos comandos operacionais de Iniciar, Pausar e Resetar a máquina, além de poder alterar parâmetros de setpoint (como volume desejado de envase).
+
+### 4.2. Processo (Servidor)
+É a base de execução das regras de controle e da física da máquina.
+*   **Em qual processo?** O processo escolhido é a **Máquina de Envasamento de Água em Copos** (conforme definição do projeto, descartando outras opções como "Geração de Matéria Prima").
+*   Neste cenário, o servidor é a própria simulação rodando no **Automation Studio**. Ele é responsável por calcular o comportamento dos atuadores pneumáticos, processar as lógicas de intertravamento e responder às requisições de monitoramento e atuação feitas pelo SCADA.
 ---
 
 ## 5. Descrição técnica do processo
