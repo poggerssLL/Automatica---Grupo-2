@@ -21,8 +21,6 @@ O sistema deve permitir que o operador compreenda, em tempo de execução:
 - 
 ---
 
-## 3. Conceito de operação
-
 ## 3. Processo supervisionado
 
 A máquina opera sobre uma mesa giratória indexada. Cada avanço da mesa posiciona os copos para a próxima operação e depende da conclusão segura do estágio anterior.
