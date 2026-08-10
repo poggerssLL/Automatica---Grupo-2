@@ -42,28 +42,43 @@ Magazine de copos
        |
        v
 [E5] Ejeção ──> Esteira de saída ──> Contagem de produção
-
-A mesa é movimentada por motor elétrico servocontrolado, com encoder integrado para garantir a precisão do giro e o posicionamento dos alojamentos. Entre estações de trabalho há um espaço intermediário para copo, conforme a concepção descrita no relatório.
 ```
+A mesa é movimentada por motor elétrico servocontrolado, com encoder integrado para garantir a precisão do giro e o posicionamento dos alojamentos. Entre estações de trabalho há um espaço intermediário para copo, conforme a concepção descrita no relatório.
+
 ## 4. Arquitetura da aplicação
 
-A arquitetura do sistema baseia-se no modelo **Cliente-Servidor**, estabelecendo um fluxo bidirecional de dados entre a interface de supervisão e o controle do processo. 
+A nossa aplicação funciona no modelo **Cliente-Servidor**. Como a física da máquina foi toda montada no **Automation Studio**, o nosso sistema SCADA vai se comunicar com essa simulação através da rede.
 
-Como a planta física da máquina foi desenvolvida e simulada dentro do software **Automation Studio**, a nossa aplicação precisará estabelecer uma comunicação de rede direta com este ambiente de simulação.
-
-A estrutura define-se da seguinte forma:
+A estrutura funciona da seguinte maneira:
 
 ### 4.1. SCADA (Cliente)
-É a ferramenta visual que faz a interface com o operador. Suas atribuições principais são divididas nos seguintes fluxos:
-*   **Monitorar (Sentido: Servidor -> Cliente):** *O que vamos monitorar?* O SCADA lê continuamente os dados do processo para apresentar a realidade da máquina na tela. Isso engloba o estado atual da máquina de estados (FSM), sinais dos sensores ópticos e magnéticos, e a contagem das garrafas/copos envasados.
-*   **Atuar (Sentido: Cliente -> Servidor):** *Onde o nosso SCADA pode atuar?* A aplicação tem o poder de intervir no processo enviando comandos diretos. Isso inclui atuar nos comandos operacionais de Iniciar, Pausar e Resetar a máquina, além de poder alterar parâmetros de setpoint (como volume desejado de envase).
+É a tela que o operador vai usar. Ela faz duas coisas principais:
+*   **Monitorar:** Recebe os dados do processo para mostrar o que está acontecendo (sensores, posição da mesa, copos cheios).
+*   **Atuar:** Envia comandos para a máquina, como iniciar o ciclo, pausar, resetar ou alterar configurações.
 
 ### 4.2. Processo (Servidor)
-É a base de execução das regras de controle e da física da máquina.
-*   **Em qual processo?** O processo escolhido é a **Máquina de Envasamento de Água em Copos** (conforme definição do projeto, descartando outras opções como "Geração de Matéria Prima").
-*   Neste cenário, o servidor é a própria simulação rodando no **Automation Studio**. Ele é responsável por calcular o comportamento dos atuadores pneumáticos, processar as lógicas de intertravamento e responder às requisições de monitoramento e atuação feitas pelo SCADA.
+É a simulação da **Máquina de Envasamento de Água em Copos** rodando no Automation Studio. Ele executa a lógica da máquina, obedece aos comandos que vêm do SCADA e devolve as informações de status.
+
 ---
 
+### Diagrama de Comunicação
+```text
+               (cliente)
+             ┌───────────┐
+             │           │
+             │   SCADA   │
+             │           │
+             └─┬───────▲─┘
+               │       │
+         atuar │       │ monitorar
+               │       │
+             ┌─▼───────┴─┐
+             │           │
+             │ processo  │
+             │           │
+             └───────────┘
+```
+  (servidor)
 ## 5. Descrição técnica do processo
 
 ### 5.1 Estágio 1 - Dispensa do copo
