@@ -2,31 +2,23 @@
 
 ## 1. Visão geral
 
-Este repositório documenta o projeto, a modelagem e a simulação de uma máquina automática de envasamento de água em copos. A máquina foi concebida para operar com uma **mesa giratória indexada**, utilizando atuadores pneumáticos para as operações de processo e um sistema de controle baseado em **Máquinas de Estados Finitos** (*Finite State Machines* - FSM).
+Este projeto tem como objetivo principal aplicar conhecimentos de **lógica formal**, **teoria dos grafos**, **árvores** e **relações** na resolução de um problema real, seguindo a metodologia **PBL** (*Project-Based Learning* ou Aprendizagem Baseada em Projetos). A aplicação prática escolhida para consolidar e validar esses conceitos matemáticos e computacionais é o desenvolvimento de um sistema **SCADA** (Supervisão, Controle e Aquisição de Dados) para um processo industrial.
 
-O ciclo de produção integra cinco estações: dispensação do copo, envase, alimentação da tampa, termosselagem e ejeção para esteira. A solução foi modelada nos ambientes **FluidSIM**, **CODESYS** e **Automation Studio**, com lógica de controle prevista em **Structured Text (ST)**, **Ladder Diagram (LD)** e **Sequential Function Chart (SFC)**, conforme a IEC 61131-3.
+O processo selecionado como objeto de estudo é uma **máquina pneumática de envasamento de água em copos.** A planta é organizada em uma mesa giratória indexada com cinco estações: dispensação de copos, envase, posicionamento de tampa, termosselagem e ejeção.
 
 > O conteúdo descreve uma solução de engenharia proposta e simulada, baseada no relatório técnico do projeto. Não deve ser interpretado como registro de uma implementação física concluída.
 
 ---
 
-## 2. Objetivos do projeto
+## 2. Objetivo do sistema supervisório
 
-### 2.1 Objetivo geral
+Desenvolver uma aplicação de supervisão para acompanhar a operação de uma máquina de envase de água em copos, integrando o sequenciamento do CLP, os sensores, os atuadores pneumáticos e as condições de processo relevantes para a produção segura e repetível.
 
-Projetar, modelar e simular o sistema de automação pneumática de uma máquina de envase de água em copos, com operação sincronizada de no mínimo cinco atuadores ao longo de uma mesa giratória indexada.
+### 2.1 Objetivos específicos
 
-### 2.2 Objetivos específicos
+O sistema deve permitir que o operador compreenda, em tempo de execução:
 
-- Descrever o funcionamento dos cinco estágios do processo de envase.
-- Desenvolver diagramas trajeto-passo para os estágios pneumáticos.
-- Modelar a lógica sequencial por FSM, definindo estados, transições e ações.
-- Desenvolver as máquinas de estados de controle do processo global e de cada estágio.
-- Implementar e validar a lógica nos ambientes CODESYS e Automation Studio.
-- Simular o circuito pneumático completo no FluidSIM.
-- Dimensionar cilindros, válvulas direcionais e o consumo de ar comprimido.
-- Elaborar a lista de materiais (*Bill of Materials* - BOM), o cronograma de implantação e a estimativa orçamentária.
-
+- 
 ---
 
 ## 3. Conceito de operação
