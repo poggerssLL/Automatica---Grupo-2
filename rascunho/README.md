@@ -77,8 +77,8 @@ A estrutura funciona da seguinte maneira:
              │ processo  │
              │           │
              └───────────┘
+              (servidor)
 ```
-  (servidor)
 ## 5. Descrição técnica do processo
 
 ### 5.1 Estágio 1 - Dispensa do copo
