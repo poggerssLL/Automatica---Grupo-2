@@ -12,13 +12,13 @@ O processo selecionado como objeto de estudo é uma **máquina pneumática de en
 
 ## 2. Objetivo do sistema supervisório
 
-Desenvolver uma aplicação de supervisão para acompanhar a operação de uma máquina de envase de água em copos, integrando o sequenciamento do CLP, os sensores, os atuadores pneumáticos e as condições de processo relevantes para a produção segura e repetível.
+Desenvolver uma aplicação de supervisão para acompanhar a operação de uma máquina de envase de água em copos no automation studio.
 
 ### 2.1 Objetivos específicos
 
 O sistema deve permitir que o operador compreenda, em tempo de execução:
 
-- 
+-
 ---
 
 ## 3. Processo supervisionado
