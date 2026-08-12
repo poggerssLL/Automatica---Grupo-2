@@ -16,9 +16,11 @@ Desenvolver uma aplicação de supervisão para acompanhar a operação de uma m
 
 ### 2.1 Objetivos específicos
 
-O sistema deve permitir que o operador compreenda, em tempo de execução:
+O sistema deve permitir que o operador compreenda ou atue, em tempo de execução:
 
--
+- Ligar, desligar e colocar em estado de emergência.
+- Monitorar visualmente o estado dos atuadores em cada estágio
+- Monitirar visualmente o estado dos sensores em cada estágio
 ---
 
 ## 3. Processo supervisionado
