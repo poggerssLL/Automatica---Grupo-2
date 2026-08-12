@@ -88,15 +88,23 @@ A estrutura funciona da seguinte maneira:
 O Estágio 1 libera individualmente os copos de uma pilha posicionada em um magazine vertical. O Cilindro A, de simples ação, atua como retentor na base do magazine:
 
 ```text
+  
 Cilindro A avançado  -> bloqueia a queda do copo
+ ↓
 Cilindro A recuado   -> libera o copo inferior ao alojamento da mesa
+ ↓
+Sensor Magnético     -> confirma posição de recuado
+ ↓
+Sensor Capacitivo    -> confirma presença do copo
+ ↓
 Retorno por mola     -> restabelece a condição de bloqueio
+ 
 ```
 
 O sensoriamento do estágio é composto por:
 
-- sensor magnético de fim de curso, que confirma o retorno à posição de bloqueio;
-- sensor óptico de presença, que verifica se o copo foi depositado no alojamento da mesa.
+- 2 sensores magnéticos de fim de curso, um para posição de avançado e recuado;
+- sensor capacitivo de presença, que verifica se o copo foi depositado no alojamento da mesa.
 
 Na ausência de copo, o controle gera alarme e bloqueia o avanço do ciclo.
 
@@ -104,61 +112,70 @@ Na ausência de copo, o controle gera alarme e bloqueia o avanço do ciclo.
 
 O sistema de dosagem reúne três subsistemas coordenados:
 
-1. **Direcionamento do líquido:** o Cilindro B, um atuador rotativo de dupla ação, movimenta uma válvula de três vias para conectar o funil à câmara de dosagem durante o enchimento ou a câmara ao bico durante o envase.
-2. **Dosagem volumétrica:** o Cilindro C, de dupla ação, movimenta o dosador tipo seringa. No recuo, aspira o líquido para a câmara; no avanço, empurra a dose para o copo.
-3. **Abertura e fechamento do bico:** o cilindro do bico comanda a saída de líquido. O acionamento pneumático abre a passagem; o retorno por mola fecha o bico e interrompe o fluxo ao término da dosagem.
-
+1. **Direcionamento do líquido:** o Cilindro B, um atuador rotativo de dupla ação, movimenta uma válvula de três vias para conectar o funil à câmara de dosagem durante o enchimento ou a câmara ao bico durante o envase. poussui 1 sensor magnético para saber a posição.
+2. **Dosagem volumétrica:** o Cilindro C, de dupla ação, movimenta o dosador tipo seringa. No recuo, aspira o líquido para a câmara; no avanço, empurra a dose para o copo. poussui 2 sensores magnéticos para saber a posição de avançado e recuado.
+3. **Abertura e fechamento do bico:** o cilindro do bico comanda a saída de líquido. O acionamento pneumático abre a passagem; o retorno por mola fecha o bico e interrompe o fluxo ao término da dosagem. poussui 1 sensor magnético para saber se o bico abriu ou não 
+4.sensor capacitivo, verifica presença do copo
 Sequência operacional descrita:
 
 ```text
-1. Cilindro B na posição "puxar"
+Sensor Capacitivo confirma presença do copo
         ↓
-2. Cilindro C recua e enche a câmara de dosagem
+Cilindro B na posição "puxar"
         ↓
-3. Cilindro B na posição "empurrar"
+Cilindro C recua e enche a câmara de dosagem
         ↓
-4. Bico abre
+Cilindro B na posição "empurrar"
         ↓
-5. Cilindro C avança e entrega a dose ao copo
+Bico abre
         ↓
-6. Bico fecha por retorno de mola
+Cilindro C avança e entrega a dose ao copo
+        ↓
+Bico fecha por retorno de mola
 ```
 
-Os fins de curso confirmam as posições de enchimento, de entrega e de abertura/fechamento do bico. O controle de volume é fechado pelo medidor de fluxo de **1.000 pulsos/L**, equivalente a 1 mL por pulso: o CLP comanda o fechamento ao contabilizar 150 pulsos. O relatório também especifica sensor ultrassônico de nível como redundância, com corte em `h >= 38 mm`.
+Os fins de curso confirmam as posições de enchimento, de entrega e de abertura/fechamento do bico. O controle de volume é definido pela geometria do dosador, que já tem um espaço exato de 150ml
 
-Para o dimensionamento hidráulico, o relatório adota 150 mL em 0,7 s de tempo útil, resultando em vazão requerida de **12,9 L/min**. O bocal foi definido como DN15 (1/2"), com velocidade calculada de 1,21 m/s, abaixo do limite de 1,5 m/s empregado como critério anti-aeração.
-
-### 5.3 Estágio 3 - Alimentação e posicionamento da tampa
+### 5.3 Estágio 3 - Posicionamento da Tampa
 
 O Estágio 3 é um manipulador pneumático do tipo *pick-and-place*. Ele combina:
 
-- **Cilindro D:** atuador rotativo responsável pelo giro do braço entre a posição de captura e a posição de entrega;
-- **Cilindro E:** atuador linear para aproximação vertical da ventosa;
-- **ejetor Venturi e ventosa:** geração e aplicação do vácuo para capturar a tampa;
+- **Cilindro D:** atuador rotativo responsável pelo giro do braço entre a posição de captura e a posição de entrega, possui 2 sensores magnéticos para saber a posição de captura e entrega;
+- **Cilindro E:** atuador linear dupla ação para aproximação vertical da ventosa,  possui 2 sensores magnéticos, um para avançao e outro para recuo 
+- **Válvula geradora de Vácuo/Ventosa:** geração e aplicação do vácuo para capturar a tampa;
 - **pressostato de vácuo:** confirmação de que a tampa está efetivamente aderida à ventosa.
-
+- sensor capacitivo, verifica presença do copo
 Sequência de controle descrita:
 
 ```text
-Acionar vácuo
+Sensor Capacitivo confirma presença do copo
+      ↓
+Acionar válvula de vácuo
       ↓
 Confirmar "peça capturada" pelo pressostato
       ↓
-Mover o conjunto e girar o braço para a posição sobre o copo
+Mover o cilindro vertical e girar o braço para a posição sobre o copo
       ↓
-Desligar vácuo e confirmar perda de vácuo
+Desligar válvula de vácuo e confirmar que soltou a tampa
       ↓
 Retornar cilindro vertical e braço à posição inicial
 ```
 
-Sensores de fim de curso confirmam as posições do atuador linear e do giro. Antes da próxima indexação, um sensor capacitivo ou óptico verifica se a tampa está posicionada no topo do copo.
+Sensores de fim de curso confirmam as posições do atuador linear e do giro. Antes da próxima indexação.
 
 ### 5.4 Estágio 4 - Termosselagem
 
 O Estágio 4 sela a tampa ao copo pela ação combinada de pressão, temperatura e tempo. O Cilindro F movimenta verticalmente um cabeçote de alumínio que contém uma resistência cartucho. Uma mola de compressão entre o atuador e o cabeçote distribui a força, compensa variações de altura e reduz o risco de esmagamento do copo.
-
+- O Cilindro F, possui 2 sensores magnéticos, um para avançao e outro para recuo 
+- resistência cartucho
+- sensor de temperatura
+- sensor capacitivo, verifica presença do copo
 ```text
-Temperatura válida
+Sensor Capacitivo confirma presença do copo
+      ↓
+Ligar resistência
+      ↓
+Alcançou temperatura desejada
       ↓
 Prensa avança e aplica pressão
       ↓
@@ -167,23 +184,38 @@ Fim de curso confirma posição de selagem
 Temporizador mantém calor e pressão por 2 s
       ↓
 Prensa recua e libera a mesa
-```
+``` 
 
-Um termopar instalado no cabeçote fornece a medição de temperatura, e sensores magnéticos confirmam as posições avançada e recuada da prensa.
-
-### 5.5 Estágio 5 - Ejeção e contagem
+### 5.5 Estágio 5 - Ejeção
 
 Ao final do processo, o Cilindro G eleva o copo selado até o nível da esteira. O Cilindro H realiza a transferência lateral do produto para a esteira transportadora.
-
+- Cilindro G simples ação retorno por mola, vertical, possui 2 sensores magnéticos, um para avançao e outro para recuo.
+- Cilindro H simples ação avanço por mola, horizontal, possui 2 sensores magnéticos, um para avançao e outro para recuo.
+- sensor capacitivo, verifica presença do copo
 ```text
-1. Cilindro G avança: eleva o copo
-2. Sensor confirma que o copo atingiu o nível da esteira
-3. Cilindro H recua: transfere o copo
-4. Cilindro H avança e Cilindro G recua
-5. Fins de curso liberam o início de novo ciclo
+Sensor Capacitivo confirma presença do copo
+              ↓
+Cilindro G avança: eleva o copo
+              ↓
+Sensor mágnetico confirma que o copo atingiu o nível da esteira
+              ↓
+Cilindro H recua: transfere o copo
+              ↓
+Cilindro H avança e Cilindro G recua
+              ↓
+Fins de curso liberam o início de novo ciclo
 ```
-
-Um sensor no final da esteira é acionado pela passagem do produto e realiza a contagem total de copos finalizados.
+### 5.6 Controle Geral do processo
+- motor da mesa indexadora, sensor de posição da mesa
+- motor da esteira de saída
+- botão ligar
+- LED ligado
+- botão desligar
+- emergencia
+- LED emergência
+- botão parar
+- chave energizada
+- LED energizado 
 
 ---
 
@@ -200,11 +232,7 @@ Os intertravamentos explicitamente descritos incluem:
 | Cilindro C não alcança o fim de curso de recuo | A dose não é considerada aspirada. |
 | Bico não confirma abertura ou fechamento | A sequência de envase não é concluída. |
 | Vácuo não confirma tampa capturada | O manipulador não prossegue com a movimentação. |
-| Tampa não identificada sobre o copo | A indexação seguinte é bloqueada. |
 | Temperatura de selagem não está adequada | A prensa não inicia o ciclo de termosselagem. |
 | Prensa não está recuada | Novo giro da mesa não é permitido. |
-| Três erros consecutivos de processo | A máquina é automaticamente pausada. |
-
-Reguladores de fluxo são previstos em todos os atuadores para produzir movimentos suaves e reduzir oscilações e derramamento durante a indexação.
 
 ---
