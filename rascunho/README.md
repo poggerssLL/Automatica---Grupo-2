@@ -1,4 +1,4 @@
-# Projeto de Automação Pneumática de uma Máquina de Envasamento de Água em Copos
+# Projeto SCADA de uma Máquina de Envasamento de Água em Copos
 
 ## 1. Visão geral
 
