@@ -72,3 +72,73 @@ flowchart TD
 
     %% Sincronismo da Mesa
     S1 -.->|Avança Indexador| S2 -.->|Avança Indexador| S3 -.->|Avança Indexador| S4 -.->|Avança Indexador| S5
+```
+
+### Setor 000: Controle Geral do Processo
+| Tag | Dispositivo | Lógica | Estado 1 |
+| :--- | :--- | :--- | :--- |
+| M-001 | Motor da mesa indexadora | *m0* | Motor LIGADO |
+| M-002 | Motor da esteira de saída | *m1* | Motor LIGADO |
+| SE-001 | Sensor de posição (Encoder) | *p0* | Mesa na posição correta |
+| HS-001 | Botão Ligar | *b1* | Pressionado |
+| HS-002 | Botão Desligar | *b2* | Pressionado |
+| HS-003 | Botão Parar | *b3* | Pressionado |
+| HS-004 | Botão Emergência | *e1* | Pressionado |
+| HS-005 | Chave Energizada | *k1* | LIGADA |
+| IL-001 | LED Ligado | *l1* | Aceso |
+| IL-002 | LED Emergência | *l2* | Aceso |
+| IL-003 | LED Energizado | *l3* | Aceso |
+
+### Setor 100: Dispensa de Copo
+| Tag | Dispositivo | Lógica | Estado 1 |
+| :--- | :--- | :--- | :--- |
+| XV-101 | Válvula (Cilindro A) | *v1* | Cilindro RECUADO (Libera copo) |
+| ZSC-101 | Sensor Mag. (Cil. A Avanço) | *c1a* | Cilindro avançado |
+| ZSO-101 | Sensor Mag. (Cil. A Recuo) | *c1r* | Cilindro recuado |
+| ZS-102 | Sensor Capacitivo | *s1* | Copo presente na mesa |
+
+### Setor 200: Envase de Água
+| Tag | Dispositivo | Lógica | Estado 1 |
+| :--- | :--- | :--- | :--- |
+| ZS-200 | Sensor Capacitivo | *s2* | Copo presente na mesa |
+| XV-201 | Válvula 3 vias (Cilindro B) | *v2* | Direcionada p/ bico |
+| ZSC-201 | Sensor Mag. (Cil. B) | *c2* | Posição alcançada |
+| XV-202 | Dosador (Cilindro C) | *v3* | Dosador AVANÇA |
+| ZSC-202 | Sensor Mag. (Cil. C Recuo) | *c3r* | Dosador recuado |
+| ZSO-202 | Sensor Mag. (Cil. C Avanço) | *c3a* | Dosador avançado |
+| XV-203 | Válvula do Bico | *v4* | Bico ABRE |
+| ZSC-203 | Sensor Mag. (Bico) | *c4* | Bico aberto detectado |
+
+### Setor 300: Pick-and-Place (Tampa)
+| Tag | Dispositivo | Lógica | Estado 1 |
+| :--- | :--- | :--- | :--- |
+| ZS-300 | Sensor Capacitivo | *s3* | Copo presente na mesa |
+| XV-301 | Giro (Cilindro D) | *v5* | Braço em 180° (Entrega) |
+| ZSC-301 | Sensor Mag. (Cil. D 0°) | *c5r* | Braço em 0° (Captura) |
+| ZSO-301 | Sensor Mag. (Cil. D 180°) | *c5a* | Braço em 180° (Entrega) |
+| XV-302 | Vertical (Cilindro E) | *v6* | Vertical AVANÇA |
+| ZSC-302 | Sensor Mag. (Cil. E Recuo) | *c6r* | Vertical recuado |
+| ZSO-302 | Sensor Mag. (Cil. E Avanço) | *c6a* | Vertical avançado |
+| VAC-301 | Válvula de Vácuo | *v7* | Vácuo LIGADO |
+| PIT-301 | Pressostato de Vácuo | *p1* | Tampa capturada |
+
+### Setor 400: Termosselagem
+| Tag | Dispositivo | Lógica | Estado 1 |
+| :--- | :--- | :--- | :--- |
+| ZS-400 | Sensor Capacitivo | *s4* | Copo presente na mesa |
+| XV-401 | Prensa (Cilindro F) | *v8* | Prensa AVANÇA |
+| ZSC-401 | Sensor Mag. (Prensa Recuo) | *c7r* | Prensa recuada |
+| ZSO-401 | Sensor Mag. (Prensa Avanço)| *c7a* | Prensa avançada |
+| HT-401 | Resistência Cartucho | *h1* | Resistência LIGADA |
+| TIT-401 | Sensor de Temperatura | *t1* | Temp. >= 180°C |
+
+### Setor 500: Ejeção
+| Tag | Dispositivo | Lógica | Estado 1 |
+| :--- | :--- | :--- | :--- |
+| ZS-500 | Sensor Capacitivo | *s5* | Copo presente na mesa |
+| XV-501 | Elevador (Cilindro G) | *v9* | Elevador AVANÇA |
+| ZSC-501 | Sensor Mag. (Cil. G Recuo) | *c8r* | Elevador recuado |
+| ZSO-501 | Sensor Mag. (Cil. G Avanço)| *c8a* | Elevador avançado |
+| XV-502 | Extrator (Cilindro H) | *v10* | Extrator RECUA |
+| ZSC-502 | Sensor Mag. (Cil. H Avanço)| *c9a* | Extrator avançado |
+| ZSO-502 | Sensor Mag. (Cil. H Recuo) | *c9r* | Extrator recuado |
