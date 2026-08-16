@@ -7,124 +7,68 @@
 
 # Mapeamento de Variáveis de Processo para Proposições Lógicas
 
-Na automação industrial (norma ISA-5.1), instrumentos e atuadores emitem e recebem sinais discretos (binários: 0 = Falso / 1 = Verdadeiro). 
+Na automação industrial (norma ISA-5.1), instrumentos e atuadores emitem e recebem sinais discretos (binários: 0 = Falso / 1 = Verdadeiro). Abaixo, as variáveis da planta de envasamento de copos são discretizadas em proposições lógicas para a programação e intertravamento no sistema de controle:
 
 ## Diagrama P&ID Simplificado do Sistema
 
 ```mermaid
 flowchart TD
-    %% Setor 000: Mesa Giratória Base
-    subgraph S0 [Setor 000: Mesa Giratória]
-        M001[M-001<br>Servomotor] -->|Indexa| MESA((Mesa<br>Giratória))
-        SE001[SE-001<br>Encoder] -.->|Sinal de Posição| M001
-        ZS001[ZS-001<br>Sensor Indutivo] -.->|Confirma Alinhamento| MESA
+    %% Setor 000: Mesa Giratória e Controle
+    subgraph S0 [Setor 000: Controle Geral]
+        M001[Motor da Mesa] -->|Indexa| MESA((Mesa<br>Giratória))
+        SE001[Encoder] -.->|Precisão| M001
+        PAINEL[Painel: Botões e LEDs] -.->|Interface SCADA| MESA
     end
 
     %% Setor 100: Dispensa de Copo
-    subgraph S1 [Setor 100: Dispensa de Copo]
-        XV101[XV-101<br>Válvula 3/2] -->|Avanço/Recuo| CYL101[Cilindro A<br>Puxador]
-        CYL101 -->|Libera Copo| MESA
-        ZSC101[ZSC-101<br>Sensor Fim de Curso] -.->|Copo Retido| CYL101
-        ZS102[ZS-102<br>Sensor Óptico] -.->|Confirma Presença| MESA
+    subgraph S1 [Setor 100: Dispensa]
+        XV101[Cilindro A<br>Retentor] -->|Avança/Recua| MESA
+        ZSC101[2x Sensores Mag.] -.->|Posição| XV101
+        ZS102[Sensor Capacitivo] -.->|Presença Copo| MESA
     end
 
     %% Setor 200: Envase de Água
-    subgraph S2 [Setor 200: Envase de Água]
-        LIT201[LIT-201<br>Sensor Ultrassônico] -.->|Monitora Nível| FUNIL[(Funil)]
-        FUNIL --> XV201[XV-201<br>Válvula Esfera 3 Vias]
-        XV201 -->|Direciona Fluxo| CYL202[Cilindro C<br>Dosador]
-        XV202[XV-202<br>Válvula 5/2] -->|Aciona Seringa| CYL202
-        CYL202 -->|Puxa/Empurra Dose| FIT201[FIT-201<br>Medidor de Fluxo]
-        FIT201 --> XV203[XV-203<br>Cilindro Bico]
-        XV203 -->|Abre/Fecha Bico| MESA
+    subgraph S2 [Setor 200: Envase e Dosagem]
+        ZS200[Sensor Capacitivo] -.->|Presença Copo| MESA
+        XV201[Cilindro B<br>Direcionamento] -->|Válvula 3 vias| XV202
+        ZSC201[1x Sensor Mag.] -.->|Posição| XV201
+        XV202[Cilindro C<br>Dosador 150ml] -->|Empurra Dose| XV203
+        ZSC202[2x Sensores Mag.] -.->|Avanço/Recuo| XV202
+        XV203[Cilindro Bico] -->|Abre/Fecha| MESA
+        ZSC203[1x Sensor Mag.] -.->|Posição| XV203
     end
 
-    %% Setor 300: Alimentação da Tampa
-    subgraph S3 [Setor 300: Tampa Pick-and-Place]
-        VAC301[VAC-301<br>Ejetor Vácuo] -->|Gera Sucção| VENTOSA
-        PIT301[PIT-301<br>Pressostato] -.->|Confirma Vácuo| VENTOSA
-        XV302[XV-302<br>Válvula 3/2] -->|Mov. Vertical| CYL301[Cilindro E]
-        XV301[XV-301<br>Válvula 3/2] -->|Giro 180°| CYL302[Cilindro D]
-        CYL301 --> VENTOSA
-        CYL302 --> VENTOSA
-        VENTOSA -->|Posiciona Tampa| MESA
-        ZS303[ZS-303<br>Sensor Capacitivo] -.->|Confirma Tampa| MESA
+    %% Setor 300: Pick-and-Place
+    subgraph S3 [Setor 300: Posicionamento Tampa]
+        ZS300[Sensor Capacitivo] -.->|Presença Copo| MESA
+        XV301[Cilindro D<br>Giro] -->|Gira Braço| BRACO{Manipulador}
+        ZSC301[2x Sensores Mag.] -.->|Captura/Entrega| XV301
+        XV302[Cilindro E<br>Vertical] -->|Sobe/Desce| BRACO
+        ZSC302[2x Sensores Mag.] -.->|Avanço/Recuo| XV302
+        VAC301[Válvula Vácuo] -->|Sucção| BRACO
+        PIT301[Pressostato] -.->|Confirma Adesão| BRACO
+        BRACO -->|Posiciona Tampa| MESA
     end
 
     %% Setor 400: Termosselagem
     subgraph S4 [Setor 400: Termosselagem]
-        XV401[XV-401<br>Válvula 5/2] -->|Avança Prensa| CYL401[Cilindro F]
-        HT401[HT-401<br>Resist. Cartucho] --> CABECOTE[Cabeçote<br>Selador]
-        TIT401[TIT-401<br>Termopar] -.->|Controle de Temp.| CABECOTE
-        CYL401 --> CABECOTE
-        CABECOTE -->|Calor + Pressão| MESA
+        ZS400[Sensor Capacitivo] -.->|Presença Copo| MESA
+        XV401[Cilindro F<br>Prensa] -->|Pressão| CABECOTE{Cabeçote}
+        ZSC401[2x Sensores Mag.] -.->|Avanço/Recuo| XV401
+        HT401[Resistência] -->|Calor| CABECOTE
+        TIT401[Sensor Temp.] -.->|Monitora| CABECOTE
+        CABECOTE -->|Sela 2s| MESA
     end
 
     %% Setor 500: Ejeção
-    subgraph S5 [Setor 500: Ejeção e Esteira]
-        XV501[XV-501<br>Válvula 3/2] -->|Eleva Copo| CYL501[Cilindro G<br>Elevador]
-        XV502[XV-502<br>Válvula 3/2] -->|Puxa Copo| CYL502[Cilindro H<br>Extrator]
-        CYL501 --> MESA
-        CYL502 -->|Transfere| ESTEIRA
-        ZS503[ZS-503<br>Sensor Fotoelétrico] -.->|Conta Produção| ESTEIRA
+    subgraph S5 [Setor 500: Ejeção]
+        ZS500[Sensor Capacitivo] -.->|Presença Copo| MESA
+        XV501[Cilindro G<br>Elevador Vertical] -->|Sobe Copo| MESA
+        ZSC501[2x Sensores Mag.] -.->|Avanço/Recuo| XV501
+        XV502[Cilindro H<br>Transferência Horiz.] -->|Empurra| ESTEIRA
+        ZSC502[2x Sensores Mag.] -.->|Avanço/Recuo| XV502
+        M501[Motor Esteira] -->|Transporta| ESTEIRA
     end
 
-    %% Sincronismo da Mesa (Rotacional)
-    S1 -.->|1º Estágio| S2 -.->|2º Estágio| S3 -.->|3º Estágio| S4 -.->|4º Estágio| S5
-```
-
-Abaixo, as variáveis da planta de envasamento de copos são discretizadas em proposições lógicas para a programação e intertravamento no sistema de controle:
-
-### Setor 000: Mesa Giratória
-| Tag | Dispositivo | Lógica | Estado 1 |
-| :--- | :--- | :--- | :--- |
-| M-001 | Motor mesa | *m0* | Motor LIGADO |
-| ZS-001 | Sensor Indutivo | *z0* | Alojamento alinhado |
-
-### Setor 100: Dispensa de Copo
-| Tag | Dispositivo | Lógica | Estado 1 |
-| :--- | :--- | :--- | :--- |
-| XV-101 | Válvula 3/2 | *v1* | Cilindro recua |
-| ZSC-101 | Sensor Mag. | *c1* | Cilindro recuado |
-| ZS-102 | Sensor Óptico | *s1* | Copo na mesa |
-
-### Setor 200: Envase de Água
-| Tag | Dispositivo | Lógica | Estado 1 |
-| :--- | :--- | :--- | :--- |
-| XV-201 | Válvula esfera | *v2* | Válvula direcionada p/ bico|
-| XV-202 | Válvula 5/2 | *v3* | Dosador AVANÇA |
-| XV-203 | Válvula 3/2 | *v4* | Bico ABRE |
-| ZSC-201 | Sensor Mag. | *c2r* | Dosador recuado |
-| ZSO-201 | Sensor Mag. | *c2a* | Dose entregue |
-| ZSC-203 | Sensor Mag. | *c3r* | Bico FECHADO |
-| ZSO-203 | Sensor Mag. | *c3a* | Bico ABERTO |
-
-
-### Setor 300: Pick-and-Place
-| Tag | Dispositivo | Lógica | Estado 1 |
-| :--- | :--- | :--- | :--- |
-| XV-301 | Válvula 3/2 | *v5* | Braço rot. 180° |
-| XV-302 | Válvula 3/2 | *v6* | Vertical AVANÇA |
-| VAC-301 | Valvula de vácuo | *v7* | Vácuo LIGADO |
-| PIT-301 | Pressostato | *p1* | Ventosa agarrou a tampa |
-| ZSC-301 | Sensor Mag. | *c4r* | Braço em 0° |
-| ZSO-301 | Sensor Mag. | *c4a* | Braço em 180° |
-
-### Setor 400: Termosselagem
-| Tag | Dispositivo | Lógica | Estado 1 |
-| :--- | :--- | :--- | :--- |
-| XV-401 | Válvula 5/2 | *v8* | Prensa AVANÇA |
-| ZSC-401 | Sensor Mag. | *c5r* | Prensa recuada |
-| ZSO-401 | Sensor Mag. | *c5a* | Prensa avançada |
-| TIT-401 | Termopar | *t1* | Temp. >= 150°C |
-| HT-401 | Resist. Cartucho | *h1* | Resistência LIGADA |
-
-### Setor 500: Ejeção
-| Tag | Dispositivo | Lógica | Estado 1 |
-| :--- | :--- | :--- | :--- |
-| XV-501 | Válvula 3/2 | *v9* | Elevador AVANÇA |
-| XV-502 | Válvula 3/2 | *v10* | Extrator RECUA |
-| ZSO-501 | Sensor Mag. | *c6a* | Elevador avançado |
-| ZSC-502 | Sensor Mag. | *c6r* | Elevador recuado |
-| ZSO-503 | Sensor Mag. | *c7a* | Extrator avançado |
-| ZSC-504 | Sensor Mag. | *c7r* | Extrator recuado |
+    %% Sincronismo da Mesa
+    S1 -.->|Avança Indexador| S2 -.->|Avança Indexador| S3 -.->|Avança Indexador| S4 -.->|Avança Indexador| S5
