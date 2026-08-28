@@ -1,6 +1,6 @@
 # Aula 10: Avaliação Integrada do Módulo 1 — Motor de Intertravamento e Diagnóstico
 
-## 1. Escopo e Diretrizes do Desafio de Engenharia
+## 1.1 Escopo e Diretrizes do Desafio de Engenharia
 
 Nesta avaliação integradora, consolidamos os conceitos do **Módulo 1: Lógica Formal & Sistemas Especialistas**, demonstrando o funcionamento conjunto aplicado à **Máquina Pneumática de Envasamento de Água em Copos**:
 1. Catálogo e telemetria de *Tags* ISA-5.1 (sensores magnéticos, capacitivos, pressostato e temperatura) com discretização proposicional.
@@ -9,7 +9,7 @@ Nesta avaliação integradora, consolidamos os conceitos do **Módulo 1: Lógica
 
 ---
 
-## 2. Visão Geral da Arquitetura de Decisão
+## 1.2 Visão Geral da Arquitetura de Decisão
 
 O Módulo 1 do nosso sistema **SCADA** consolida o fluxo de dados desde o "chão de fábrica" virtual (Automation Studio) até a tomada de decisão no nível de supervisão. A arquitetura lógica que construímos opera em três camadas sucessivas:
 
@@ -19,7 +19,7 @@ O Módulo 1 do nosso sistema **SCADA** consolida o fluxo de dados desde o "chão
 
 ---
 
-## 3. Base de Conhecimento: Intertravamentos da Envasadora
+## 1.3 Base de Conhecimento: Intertravamentos da Envasadora
 
 As regras de produção do nosso Sistema Especialista foram extraídas diretamente da **Tabela de Estratégia de Controle e Intertravamentos** do processo pneumático:
 
@@ -33,7 +33,7 @@ As regras de produção do nosso Sistema Especialista foram extraídas diretamen
 
 ---
 
-## 4. O Ciclo de Scan do Autograder (Entregável)
+## 2. O Ciclo de Scan do Autograder (Entregável)
 
 O entregável desta aula é o script executável em Python (`.ipynb`) que avalia o motor de inferência submetendo a planta a três cenários críticos de estresse:
 
