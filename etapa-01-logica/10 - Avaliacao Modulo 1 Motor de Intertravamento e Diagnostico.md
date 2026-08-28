@@ -1,6 +1,6 @@
 # Aula 10: Avaliação Integrada do Módulo 1 — Motor de Intertravamento e Diagnóstico
 
-## 1.1 Escopo e Diretrizes do Desafio de Engenharia
+## 1. Escopo e Diretrizes do Desafio de Engenharia
 
 Nesta avaliação integradora, consolidamos os conceitos do **Módulo 1: Lógica Formal & Sistemas Especialistas**, demonstrando o funcionamento conjunto aplicado à **Máquina Pneumática de Envasamento de Água em Copos**:
 1. Catálogo e telemetria de *Tags* ISA-5.1 (sensores magnéticos, capacitivos, pressostato e temperatura) com discretização proposicional.
@@ -9,9 +9,9 @@ Nesta avaliação integradora, consolidamos os conceitos do **Módulo 1: Lógica
 
 ---
 
-## 1.2 Visão Geral da Arquitetura de Decisão
+### 1.1 Visão Geral da Arquitetura de Decisão
 
-O Módulo 1 do nosso sistema **SCADA** consolida o fluxo de dados desde o "chão de fábrica" virtual (Automation Studio) até a tomada de decisão no nível de supervisão. A arquitetura lógica que construímos opera em três camadas sucessivas:
+O Módulo 1 do nosso sistema **SCADA** consolidida o fluxo de dados desde o "chão de fábrica" virtual (Automation Studio) até a tomada de decisão no nível de supervisão. A arquitetura lógica que construímos opera em três camadas sucessivas:
 
 1. **Telemetria (Sinais Analógicos/Digitais):** O SCADA lê dados brutos do processo simulado. Ex: `Temp_Termosselagem = 175.5°C`.
 2. **Mapeador Proposicional (Discretização):** Transforma dados contínuos em fatos booleanos (T/F). Ex: Se T < 180°C, então a variável lógica `baixa_temp` é cravada como **True**.
@@ -19,7 +19,7 @@ O Módulo 1 do nosso sistema **SCADA** consolida o fluxo de dados desde o "chão
 
 ---
 
-## 1.3 Base de Conhecimento: Intertravamentos da Envasadora
+### 1.2 Base de Conhecimento: Intertravamentos da Envasadora
 
 As regras de produção do nosso Sistema Especialista foram extraídas diretamente da **Tabela de Estratégia de Controle e Intertravamentos** do processo pneumático:
 
@@ -40,4 +40,3 @@ O entregável desta aula é o script executável em Python (`.ipynb`) que avalia
 *   **Cenário A (Falta de Copo):** Simula a ausência de recipiente no Setor 100. Espera-se que o motor infira `alarme_sem_copo` e, em cascata, `bloqueia_dosador`.
 *   **Cenário B (Bloqueio Térmico):** Simula o Setor 400 com copo presente, porém com a resistência fria. Espera-se que o motor infira `bloqueia_prensa`.
 *   **Cenário C (Operação Normal):** Todas as condições nominais atingidas. Espera-se que o sistema valide as regras libere o processo (`libera_prensa`).
-*   
