@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Memorial técnico, fluxo de processo e catálogo de tags da máquina pneumática de envasamento do Grupo 2.">
+  <meta name="theme-color" content="#f4f1e8">
+  <title>A Envasadora | Aqua Index — Grupo 2</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script defer src="js/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <header class="site-header" data-header>
+    <a class="brand" href="../index.html" aria-label="Aqua Index — página inicial"><span class="brand-mark">A2</span><span class="brand-copy"><strong>AQUA INDEX</strong><small>SCADA · GRUPO 2</small></span></a>
+    <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
+      <a href="../index.html">Visão geral</a><a href="etapa-01-logica.html">Etapa 01</a><a class="active" href="planta-envasadora.html">A envasadora</a><a href="diretrizes-github.html">GitHub & Entregas</a>
+    </nav>
+    <div class="header-actions"><button class="icon-button" type="button" data-theme-toggle aria-label="Alternar tema"><span data-theme-icon>◐</span></button><button class="menu-button" type="button" data-menu-toggle aria-controls="main-nav" aria-expanded="false"><span></span><span></span><span></span><span class="sr-only">Abrir menu</span></button></div>
+  </header>
+
+  <main id="conteudo">
+    <header class="page-hero page-hero-machine">
+      <div class="page-hero-copy reveal">
+        <p class="breadcrumb"><a href="../index.html">Início</a><span>/</span> Planta modelo</p>
+        <p class="eyebrow">MEMORIAL TÉCNICO · SETORES 000–500</p>
+        <h1>Máquina pneumática de <em>envasamento de água</em> em copos.</h1>
+        <p>Uma mesa giratória indexada sincroniza dispensação, dosagem de 150 mL, posicionamento de tampa, termosselagem e ejeção.</p>
+      </div>
+      <div class="page-hero-aside reveal">
+        <div class="spec-card"><span>TIPO DE PLANTA</span><strong>Automação discreta</strong></div>
+        <div class="spec-card"><span>CONTROLE PROPOSTO</span><strong>FSM global + 5 FSMs</strong></div>
+        <div class="spec-card"><span>INTEGRAÇÃO</span><strong>SCADA ↔ Automation Studio</strong></div>
+        <div class="spec-card"><span>STATUS</span><strong>Solução simulada</strong></div>
+      </div>
+    </header>
+
+    <section class="truth-strip"><strong>LIMITE DO MODELO</strong><p>As informações abaixo consolidam o relatório e os arquivos do Grupo 2. O conjunto é uma proposta de engenharia em desenvolvimento, não uma instalação física validada.</p><span>BASE: README + AULA 02</span></section>
+
+    <section class="section doc-section">
+      <div class="section-number">01</div>
+      <div class="doc-content">
+        <div class="section-heading compact-heading reveal"><div><p class="eyebrow">CONTEXTO OPERACIONAL</p><h2>O processo que o SCADA precisa tornar legível.</h2></div><p>O operador acompanha estados, sensores e atuadores; a simulação de processo executa as sequências e devolve a telemetria.</p></div>
+        <div class="architecture-grid reveal">
+          <article class="architecture-card"><span class="architecture-label">CLIENTE</span><h3>SCADA</h3><p>Apresenta posição da mesa, presença de copos, estados de cilindros, temperatura, vácuo, alarmes e comandos do operador.</p><ul><li>Monitorar variáveis</li><li>Solicitar partida, pausa e reset</li><li>Exibir diagnóstico</li></ul></article>
+          <div class="architecture-link"><span>ATUAR →</span><strong>REDE</strong><span>← MONITORAR</span></div>
+          <article class="architecture-card architecture-card-accent"><span class="architecture-label">SERVIDOR</span><h3>Automation Studio</h3><p>Representa a física pneumática da máquina, executa a lógica sequencial e responde aos comandos autorizados.</p><ul><li>Executar FSMs</li><li>Atualizar sensores</li><li>Movimentar atuadores</li></ul></article>
+        </div>
+        <div class="callout callout-warning reveal"><strong>Separação de responsabilidades</strong><p>O simulador web deste portal demonstra a lógica didática. Ele não se comunica com o Automation Studio e não comanda a planta.</p></div>
+      </div>
+    </section>
+
+    <section class="section doc-section alt-surface">
+      <div class="section-number">02</div>
+      <div class="doc-content">
+        <div class="section-heading compact-heading reveal"><div><p class="eyebrow">FLUXO MATERIAL</p><h2>Uma volta completa pela mesa.</h2></div><p>Cada indexação só deve acontecer depois que os mecanismos retornarem a posições compatíveis com o movimento global.</p></div>
+
+        <div class="process-route reveal" aria-label="Fluxo das cinco estações">
+          <article><span class="route-number">E1</span><div><small>SETOR 100</small><h3>Dispensação</h3><p>O Cilindro A libera um copo do magazine; ZS-102 confirma a presença.</p></div></article>
+          <span class="route-arrow">→</span>
+          <article><span class="route-number">E2</span><div><small>SETOR 200</small><h3>Envase</h3><p>Válvula de três vias, dosador de 150 mL e bico coordenam a dose.</p></div></article>
+          <span class="route-arrow">→</span>
+          <article><span class="route-number">E3</span><div><small>SETOR 300</small><h3>Tampa</h3><p>Ventosa, vácuo e dois eixos executam a operação pick-and-place.</p></div></article>
+          <span class="route-arrow">→</span>
+          <article><span class="route-number">E4</span><div><small>SETOR 400</small><h3>Selagem</h3><p>Prensa e resistência aplicam pressão e calor durante 2 segundos.</p></div></article>
+          <span class="route-arrow">→</span>
+          <article><span class="route-number">E5</span><div><small>SETOR 500</small><h3>Ejeção</h3><p>Elevador e extrator transferem o copo selado à esteira de saída.</p></div></article>
+        </div>
+
+        <div class="station-detail-grid">
+          <details class="station-detail reveal" open><summary><span>01</span> Dispensa do copo <small>XV-101 · ZS-102</small></summary><div><p>O retentor pneumático alterna entre bloquear a pilha e liberar o copo inferior. O retorno por mola restabelece o bloqueio.</p><ol><li>Recuar o Cilindro A.</li><li>Confirmar fim de curso.</li><li>Detectar o copo no alojamento.</li><li>Retornar à posição de retenção.</li></ol></div></details>
+          <details class="station-detail reveal"><summary><span>02</span> Dosagem de água <small>XV-201/202/203</small></summary><div><p>O Cilindro B seleciona o caminho, o Cilindro C aspira ou entrega a dose e o atuador do bico libera o líquido.</p><ol><li>Confirmar copo.</li><li>Aspirar 150 mL.</li><li>Direcionar ao bico.</li><li>Abrir bico e avançar dosador.</li></ol></div></details>
+          <details class="station-detail reveal"><summary><span>03</span> Posicionamento da tampa <small>VAC-301 · PIT-301</small></summary><div><p>O manipulador combina giro, movimento vertical e vácuo. O pressostato deve confirmar a captura antes do deslocamento.</p><ol><li>Aproximar ventosa.</li><li>Aplicar e confirmar vácuo.</li><li>Girar até o copo.</li><li>Liberar tampa e retornar.</li></ol></div></details>
+          <details class="station-detail reveal"><summary><span>04</span> Termosselagem <small>XV-401 · TIT-401</small></summary><div><p>O cabeçote aquecido avança somente com copo presente, mesa posicionada e temperatura mínima de 180 °C.</p><ol><li>Aquecer cabeçote.</li><li>Confirmar temperatura.</li><li>Avançar prensa.</li><li>Manter 2 s e recuar.</li></ol></div></details>
+          <details class="station-detail reveal"><summary><span>05</span> Ejeção <small>XV-501 · XV-502</small></summary><div><p>O Cilindro G eleva o produto e o Cilindro H realiza a transferência horizontal para a esteira.</p><ol><li>Confirmar copo selado.</li><li>Elevar até o nível de saída.</li><li>Transferir lateralmente.</li><li>Retornar ambos os eixos.</li></ol></div></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="section doc-section" id="catalogo-tags">
+      <div class="section-number">03</div>
+      <div class="doc-content">
+        <div class="section-heading compact-heading reveal"><div><p class="eyebrow">INSTRUMENTAÇÃO</p><h2>Catálogo de tags e proposições.</h2></div><p>O mapeamento transforma estados físicos em variáveis booleanas utilizadas nos permissivos, intertravamentos e diagnósticos.</p></div>
+
+        <div class="table-tabs reveal" data-table-tabs>
+          <div class="tab-buttons" role="tablist" aria-label="Setores do catálogo">
+            <button class="active" role="tab" aria-selected="true" data-tab-target="tags-000">000</button><button role="tab" aria-selected="false" data-tab-target="tags-100">100</button><button role="tab" aria-selected="false" data-tab-target="tags-200">200</button><button role="tab" aria-selected="false" data-tab-target="tags-300">300</button><button role="tab" aria-selected="false" data-tab-target="tags-400">400</button><button role="tab" aria-selected="false" data-tab-target="tags-500">500</button>
+          </div>
+
+          <div class="tab-panel active" id="tags-000" role="tabpanel"><h3>Setor 000 · Controle geral</h3><div class="table-wrap"><table class="data-table"><thead><tr><th>Tag</th><th>Dispositivo</th><th>Proposição</th><th>Estado lógico 1</th></tr></thead><tbody>
+            <tr><td><code>M-001</code></td><td>Motor da mesa indexadora</td><td>m₀</td><td>Motor ligado</td></tr><tr><td><code>M-002</code></td><td>Motor da esteira</td><td>m₁</td><td>Motor ligado</td></tr><tr><td><code>SE-001</code></td><td>Encoder de posição</td><td>p₀</td><td>Mesa posicionada</td></tr><tr><td><code>HS-001/005</code></td><td>Comandos do painel</td><td>b₁…k₁</td><td>Comando ativo</td></tr><tr><td><code>IL-001/003</code></td><td>Sinalizadores</td><td>l₁…l₃</td><td>LED aceso</td></tr>
+          </tbody></table></div></div>
+
+          <div class="tab-panel" id="tags-100" role="tabpanel"><h3>Setor 100 · Dispensa</h3><div class="table-wrap"><table class="data-table"><thead><tr><th>Tag</th><th>Dispositivo</th><th>Proposição</th><th>Estado lógico 1</th></tr></thead><tbody>
+            <tr><td><code>XV-101</code></td><td>Válvula do Cilindro A</td><td>v₁</td><td>Cilindro recuado / libera copo</td></tr><tr><td><code>ZSC-101</code></td><td>Fim de curso de avanço</td><td>c₁a</td><td>Cilindro avançado</td></tr><tr><td><code>ZSO-101</code></td><td>Fim de curso de recuo</td><td>c₁r</td><td>Cilindro recuado</td></tr><tr><td><code>ZS-102</code></td><td>Sensor capacitivo</td><td>s₁</td><td>Copo presente</td></tr>
+          </tbody></table></div></div>
+
+          <div class="tab-panel" id="tags-200" role="tabpanel"><h3>Setor 200 · Envase</h3><div class="table-wrap"><table class="data-table"><thead><tr><th>Tag</th><th>Dispositivo</th><th>Proposição</th><th>Estado lógico 1</th></tr></thead><tbody>
+            <tr><td><code>ZS-200</code></td><td>Presença de copo</td><td>s₂</td><td>Copo presente</td></tr><tr><td><code>XV-201</code></td><td>Válvula 3 vias / Cilindro B</td><td>v₂</td><td>Direcionada para o bico</td></tr><tr><td><code>ZSC-201</code></td><td>Posição do Cilindro B</td><td>c₂</td><td>Posição alcançada</td></tr><tr><td><code>XV-202</code></td><td>Dosador / Cilindro C</td><td>v₃</td><td>Dosador avança</td></tr><tr><td><code>ZSC/ZSO-202</code></td><td>Fins de curso do dosador</td><td>c₃r / c₃a</td><td>Recuado / avançado</td></tr><tr><td><code>XV-203</code></td><td>Válvula do bico</td><td>v₄</td><td>Bico comandado aberto</td></tr><tr><td><code>ZSC-203</code></td><td>Confirmação do bico</td><td>c₄</td><td>Abertura detectada</td></tr>
+          </tbody></table></div></div>
+
+          <div class="tab-panel" id="tags-300" role="tabpanel"><h3>Setor 300 · Pick-and-place</h3><div class="table-wrap"><table class="data-table"><thead><tr><th>Tag</th><th>Dispositivo</th><th>Proposição</th><th>Estado lógico 1</th></tr></thead><tbody>
+            <tr><td><code>ZS-300</code></td><td>Presença de copo</td><td>s₃</td><td>Copo presente</td></tr><tr><td><code>XV-301</code></td><td>Giro do Cilindro D</td><td>v₅</td><td>Braço em 180°</td></tr><tr><td><code>ZSC/ZSO-301</code></td><td>Posições do giro</td><td>c₅r / c₅a</td><td>Captura / entrega</td></tr><tr><td><code>XV-302</code></td><td>Vertical do Cilindro E</td><td>v₆</td><td>Eixo avança</td></tr><tr><td><code>ZSC/ZSO-302</code></td><td>Fins de curso do eixo</td><td>c₆r / c₆a</td><td>Recuado / avançado</td></tr><tr><td><code>VAC-301</code></td><td>Gerador de vácuo</td><td>v₇</td><td>Vácuo ligado</td></tr><tr><td><code>PIT-301</code></td><td>Pressostato</td><td>p₁</td><td>Tampa capturada</td></tr>
+          </tbody></table></div></div>
+
+          <div class="tab-panel" id="tags-400" role="tabpanel"><h3>Setor 400 · Termosselagem</h3><div class="table-wrap"><table class="data-table"><thead><tr><th>Tag</th><th>Dispositivo</th><th>Proposição</th><th>Estado lógico 1</th></tr></thead><tbody>
+            <tr><td><code>ZS-400</code></td><td>Presença de copo</td><td>s₄</td><td>Copo presente</td></tr><tr><td><code>XV-401</code></td><td>Prensa / Cilindro F</td><td>v₈</td><td>Prensa avança</td></tr><tr><td><code>ZSC/ZSO-401</code></td><td>Fins de curso da prensa</td><td>c₇r / c₇a</td><td>Recuada / avançada</td></tr><tr><td><code>HT-401</code></td><td>Resistência cartucho</td><td>h₁</td><td>Resistência ligada</td></tr><tr><td><code>TIT-401</code></td><td>Sensor de temperatura</td><td>t₁</td><td>Temperatura ≥ 180 °C</td></tr>
+          </tbody></table></div></div>
+
+          <div class="tab-panel" id="tags-500" role="tabpanel"><h3>Setor 500 · Ejeção</h3><div class="table-wrap"><table class="data-table"><thead><tr><th>Tag</th><th>Dispositivo</th><th>Proposição</th><th>Estado lógico 1</th></tr></thead><tbody>
+            <tr><td><code>ZS-500</code></td><td>Presença de copo</td><td>s₅</td><td>Copo presente</td></tr><tr><td><code>XV-501</code></td><td>Elevador / Cilindro G</td><td>v₉</td><td>Elevador avança</td></tr><tr><td><code>ZSC/ZSO-501</code></td><td>Fins de curso do elevador</td><td>c₈r / c₈a</td><td>Recuado / avançado</td></tr><tr><td><code>XV-502</code></td><td>Extrator / Cilindro H</td><td>v₁₀</td><td>Extrator recua</td></tr><tr><td><code>ZSC/ZSO-502</code></td><td>Fins de curso do extrator</td><td>c₉a / c₉r</td><td>Avançado / recuado</td></tr>
+          </tbody></table></div></div>
+        </div>
+
+        <div class="callout callout-critical reveal"><strong>Limitação do bico</strong><p>ZSC-203 confirma somente a abertura. Logo, ¬c₄ significa “abertura não detectada”, e não “bico positivamente fechado”. Um segundo fim de curso é necessário para diagnóstico inequívoco de fechamento.</p></div>
+      </div>
+    </section>
+
+    <section class="section doc-section alt-surface">
+      <div class="section-number">04</div>
+      <div class="doc-content">
+        <div class="section-heading compact-heading reveal"><div><p class="eyebrow">ESTRATÉGIA DE CONTROLE</p><h2>Intertravamentos que protegem a sequência.</h2></div><p>A FSM global coordena a mesa; as FSMs locais esperam confirmações de posição, processo e temporização.</p></div>
+        <div class="table-wrap reveal"><table class="data-table response-table"><thead><tr><th>Condição monitorada</th><th>Resposta proposta</th><th>Domínio</th></tr></thead><tbody>
+          <tr><td>Mesa não posicionada</td><td>Impedir início das estações</td><td>Sincronismo</td></tr><tr><td>Copo ausente após dispensação</td><td>Alarmar e interromper avanço</td><td>Material</td></tr><tr><td>Dosador sem fim de curso de recuo</td><td>Não considerar a dose aspirada</td><td>Envase</td></tr><tr><td>Bico sem confirmação de abertura</td><td>Não avançar o dosador</td><td>Envase</td></tr><tr><td>Vácuo sem confirmação de tampa</td><td>Não girar o manipulador</td><td>Tampa</td></tr><tr><td>Temperatura abaixo de 180 °C</td><td>Inibir avanço da prensa</td><td>Qualidade</td></tr><tr><td>Prensa não recuada</td><td>Bloquear nova indexação</td><td>Segurança mecânica</td></tr>
+        </tbody></table></div>
+        <div class="next-link-row reveal"><a class="button button-primary" href="etapa-01-logica.html">Ver a lógica aplicada <span>↗</span></a><a class="button button-ghost" href="etapa-01-logica.html#simulador">Testar cenários</a></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="footer-brand"><span class="brand-mark">A2</span><div><strong>Aqua Index</strong><small>Grupo 2 · ECAA08 · UNIFEI</small></div></div><p>Memorial da máquina pneumática de envasamento.</p><a href="https://github.com/poggerssLL/Automatica---Grupo-2" target="_blank" rel="noopener">Repositório no GitHub ↗</a></footer>
+</body>
+</html>

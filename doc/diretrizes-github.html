@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Diretrizes GitHub, rastreabilidade das contribuições e acompanhamento das entregas do projeto Aqua Index.">
+  <meta name="theme-color" content="#f4f1e8">
+  <title>GitHub & Entregas | Aqua Index — Grupo 2</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script defer src="js/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <header class="site-header" data-header>
+    <a class="brand" href="../index.html" aria-label="Aqua Index — página inicial"><span class="brand-mark">A2</span><span class="brand-copy"><strong>AQUA INDEX</strong><small>SCADA · GRUPO 2</small></span></a>
+    <nav class="main-nav" id="main-nav" aria-label="Navegação principal"><a href="../index.html">Visão geral</a><a href="etapa-01-logica.html">Etapa 01</a><a href="planta-envasadora.html">A envasadora</a><a class="active" href="diretrizes-github.html">GitHub & Entregas</a></nav>
+    <div class="header-actions"><button class="icon-button" type="button" data-theme-toggle aria-label="Alternar tema"><span data-theme-icon>◐</span></button><button class="menu-button" type="button" data-menu-toggle aria-controls="main-nav" aria-expanded="false"><span></span><span></span><span></span><span class="sr-only">Abrir menu</span></button></div>
+  </header>
+
+  <main id="conteudo">
+    <header class="page-hero page-hero-git">
+      <div class="page-hero-copy reveal">
+        <p class="breadcrumb"><a href="../index.html">Início</a><span>/</span> Governança</p>
+        <p class="eyebrow">RASTREABILIDADE · AUTORIA · PLANEJAMENTO</p>
+        <h1>Um projeto coletivo.<br><em>Contribuições identificáveis.</em></h1>
+        <p>O Git registra a evolução técnica, associa cada alteração ao seu autor e mantém as evidências de implementação e validação do grupo.</p>
+      </div>
+      <div class="git-visual reveal" aria-label="Representação de um histórico Git">
+        <div class="git-line"><i></i><div><code>main</code><strong>Entrega integrada</strong><small>fonte de avaliação</small></div></div>
+        <div class="git-line"><i></i><div><code>feat:</code><strong>Implementação funcional</strong><small>autor identificado</small></div></div>
+        <div class="git-line"><i></i><div><code>docs:</code><strong>Memorial técnico</strong><small>mudança auditável</small></div></div>
+        <div class="git-line"><i></i><div><code>test:</code><strong>Validação reproduzível</strong><small>evidência no histórico</small></div></div>
+      </div>
+    </header>
+
+    <section class="truth-strip"><strong>REGRA DE AUTORIA</strong><p>Cada integrante deve realizar os próprios commits com nome e e-mail vinculados à sua conta do GitHub. Upload, push e edição não substituem a autoria gravada no commit.</p><span>INSIGHTS → CONTRIBUTORS</span></section>
+
+    <section class="section doc-section">
+      <div class="section-number">01</div>
+      <div class="doc-content">
+        <div class="section-heading compact-heading reveal"><div><p class="eyebrow">REPOSITÓRIO UNIFICADO</p><h2>Estrutura que conecta código, relatório e portal.</h2></div><p>A organização abaixo preserva as quatro etapas do semestre e mantém o site estático na raiz para publicação pelo GitHub Pages.</p></div>
+        <div class="repo-layout reveal">
+          <div class="repo-tree" aria-label="Estrutura do repositório"><pre><code>Automatica---Grupo-2/
+├── README.md
+├── .nojekyll
+├── index.html
+├── doc/
+│   ├── css/styles.css
+│   ├── js/main.js
+│   ├── etapa-01-logica.html
+│   ├── planta-envasadora.html
+│   └── diretrizes-github.html
+├── etapa-01-logica/
+│   ├── 01 - Insumos.md
+│   ├── 02 - Mapeamento_de_variaveis.md
+│   ├── 03 ... 09 (.md / .ipynb)
+│   └── 10 - Avaliação Módulo 1 (.md / .ipynb)
+├── etapa-02-grafos/
+├── etapa-03-arvores/
+└── etapa-04-relacoes/</code></pre></div>
+          <div class="repo-principles">
+            <article><span>01</span><div><h3>Fonte única</h3><p>Um repositório oficial reúne a documentação e evita versões paralelas sem rastreabilidade.</p></div></article>
+            <article><span>02</span><div><h3>Entregável por aula</h3><p>Arquivos numerados permitem relacionar conteúdo, implementação e autoria.</p></div></article>
+            <article><span>03</span><div><h3>Portal na raiz</h3><p>O arquivo index.html torna o mesmo conteúdo navegável no GitHub Pages.</p></div></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section doc-section alt-surface">
+      <div class="section-number">02</div>
+      <div class="doc-content">
+        <div class="section-heading compact-heading reveal"><div><p class="eyebrow">CONTRIBUIÇÃO INDIVIDUAL</p><h2>O commit precisa apontar para a pessoa certa.</h2></div><p>O gráfico Contributors considera commits da branch padrão e associa o autor pelo e-mail armazenado no objeto Git.</p></div>
+        <div class="metric-grid reveal">
+          <article><strong>1</strong><h3>Autor</h3><p>Nome e e-mail configurados antes do commit.</p><code>git config user.name</code><code>git config user.email</code></article>
+          <article><strong>2</strong><h3>Commit</h3><p>Mudança pequena, coerente e com mensagem objetiva.</p><code>git add caminho/do/arquivo</code><code>git commit -m "tipo: resumo"</code></article>
+          <article><strong>3</strong><h3>Main</h3><p>O commit precisa chegar à branch padrão para aparecer na métrica.</p><code>git pull --ff-only</code><code>git push origin main</code></article>
+        </div>
+        <div class="callout callout-critical reveal"><strong>Não compartilhar autoria</strong><p>Se uma pessoa criar o commit por outra, o GitHub atribuirá a contribuição ao autor/e-mail registrado — ainda que o arquivo tenha sido produzido por outro integrante. Cada estudante deve revisar e commitar sua própria entrega.</p></div>
+
+        <div class="commit-conventions reveal">
+          <h3>Padrão recomendado de mensagens</h3>
+          <div class="convention-list"><div><code>feat:</code><span>nova funcionalidade ou aula implementada</span></div><div><code>docs:</code><span>documentação, relatório ou texto técnico</span></div><div><code>fix:</code><span>correção de comportamento ou conteúdo</span></div><div><code>test:</code><span>ensaio, validação ou caso de teste</span></div><div><code>refactor:</code><span>reorganização sem mudar o resultado</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section doc-section">
+      <div class="section-number">03</div>
+      <div class="doc-content">
+        <div class="section-heading compact-heading reveal"><div><p class="eyebrow">ACOMPANHAMENTO TÉCNICO</p><h2>Entregas com responsável, evidência e validação.</h2></div><p>O quadro organiza o trabalho já adotado pelo grupo sem impor uma metodologia externa ao projeto.</p></div>
+        <div class="delivery-board reveal">
+          <article><span>01</span><small>ESCOPO</small><h3>Definir o entregável técnico.</h3><p>Identificar a aula, os arquivos envolvidos e o comportamento esperado antes da alteração.</p></article>
+          <article><span>02</span><small>AUTORIA</small><h3>Registrar quem realizou o trabalho.</h3><p>O integrante responsável revisa os próprios arquivos e cria o commit com nome e e-mail corretos.</p></article>
+          <article><span>03</span><small>EVIDÊNCIA</small><h3>Manter o resultado reproduzível.</h3><p>Notebooks executados, testes, cenários do simulador e documentação acompanham a implementação.</p></article>
+          <article><span>04</span><small>VALIDAÇÃO</small><h3>Conferir conteúdo e integração.</h3><p>O grupo verifica lógica, links, nomenclatura das variáveis e coerência com a planta envasadora.</p></article>
+          <article class="delivery-wide"><span>05</span><small>PUBLICAÇÃO</small><h3>Integrar somente uma versão conferida.</h3><p>A alteração validada chega à branch principal com mensagem objetiva e permanece identificável no histórico do repositório.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section doc-section alt-surface">
+      <div class="section-number">04</div>
+      <div class="doc-content">
+        <div class="section-heading compact-heading reveal"><div><p class="eyebrow">CHECKLIST DE ENTREGA</p><h2>Antes de publicar uma alteração.</h2></div><p>Um fluxo curto reduz conflitos, commits atribuídos incorretamente e arquivos sem validação.</p></div>
+        <ol class="delivery-steps reveal">
+          <li><span>01</span><div><h3>Sincronizar</h3><p>Atualizar a cópia local e confirmar que não existem alterações inesperadas.</p></div></li>
+          <li><span>02</span><div><h3>Validar autoria</h3><p>Conferir nome e e-mail Git antes de criar o commit.</p></div></li>
+          <li><span>03</span><div><h3>Revisar arquivos</h3><p>Executar notebooks, abrir o portal e conferir links e conteúdo.</p></div></li>
+          <li><span>04</span><div><h3>Adicionar explicitamente</h3><p>Selecionar somente os arquivos da entrega atual.</p></div></li>
+          <li><span>05</span><div><h3>Commitar e enviar</h3><p>Usar uma mensagem convencional e confirmar a atualização da main remota.</p></div></li>
+        </ol>
+        <div class="next-link-row reveal"><a class="button button-primary" href="https://github.com/poggerssLL/Automatica---Grupo-2" target="_blank" rel="noopener">Abrir repositório <span>↗</span></a><a class="button button-ghost" href="etapa-01-logica.html">Ver entregáveis da Etapa 01</a></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="footer-brand"><span class="brand-mark">A2</span><div><strong>Aqua Index</strong><small>Grupo 2 · ECAA08 · UNIFEI</small></div></div><p>Governança, autoria e planejamento do projeto.</p><a href="../index.html">Voltar ao portal ↑</a></footer>
+</body>
+</html>

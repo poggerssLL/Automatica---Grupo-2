@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Etapa 01 do projeto Aqua Index: lógica formal, apresentação, simulador da envasadora e memorial das Aulas 01–10.">
+  <meta name="theme-color" content="#f4f1e8">
+  <title>Etapa 01 — Lógica Formal | Aqua Index</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script defer src="js/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <header class="site-header" data-header>
+    <a class="brand" href="../index.html" aria-label="Aqua Index — página inicial"><span class="brand-mark">A2</span><span class="brand-copy"><strong>AQUA INDEX</strong><small>SCADA · GRUPO 2</small></span></a>
+    <nav class="main-nav" id="main-nav" aria-label="Navegação principal"><a href="../index.html">Visão geral</a><a class="active" href="etapa-01-logica.html">Etapa 01</a><a href="planta-envasadora.html">A envasadora</a><a href="diretrizes-github.html">GitHub & Entregas</a></nav>
+    <div class="header-actions"><button class="icon-button" type="button" data-theme-toggle aria-label="Alternar tema"><span data-theme-icon>◐</span></button><button class="menu-button" type="button" data-menu-toggle aria-controls="main-nav" aria-expanded="false"><span></span><span></span><span></span><span class="sr-only">Abrir menu</span></button></div>
+  </header>
+
+  <main id="conteudo">
+    <header class="page-hero page-hero-logic">
+      <div class="page-hero-copy reveal">
+        <p class="breadcrumb"><a href="../index.html">Início</a><span>/</span> Etapa 01</p>
+        <p class="eyebrow">MÓDULO 01 · AULAS 01–10</p>
+        <h1>Lógica que autoriza.<br><em>Lógica que explica.</em></h1>
+        <p>Dos sinais discretos aos motores de inferência: a Etapa 01 formaliza permissivos, diagnósticos e provas aplicados às cinco estações da envasadora.</p>
+        <div class="hero-actions"><a class="button button-primary" href="#apresentacao">Ver 15 quadros <span>↓</span></a><a class="button button-ghost" href="#simulador">Ir ao simulador</a></div>
+      </div>
+      <div class="logic-expression reveal" aria-label="Exemplo de regra lógica do projeto">
+        <span class="logic-caption">REGRA CRÍTICA · R-01</span>
+        <div class="logic-row"><code>SOLICITA_GIRO_MESA</code><b>∧</b></div>
+        <div class="logic-row"><code>PRENSA_NAO_RECUADA</code></div>
+        <div class="logic-arrow">↓</div>
+        <div class="logic-result"><code>TRIP_COLISAO_MESA</code></div>
+        <small>Modus Ponens · prioridade local 10</small>
+      </div>
+    </header>
+
+    <nav class="anchor-nav" aria-label="Seções da Etapa 01"><a href="#apresentacao">Apresentação</a><a href="#aula-10">Aula 10</a><a href="#simulador">Simulador</a><a href="#regras">Base de regras</a><a href="#aulas">Memorial das aulas</a></nav>
+
+    <section class="section" id="apresentacao">
+      <div class="section-heading reveal"><div><p class="eyebrow">APRESENTAÇÃO INTERATIVA</p><h2>Etapa 01 em<br>15 quadros.</h2></div><p>Use os botões, os indicadores ou as setas ← → do teclado. Cada quadro resume uma decisão matemática aplicada ao processo.</p></div>
+
+      <div class="slide-deck reveal" data-slide-deck tabindex="0" aria-label="Apresentação com 15 quadros">
+        <div class="deck-topbar"><div><span class="deck-signal"></span><strong>AQUA INDEX / MÓDULO LÓGICO</strong></div><span data-slide-counter>01 / 15</span></div>
+        <div class="slides-viewport">
+          <article class="deck-slide active" data-slide>
+            <div class="slide-meta">QUADRO 01 · ABERTURA</div><div class="slide-layout"><div><p class="slide-kicker">O PROBLEMA</p><h3>Como impedir que cinco estações independentes entrem em conflito?</h3><p>A mesa só pode indexar quando os atuadores estiverem recolhidos. Cada estação só começa quando o copo e as condições de processo forem confirmados.</p></div><div class="slide-big-number">5<small>estações sincronizadas</small></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 02 · ARQUITETURA</div><div class="slide-layout"><div><p class="slide-kicker">SCADA + PROCESSO</p><h3>Supervisionar não é substituir o controle.</h3><p>O SCADA monitora e solicita ações. O Automation Studio representa o processo e executa as FSMs. A lógica formal documenta quando um comando pode ser aceito.</p></div><div class="slide-flow"><span>OPERADOR</span><b>→</b><span>SCADA</span><b>↔</b><span>PROCESSO</span></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 03 · AULAS 01–02</div><div class="slide-layout"><div><p class="slide-kicker">DO CAMPO À PROPOSIÇÃO</p><h3>45 variáveis transformam posições e comandos em estados lógicos.</h3><p>Exemplo: TIT-401 produz t₁ = 1 quando a temperatura é maior ou igual a 180 °C. ZS-400 produz s₄ = 1 quando existe copo na estação de selagem.</p></div><div class="slide-code"><code>t₁ := T ≥ 180 °C</code><code>s₄ := copo presente</code><code>c₇r := prensa recuada</code></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 04 · AULA 03</div><div class="slide-layout"><div><p class="slide-kicker">TAUTOLOGIA DE SEGURANÇA</p><h3>Giro autorizado e prensa avançada não podem coexistir.</h3><p>O permissivo inclui c₇r. Se a prensa não está recolhida, a autorização de giro deve ser falsa. A tabela-verdade verifica exaustivamente essa relação.</p></div><div class="slide-formula">P<sub>giro</sub> → c<sub>7r</sub><small>invariante mecânico</small></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 05 · AULA 03</div><div class="slide-layout"><div><p class="slide-kicker">QUALIDADE DE SELAGEM</p><h3>Sem temperatura mínima, não existe permissivo para a prensa.</h3><p>O requisito t₁ impede a descida do cabeçote abaixo de 180 °C e reduz o risco de uma tampa sem vedação adequada.</p></div><div class="temperature-gauge"><span>180 °C</span><i></i><strong>t₁</strong></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 06 · AULA 04</div><div class="slide-layout"><div><p class="slide-kicker">PERMISSIVO × INTERTRAVAMENTO</p><h3>Começar seguro e permanecer seguro são condições diferentes.</h3><p>O permissivo avalia a entrada na etapa. O intertravamento contínuo retém somente as condições que devem continuar verdadeiras durante o movimento.</p></div><div class="slide-compare"><div><strong>P</strong><span>autoriza partida</span></div><div><strong>I</strong><span>mantém operação</span></div></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 07 · AULA 05</div><div class="slide-layout"><div><p class="slide-kicker">FORMAS NORMAIS</p><h3>FND e FNC padronizam expressões para análise e implementação.</h3><p>A álgebra booleana permite remover redundâncias sem modificar a tabela-verdade. A equivalência deve ser demonstrada antes da otimização.</p></div><div class="slide-code"><code>FND = Σ mintermos</code><code>FNC = Π maxtermos</code><code>f original ≡ f otimizada</code></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 08 · AULA 06</div><div class="slide-layout"><div><p class="slide-kicker">PREDICADOS E QUANTIFICADORES</p><h3>Condições globais sobre redes de sensores.</h3><p>O giro global requer cada mecanismo na posição de repouso definida para ele. Uma única exceção é suficiente para bloquear a mesa.</p></div><div class="slide-formula">∀ c ∈ Atuadores,<br>RepousoSeguro(c)<small>permissivo global</small></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 09 · AULA 07</div><div class="slide-layout"><div><p class="slide-kicker">VALIDADE</p><h3>Premissas verdadeiras precisam sustentar a conclusão.</h3><p>Modus Ponens e Modus Tollens são aplicados a diagnósticos. Afirmar o consequente e negar o antecedente permanecem falácias, mesmo em código de controle.</p></div><div class="slide-code"><code>P → Q, P ⊢ Q</code><code>P → Q, ¬Q ⊢ ¬P</code><code>P → Q, Q ⊬ P</code></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 10 · AULA 08</div><div class="slide-layout"><div><p class="slide-kicker">SISTEMA ESPECIALISTA</p><h3>Fatos, regras e estratégia de resolução.</h3><p>A arquitetura ⟨F, R, E⟩ combina telemetria ativa, cláusulas de Horn e uma agenda determinística baseada em prioridade, especificidade e identificador.</p></div><div class="expert-triplet"><span>F<small>fatos</small></span><span>R<small>regras</small></span><span>E<small>estratégia</small></span></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 11 · AULA 08</div><div class="slide-layout"><div><p class="slide-kicker">CATÁLOGO DE FALHAS</p><h3>Sete regras cobrem segurança, processo, qualidade e integridade.</h3><p>Colisão da mesa, selagem fria, perda de vácuo, falta de copos, dosagem com bico fechado, sensores contraditórios e parada em cascata.</p></div><div class="rule-stack"><span>R-01 · PRIO 10</span><span>R-05 · PRIO 09</span><span>R-02/R-06 · PRIO 08</span><span>R-04 · PRIO 07</span><span>R-03 · PRIO 06</span></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 12 · AULA 09</div><div class="slide-layout"><div><p class="slide-kicker">FORWARD CHAINING</p><h3>Dos fatos ao fechamento dedutivo.</h3><p>O motor percorre regras disparáveis, adiciona conclusões e repete até o ponto fixo. R-01 infere o trip; esse fato habilita R-07 e gera a parada geral.</p></div><div class="slide-flow vertical"><span>FATOS</span><b>↓ R-01</b><span>TRIP</span><b>↓ R-07</b><span>ALARME</span></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 13 · AULA 09</div><div class="slide-layout"><div><p class="slide-kicker">BACKWARD CHAINING</p><h3>Da hipótese às evidências necessárias.</h3><p>Ao perguntar “por que houve parada?”, o motor busca regras que produzam essa meta e transforma os antecedentes em submetas até encontrar fatos observados ou lacunas.</p></div><div class="proof-mini"><strong>ALARME_GERAL_PARADA</strong><span>└ R-07 → TRIP_COLISAO_MESA</span><span>&nbsp;&nbsp;└ R-01 → fatos observados</span></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 14 · AULA 10</div><div class="slide-layout"><div><p class="slide-kicker">AVALIAÇÃO INTEGRADA</p><h3>Telemetria, proposições e diagnóstico no mesmo ciclo de scan.</h3><p>O SCADA-Core discretiza sinais, aplica cinco regras de produção por prioridade e valida falta de copo, bloqueio térmico e operação normal por meio de asserts.</p></div><div class="test-score"><strong>3/3</strong><span>cenários aprovados</span><small>execução conferida no notebook da Aula 10</small></div></div>
+          </article>
+          <article class="deck-slide" data-slide>
+            <div class="slide-meta">QUADRO 15 · STATUS</div><div class="slide-layout"><div><p class="slide-kicker">MÓDULO 1 DOCUMENTADO</p><h3>A avaliação integrada fecha a sequência das Aulas 01–10.</h3><p>Os arquivos Markdown e notebook da Aula 10 estão presentes no repositório. As etapas seguintes permanecem reservadas para grafos, árvores e relações.</p></div><div class="status-stack"><span class="done">01–10 · PRESENTES</span><span class="done">AULA 10 · 3/3 CENÁRIOS</span><span class="future">ETAPAS 02–04 · FUTURAS</span></div></div>
+          </article>
+        </div>
+        <div class="deck-controls"><button type="button" data-slide-prev aria-label="Quadro anterior">← Anterior</button><div class="slide-dots" data-slide-dots></div><button type="button" data-slide-next>Próximo →</button></div>
+      </div>
+    </section>
+
+    <section class="section module-assessment" id="aula-10">
+      <div class="section-heading reveal"><div><p class="eyebrow">NOVO NO REPOSITÓRIO · AULA 10</p><h2>Avaliação integrada<br>do Módulo 1.</h2></div><p>O novo notebook reúne o mapeamento da telemetria, a base de conhecimento e o forward chaining em um único ciclo de scan verificável.</p></div>
+
+      <div class="assessment-panel reveal">
+        <div class="assessment-chain" aria-label="Arquitetura de decisão em três camadas">
+          <article><span>01 · TELEMETRIA</span><strong>Sinais brutos</strong><code>Sensor_Capacitivo · Temp_Termosselagem · Botao_Emergencia</code></article>
+          <b aria-hidden="true">→</b>
+          <article><span>02 · DISCRETIZAÇÃO</span><strong>Fatos booleanos</strong><code>tem_copo · falta_copo · t1 · baixa_temp · e1</code></article>
+          <b aria-hidden="true">→</b>
+          <article><span>03 · INFERÊNCIA</span><strong>Diagnóstico</strong><code>R-01…R-05 · prioridade · fechamento dedutivo</code></article>
+        </div>
+        <aside class="assessment-score" aria-label="Resultado da execução da Aula 10">
+          <span>EXECUÇÃO VERIFICADA</span><strong>3/3</strong><p>cenários aprovados</p><small>Saída registrada: 100% de sucesso</small>
+        </aside>
+      </div>
+
+      <div class="assessment-scenarios reveal">
+        <article><span>CENÁRIO A</span><h3>Falta de copo</h3><p><code>falta_copo</code> gera <code>alarme_sem_copo</code> e, em cascata, <code>bloqueia_dosador</code>.</p><strong>TRIP ATIVO · APROVADO</strong></article>
+        <article><span>CENÁRIO B</span><h3>Bloqueio térmico</h3><p>Com copo presente e temperatura de 160 °C, <code>baixa_temp</code> gera <code>bloqueia_prensa</code>.</p><strong>TRIP ATIVO · APROVADO</strong></article>
+        <article><span>CENÁRIO C</span><h3>Operação normal</h3><p>Com copo presente e 182 °C, <code>t1</code> permite inferir <code>libera_prensa</code>.</p><strong>SEM TRIP · APROVADO</strong></article>
+      </div>
+
+      <div class="assessment-rules reveal" aria-label="Cinco regras da avaliação integrada">
+        <article><span>R-01 · PRIO 10</span><code>e1 → parada_imediata</code></article>
+        <article><span>R-02 · PRIO 09</span><code>falta_copo → alarme_sem_copo</code></article>
+        <article><span>R-03 · PRIO 08</span><code>alarme_sem_copo → bloqueia_dosador</code></article>
+        <article><span>R-04 · PRIO 08</span><code>tem_copo ∧ baixa_temp → bloqueia_prensa</code></article>
+        <article><span>R-05 · PRIO 05</span><code>tem_copo ∧ t1 → libera_prensa</code></article>
+      </div>
+
+      <div class="assessment-actions reveal"><a class="button button-primary" href="../etapa-01-logica/10%20-%20Avaliacao%20Modulo%201%20Motor%20de%20Intertravamento%20e%20Diagnostico.md">Abrir memorial da Aula 10 <span>↗</span></a><a class="button assessment-button" href="../etapa-01-logica/10%20-%20Avaliacao%20Modulo%201%20Motor%20de%20Intertravamento%20e%20Diagnostico.ipynb">Abrir notebook <span>↗</span></a></div>
+      <div class="assessment-note reveal"><strong>Dois escopos complementares</strong><p>A Aula 10 avalia cinco regras compactas do SCADA-Core. O laboratório abaixo preserva as sete regras detalhadas das Aulas 08–09 e a FSM didática das cinco estações; por isso, os identificadores não devem ser comparados regra a regra.</p></div>
+    </section>
+
+    <section class="section simulator-section" id="simulador">
+      <div class="section-heading simulator-heading reveal"><div><p class="eyebrow">LABORATÓRIO DIDÁTICO</p><h2>Simulador lógico<br>da envasadora.</h2></div><p>Escolha um cenário ou altere os sinais manualmente. O motor avalia as sete regras da Aula 08 e apresenta a trilha de inferência da Aula 09.</p></div>
+
+      <div class="sim-shell reveal" data-simulator>
+        <header class="sim-header"><div><span class="sim-brand-dot"></span><div><strong>AQUA INDEX / DIGITAL BENCH</strong><small>Simulação local no navegador · sem conexão com CLP</small></div></div><div class="sim-status nominal" data-sim-status><span></span><strong>OPERAÇÃO NOMINAL</strong></div></header>
+
+        <div class="scenario-bar" aria-label="Cenários de falha">
+          <button class="active" type="button" data-scenario="nominal">Nominal</button><button type="button" data-scenario="collision">Colisão</button><button type="button" data-scenario="cold">Selagem fria</button><button type="button" data-scenario="vacuum">Falha de vácuo</button><button type="button" data-scenario="empty">Sem copos</button><button type="button" data-scenario="nozzle">Bico fechado*</button><button type="button" data-scenario="sensors">Sensores incoerentes</button><button type="button" data-scenario="emergency">Emergência</button>
+        </div>
+
+        <div class="sim-grid">
+          <section class="sim-process-panel">
+            <div class="panel-title"><span>01</span><div><strong>PROCESSO SINÓTICO ILUSTRADO</strong><small>máquina, sensores e atuadores em tempo real</small></div></div>
+            <div class="sim-machine" aria-label="Sinótico SCADA clássico das cinco estações da envasadora">
+              <div class="machine-overview">
+                <span><i class="legend-dot actuator-dot"></i> Atuador</span>
+                <span><i class="legend-dot sensor-dot"></i> Sensor</span>
+                <span><i class="legend-dot active-dot"></i> Sinal ativo</span>
+                <span><i class="legend-dot fault-dot"></i> Falha</span>
+              </div>
+              <div class="scada-viewport">
+                <div class="classic-scada">
+                  <div class="scada-titlebar"><strong>SINÓTICO GERAL · ENVASADORA AUTOMÁTICA</strong><span>GRUPO 2 · SETORES 100–500</span></div>
+                  <div class="utility-label utility-air">AR COMPRIMIDO · REDE PNEUMÁTICA</div>
+                  <div class="utility-label utility-water">ÁGUA DE PROCESSO</div>
+                  <div class="scada-pipe pipe-air-main"></div><div class="scada-pipe pipe-air-e1"></div><div class="scada-pipe pipe-air-e3"></div><div class="scada-pipe pipe-air-e4"></div><div class="scada-pipe pipe-air-e5"></div>
+                  <div class="scada-pipe water pipe-water-main"></div><div class="scada-pipe water pipe-water-rise"></div><div class="scada-pipe water pipe-water-dose"></div>
+
+                  <article class="scada-unit unit-dispense" data-station="dispense">
+                    <header><b>E1 · DISPENSA</b><small data-station-status>pronta</small></header>
+                    <div class="pid-block pid-magazine"><b>MAGAZINE</b><span>PILHA DE COPOS</span><small>CILINDRO A · RETENTOR</small></div>
+                    <div class="pid-connection pid-connection-e1" aria-hidden="true"></div>
+                    <span class="scada-tag actuator tag-xv101" data-device="XV-101"><i></i><b>XV-101</b><small data-device-state>STANDBY</small></span>
+                    <span class="scada-tag sensor tag-zs102 active" data-device="ZS-102"><i></i><b>ZS-102</b><small data-device-state>PRESENTE</small></span>
+                  </article>
+
+                  <article class="scada-unit unit-fill" data-station="fill">
+                    <header><b>E2 · DOSAGEM 150 mL</b><small data-station-status>pronta</small></header>
+                    <div class="pid-block pid-doser"><b>DOSADOR C</b><span>VOLUME: 150 mL</span><small>ASPIRA / ENTREGA</small></div>
+                    <div class="pid-block pid-nozzle"><b>BICO</b><span>XV-203</span><small>SAÍDA DE ÁGUA</small></div>
+                    <div class="pid-connection pid-connection-e2" aria-hidden="true"></div>
+                    <span class="scada-tag actuator tag-xv202" data-device="XV-202"><i></i><b>XV-202</b><small data-device-state>STANDBY</small></span>
+                    <span class="scada-tag actuator tag-xv203" data-device="XV-203"><i></i><b>XV-203</b><small data-device-state>STANDBY</small></span>
+                    <span class="scada-tag sensor tag-zsc203" data-device="ZSC-203"><i></i><b>ZSC-203</b><small data-device-state>AGUARDANDO</small></span>
+                  </article>
+
+                  <article class="scada-unit unit-cap" data-station="cap">
+                    <header><b>E3 · POSICIONAR TAMPA</b><small data-station-status>pronta</small></header>
+                    <div class="pid-block pid-axis-rotate"><b>CILINDRO D</b><span>GIRO 0° / 180°</span><small>XV-301</small></div>
+                    <div class="pid-block pid-axis-vertical"><b>CILINDRO E</b><span>EIXO VERTICAL</span><small>XV-302</small></div>
+                    <div class="pid-block pid-vacuum"><b>VENTOSA</b><span>VAC-301</span><small>COMANDO NÃO MODELADO</small></div>
+                    <div class="pid-block pid-cap-stock"><b>TAMPAS</b><span>MAGAZINE</span></div>
+                    <div class="pid-connection pid-connection-e3" aria-hidden="true"></div>
+                    <span class="scada-tag actuator tag-xv301" data-device="XV-301" title="Comando de giro do cilindro D"><i></i><b>XV-301 · GIRO D</b><small data-device-state>STANDBY</small></span>
+                    <span class="scada-tag sensor tag-pit301 active" data-device="PIT-301"><i></i><b>PIT-301</b><small data-device-state>CONFIRMADO</small></span>
+                  </article>
+
+                  <article class="scada-unit unit-seal" data-station="seal">
+                    <header><b>E4 · TERMOSSELAGEM</b><small data-station-status>185 °C</small></header>
+                    <div class="pid-block pid-press"><b>CILINDRO F</b><span>PRENSA VERTICAL</span><small>XV-401</small></div>
+                    <div class="pid-block pid-heater"><b>CABEÇOTE TÉRMICO</b><span>HT-401</span><small>TIT-401 ≥ 180 °C</small></div>
+                    <div class="pid-connection pid-connection-e4" aria-hidden="true"></div>
+                    <span class="scada-tag actuator tag-xv401" data-device="XV-401"><i></i><b>XV-401</b><small data-device-state>STANDBY</small></span>
+                    <span class="scada-tag sensor tag-tit401 active" data-device="TIT-401"><i></i><b>TIT-401</b><small data-device-state>185 °C</small></span>
+                  </article>
+
+                  <article class="scada-unit unit-eject" data-station="eject">
+                    <header><b>E5 · EJEÇÃO</b><small data-station-status>pronta</small></header>
+                    <div class="pid-block pid-lift"><b>CILINDRO G</b><span>ELEVADOR</span><small>XV-501 · MOVIMENTO ↑</small></div>
+                    <div class="pid-block pid-extractor"><b>CILINDRO H</b><span>EXTRATOR</span><small>XV-502 · RECUO / TRANSFERÊNCIA</small></div>
+                    <div class="pid-block pid-exit"><b>ESTEIRA DE SAÍDA</b><span>M-002</span></div>
+                    <div class="pid-connection pid-connection-e5" aria-hidden="true"></div>
+                    <span class="scada-tag actuator tag-xv501" data-device="XV-501"><i></i><b>XV-501</b><small data-device-state>STANDBY</small></span>
+                    <span class="scada-tag actuator tag-xv502" data-device="XV-502"><i></i><b>XV-502</b><small data-device-state>STANDBY</small></span>
+                    <span class="scada-tag sensor tag-zs500 active" data-device="ZS-500"><i></i><b>ZS-500</b><small data-device-state>PRESENTE</small></span>
+                    <span class="scada-tag sensor tag-zsc501 active" data-device="ZSC-501"><i></i><b>ZSC-501</b><small data-device-state>RECUADO</small></span>
+                    <span class="scada-tag sensor tag-zso501" data-device="ZSO-501"><i></i><b>ZSO-501</b><small data-device-state>INATIVO</small></span>
+                    <span class="scada-tag sensor tag-zsc502 active" data-device="ZSC-502"><i></i><b>ZSC-502</b><small data-device-state>AVANÇADO</small></span>
+                    <span class="scada-tag sensor tag-zso502" data-device="ZSO-502"><i></i><b>ZSO-502</b><small data-device-state>INATIVO</small></span>
+                  </article>
+
+                  <div class="sim-table" data-device="M-001">
+                    <div class="index-track" aria-label="Posições da mesa indexadora"><i data-position="E1"></i><i data-position="E2"></i><i data-position="E3"></i><i data-position="E4"></i><i data-position="E5"></i></div>
+                    <div class="table-readout"><span>M-001 · MESA INDEXADORA</span><strong data-table-state>MESA PRONTA</strong><small data-position-state>SE-001 · posição confirmada</small></div>
+                  </div>
+                  <div class="scada-flow"><span>ENTRADA</span><i>FLUXO DO PRODUTO →</i><span>SAÍDA</span></div>
+                </div>
+              </div>
+              <p class="synoptic-note">Os blocos de mesa, envase, tampa, prensa e ejeção calculam P, LIB e CMD pelas equações da Aula 04. A parada geral atua como camada final de segurança. Os indicadores apenas mudam de estado; nenhum equipamento é animado.</p>
+              <div class="permissive-monitor"><div class="logic-health"><strong data-general-logic>H_G=1</strong><span data-mode-logic>M_VÁLIDO=1</span><span data-sensor-logic>F_SENSORES=0</span></div><div class="permissive-board" data-permissive-board aria-label="Matriz dinâmica de permissivos e liberações"></div></div>
+            </div>
+            <div class="fact-rack"><div class="rack-title">FATOS ATIVOS <span data-fact-count>0</span></div><div class="fact-chips" data-fact-chips><span class="empty-chip">Nenhuma solicitação ativa</span></div></div>
+          </section>
+
+          <section class="sim-controls-panel">
+            <div class="panel-title"><span>02</span><div><strong>ENTRADAS DO LABORATÓRIO</strong><small>telemetria e solicitações</small></div></div>
+            <section class="auto-controller" data-auto-controller aria-label="Controle do ciclo automático">
+              <header><div><span>AUTOMÁTICO · CICLO DIDÁTICO</span><strong data-auto-state>AGUARDANDO PREPARAÇÃO</strong></div><small data-auto-cycle>CICLO 00</small></header>
+              <div class="auto-step"><span>ETAPA MESTRE</span><strong data-auto-step>PARADO</strong></div>
+              <div class="auto-progress" aria-hidden="true"><i data-auto-progress></i></div>
+              <div class="auto-actions"><button type="button" data-auto-prepare>Preparar planta</button><button type="button" data-auto-start disabled>Iniciar 1 ciclo</button><button type="button" class="auto-stop" data-auto-stop disabled>Parar ciclo</button></div>
+              <p>O modelo altera somente estados lógicos, sem animação. Emergência, parada, modo inválido, diagnóstico ou timeout interrompem o ciclo e exigem nova preparação.</p>
+            </section>
+            <div class="control-groups">
+              <fieldset><legend>Habilitação geral & modo</legend><label class="switch-row"><span>Chave geral energizada<small>HS-005 · k₁</small></span><input type="checkbox" data-sim-input="generalEnabled" checked><i></i></label><label class="switch-row"><span>Modo automático<small>AUTO</small></span><input type="checkbox" data-sim-input="autoMode" checked><i></i></label><label class="switch-row"><span>Modo manual<small>MANUAL</small></span><input type="checkbox" data-sim-input="manualMode"><i></i></label><label class="switch-row"><span>Botão desligar<small>HS-002 · b₂</small></span><input type="checkbox" data-sim-input="offPressed"><i></i></label><label class="switch-row"><span>Botão parar<small>HS-003 · b₃</small></span><input type="checkbox" data-sim-input="stopPressed"><i></i></label><label class="switch-row"><span>Mesa posicionada<small>SE-001 · p₀</small></span><input type="checkbox" data-sim-input="tablePositioned" checked><i></i></label></fieldset>
+              <fieldset><legend>Mesa & dispensa</legend><label class="switch-row command-row"><span>Solicitar giro da mesa<small>REQ_GIRO → M-001</small></span><input type="checkbox" data-sim-input="reqTable"><i></i></label><label class="switch-row"><span>Retentor avançado<small>ZSC-101 · c₁a</small></span><input type="checkbox" data-sim-input="retainerAdvanced" checked><i></i></label><label class="switch-row"><span>Retentor recuado<small>ZSO-101 · c₁r</small></span><input type="checkbox" data-sim-input="retainerRetracted"><i></i></label><label class="switch-row"><span>Ciclo de dispensa concluído<small>CICLO_DISPENSA_CONCLUIDO</small></span><input type="checkbox" data-sim-input="dispenseDone"><i></i></label><label class="switch-row"><span>Copo presente em E1<small>ZS-102 · s₁</small></span><input type="checkbox" data-sim-input="cupE1Present" checked><i></i></label></fieldset>
+              <fieldset><legend>Envase · Setor 200</legend><label class="switch-row command-row"><span>Solicitar abertura do bico<small>REQ_BICO → XV-203</small></span><input type="checkbox" data-sim-input="reqNozzle"><i></i></label><label class="switch-row command-row"><span>Solicitar avanço do dosador<small>REQ_DOSE → XV-202</small></span><input type="checkbox" data-sim-input="reqDose"><i></i></label><label class="switch-row"><span>Copo presente em E2<small>ZS-200 · s₂</small></span><input type="checkbox" data-sim-input="cupE2Present" checked><i></i></label><label class="switch-row"><span>Rota para o bico alcançada<small>ZSC-201 · c₂</small></span><input type="checkbox" data-sim-input="routeReached" checked><i></i></label><label class="switch-row"><span>Dosador recuado<small>ZSC-202 · c₃r</small></span><input type="checkbox" data-sim-input="doserRetracted"><i></i></label><label class="switch-row"><span>Dosador avançado<small>ZSO-202 · c₃a</small></span><input type="checkbox" data-sim-input="doserAdvanced" checked><i></i></label><label class="switch-row"><span>Abertura do bico confirmada<small>ZSC-203 · c₄</small></span><input type="checkbox" data-sim-input="nozzleOpenConfirmed"><i></i></label><label class="switch-row fault-injection-row"><span>Injetar falha didática: bico fechado*<small>BICO_FECHADO · hipótese da R-05</small></span><input type="checkbox" data-sim-input="nozzleClosed"><i></i></label></fieldset>
+              <fieldset><legend>Tampa · Setor 300</legend><label class="switch-row command-row"><span>Solicitar giro de entrega<small>REQ_TAMPA → XV-301</small></span><input type="checkbox" data-sim-input="reqArm"><i></i></label><label class="switch-row"><span>Copo presente em E3<small>ZS-300 · s₃</small></span><input type="checkbox" data-sim-input="cupE3Present" checked><i></i></label><label class="switch-row"><span>Vácuo confirmado<small>PIT-301 · p₁</small></span><input type="checkbox" data-sim-input="vacuumConfirmed" checked><i></i></label><label class="switch-row"><span>Braço em captura<small>ZSC-301 · c₅r</small></span><input type="checkbox" data-sim-input="armHome" checked><i></i></label><label class="switch-row"><span>Braço em entrega<small>ZSO-301 · c₅a</small></span><input type="checkbox" data-sim-input="armDelivered"><i></i></label><label class="switch-row"><span>Eixo vertical recuado<small>ZSC-302 · c₆r</small></span><input type="checkbox" data-sim-input="verticalRetracted" checked><i></i></label><label class="switch-row"><span>Eixo vertical avançado<small>ZSO-302 · c₆a</small></span><input type="checkbox" data-sim-input="verticalAdvanced"><i></i></label></fieldset>
+              <fieldset><legend>Termosselagem · Setor 400</legend><label class="switch-row command-row"><span>Solicitar prensa<small>REQ_PRENSA → XV-401</small></span><input type="checkbox" data-sim-input="reqPress"><i></i></label><label class="switch-row"><span>Copo presente em E4<small>ZS-400 · s₄</small></span><input type="checkbox" data-sim-input="cupE4Present" checked><i></i></label><label class="switch-row"><span>Prensa recuada<small>ZSC-401 · c₇r</small></span><input type="checkbox" data-sim-input="pressRetracted" checked><i></i></label><label class="switch-row"><span>Prensa avançada<small>ZSO-401 · c₇a</small></span><input type="checkbox" data-sim-input="pressAdvanced"><i></i></label><label class="range-row"><span>Temperatura TIT-401<strong data-temp-value>185 °C</strong></span><input type="range" min="120" max="220" value="185" step="1" data-sim-input="temperature"><small>Limiar lógico t₁: 180 °C</small></label></fieldset>
+              <fieldset class="ejection-controls"><legend>Ejeção · Setor 500</legend><label class="switch-row"><span>Copo presente em E5<small>ZS-500 · s₅</small></span><input type="checkbox" data-sim-input="cupE5Present" checked><i></i></label><label class="switch-row"><span>Elevador recuado<small>ZSC-501 · c₈r</small></span><input type="checkbox" data-sim-input="liftRetracted" checked><i></i></label><label class="switch-row"><span>Elevador avançado<small>ZSO-501 · c₈a</small></span><input type="checkbox" data-sim-input="liftAdvanced"><i></i></label><label class="switch-row"><span>Extrator avançado / inicial<small>ZSC-502 · c₉a</small></span><input type="checkbox" data-sim-input="extractorAdvanced" checked><i></i></label><label class="switch-row"><span>Extrator recuado<small>ZSO-502 · c₉r</small></span><input type="checkbox" data-sim-input="extractorRetracted"><i></i></label><label class="switch-row command-row"><span>Solicitar elevação<small>REQ_ELEVADOR → XV-501</small></span><input type="checkbox" data-sim-input="reqLift"><i></i></label><label class="switch-row command-row"><span>Solicitar extração<small>REQ_EXTRATOR → XV-502</small></span><input type="checkbox" data-sim-input="reqExtract"><i></i></label><div class="ejection-readout" data-ejection-readout><strong>E5 PRONTA</strong><small>P_ELEVADOR=1 · P_EXTRATOR=0</small></div></fieldset>
+              <label class="emergency-row"><input type="checkbox" data-sim-input="emergency"><span>PARADA DE EMERGÊNCIA</span></label>
+            </div>
+          </section>
+
+          <section class="sim-logic-panel">
+            <div class="panel-title"><span>03</span><div><strong>MOTOR DE INFERÊNCIA</strong><small>forward + backward chaining</small></div></div>
+            <div class="inference-summary" data-inference-summary><span class="ok-mark">✓</span><div><strong>Nenhuma regra disparada</strong><p>O conjunto de fatos está sem diagnóstico ativo.</p></div></div>
+            <div class="fired-rules" data-fired-rules></div>
+            <div class="proof-box">
+              <label for="proof-goal">Auditar uma hipótese</label>
+              <select id="proof-goal" data-proof-goal><option value="ALARME_GERAL_PARADA">ALARME_GERAL_PARADA</option><option value="TRIP_COLISAO_MESA">TRIP_COLISAO_MESA</option><option value="BLOQUEIO_SELAGEM_FRIO">BLOQUEIO_SELAGEM_FRIO</option><option value="FALHA_CAPTURA_TAMPA">FALHA_CAPTURA_TAMPA</option><option value="MAGAZINE_COPOS_VAZIO">MAGAZINE_COPOS_VAZIO</option><option value="SOBREPRESSAO_DOSADOR">SOBREPRESSAO_DOSADOR</option><option value="FALHA_INCOERENCIA_SENSOR">FALHA_INCOERENCIA_SENSOR</option></select>
+              <div class="proof-result" data-proof-result></div>
+            </div>
+          </section>
+        </div>
+
+        <div class="sim-console"><div class="console-title"><span>HISTÓRICO DE EVENTOS</span><button type="button" data-clear-log>Limpar</button></div><div class="console-lines" data-console-lines aria-live="polite"></div></div>
+        <div class="sim-note">* O hardware mapeado confirma somente bico aberto. “Bico fechado” é uma injeção didática da R-05 e é mutuamente exclusiva com c₄. As demais chaves representam leituras binárias já validadas: desmarcada significa condição negativa confirmada. P e LIB autorizam a partida; as FSMs locais sustentam CMD e a FSM mestre gera os pedidos do ciclo automático. Mesa e estações são mutuamente exclusivas. Após um pedido bloqueado, leve REQ a 0 antes de solicitar novamente.</div>
+      </div>
+    </section>
+
+    <section class="section" id="regras">
+      <div class="section-heading reveal"><div><p class="eyebrow">BASE DE CONHECIMENTO</p><h2>Sete regras.<br>Uma ordem explícita.</h2></div><p>A prioridade de 1 a 10 é uma convenção interna do projeto, não uma classificação SIL.</p></div>
+      <div class="rule-catalog reveal">
+        <article><span>R-01 / 10</span><h3>Colisão da mesa</h3><code>SOLICITA_GIRO_MESA ∧ PRENSA_NAO_RECUADA</code><strong>→ TRIP_COLISAO_MESA</strong></article>
+        <article><span>R-07 / 10</span><h3>Parada em cascata</h3><code>TRIP_COLISAO_MESA</code><strong>→ ALARME_GERAL_PARADA</strong></article>
+        <article><span>R-05 / 09</span><h3>Dosagem bloqueada</h3><code>SOLICITA_DOSE_AGUA ∧ BICO_FECHADO</code><strong>→ SOBREPRESSAO_DOSADOR</strong></article>
+        <article><span>R-02 / 08</span><h3>Selagem fria</h3><code>SOLICITA_PRENSA ∧ TEMPERATURA_ABAIXO_MIN</code><strong>→ BLOQUEIO_SELAGEM_FRIO</strong></article>
+        <article><span>R-06 / 08</span><h3>Sensores incoerentes</h3><code>FIM_CURSO_AVANCO_ATIVO ∧ FIM_CURSO_RECUO_ATIVO</code><strong>→ FALHA_INCOERENCIA_SENSOR</strong></article>
+        <article><span>R-04 / 07</span><h3>Magazine vazio</h3><code>CICLO_DISPENSA_CONCLUIDO ∧ COPO_ESTACAO1_AUSENTE</code><strong>→ MAGAZINE_COPOS_VAZIO</strong></article>
+        <article><span>R-03 / 06</span><h3>Falha de captura</h3><code>SOLICITA_GIRO_BRACO ∧ VACUO_NAO_CONFIRMADO</code><strong>→ FALHA_CAPTURA_TAMPA</strong></article>
+      </div>
+    </section>
+
+    <section class="section alt-surface" id="aulas">
+      <div class="section-heading reveal"><div><p class="eyebrow">MEMORIAL DA ETAPA 01</p><h2>Aulas, conteúdos<br>e arquivos reais.</h2></div><p>O quadro diferencia arquivos presentes, entregas parciais e o material ainda pendente, sem antecipar resultados inexistentes.</p></div>
+      <div class="table-wrap reveal"><table class="data-table lesson-table"><thead><tr><th>Aula</th><th>Conteúdo aplicado</th><th>Entregáveis no repositório</th><th>Status</th></tr></thead><tbody>
+        <tr><td><strong>01</strong></td><td>Insumos e definição da máquina</td><td><a href="../etapa-01-logica/01%20-%20Insumos.md">01 - Insumos.md</a></td><td><span class="lesson-status partial">Somente MD</span></td></tr>
+        <tr><td><strong>02</strong></td><td>Mapeamento das 45 variáveis e tags</td><td><a href="../etapa-01-logica/02%20-%20Mapeamento_de_variaveis.md">02 - Mapeamento_de_variaveis.md</a></td><td><span class="lesson-status partial">Somente MD</span></td></tr>
+        <tr><td><strong>03</strong></td><td>Tautologias, contradições e invariantes</td><td><a href="../etapa-01-logica/03%20-%20Tautologias%20e%20contradições.md">MD</a> · <a href="../etapa-01-logica/03%20-%20Tautologias%20e%20contradições.ipynb">Notebook</a></td><td><span class="lesson-status done">Presente</span></td></tr>
+        <tr><td><strong>04</strong></td><td>Conectivos, permissivos e intertravamentos</td><td><a href="../etapa-01-logica/04%20-%20Logica%20Proposicional%20Conectivos%20e%20Permissivos.md">MD</a> · <a href="../etapa-01-logica/04%20-%20Logica%20Proposicional%20Conectivos%20e%20Permissivos.ipynb">Notebook</a></td><td><span class="lesson-status done">Presente</span></td></tr>
+        <tr><td><strong>05</strong></td><td>FND, FNC e otimização booleana</td><td><a href="../etapa-01-logica/05%20-%20Formas%20Normais%20e%20Otimizacao%20Booleana.md">MD</a> · <a href="../etapa-01-logica/05%20-%20Formas%20Normais%20e%20Otimizacao%20Booleana.ipynb">Notebook</a></td><td><span class="lesson-status done">Presente</span></td></tr>
+        <tr><td><strong>06</strong></td><td>Predicados e quantificadores sobre sensores</td><td><a href="../etapa-01-logica/06%20-%20Quantificadores%20e%20Predicados%20em%20Redes%20de%20Sensores.md">MD</a> · <a href="../etapa-01-logica/06%20-%20Quantificadores%20e%20Predicados%20em%20Redes%20de%20Sensores.ipynb">Notebook</a></td><td><span class="lesson-status done">Presente</span></td></tr>
+        <tr><td><strong>07</strong></td><td>Validade e inferência lógica</td><td><a href="../etapa-01-logica/07%20-%20Validade%20e%20Inferencia%20Logica%20na%20Seguranca.md">MD</a> · <a href="../etapa-01-logica/07%20-%20Validade%20e%20Inferencia%20Logica%20na%20Seguranca.ipynb">Notebook</a></td><td><span class="lesson-status done">Presente</span></td></tr>
+        <tr><td><strong>08</strong></td><td>Base de conhecimento e regras de diagnóstico</td><td><a href="../etapa-01-logica/08%20-%20Base%20de%20Conhecimento%20e%20Regras%20de%20Diagnostico.md">MD</a> · <a href="../etapa-01-logica/08_Base_de_Conhecimento_e_Regras_de_Diagnostico.ipynb">Notebook</a></td><td><span class="lesson-status done">Presente</span></td></tr>
+        <tr><td><strong>09</strong></td><td>Forward e backward chaining</td><td><a href="../etapa-01-logica/09%20-%20Motor%20de%20Inferencia%20Forward%20e%20Backward%20Chaining.md">MD</a> · <a href="../etapa-01-logica/09%20-%20Motor%20de%20Inferencia%20Forward%20e%20Backward%20Chaining.ipynb">Notebook</a></td><td><span class="lesson-status done">Presente</span></td></tr>
+        <tr><td><strong>10</strong></td><td>Avaliação integrada do motor de intertravamento e diagnóstico</td><td><a href="../etapa-01-logica/10%20-%20Avaliacao%20Modulo%201%20Motor%20de%20Intertravamento%20e%20Diagnostico.md">MD</a> · <a href="../etapa-01-logica/10%20-%20Avaliacao%20Modulo%201%20Motor%20de%20Intertravamento%20e%20Diagnostico.ipynb">Notebook</a></td><td><span class="lesson-status done">Presente</span></td></tr>
+      </tbody></table></div>
+      <div class="callout callout-warning reveal"><strong>Leitura do status</strong><p>“Presente” confirma somente a existência dos dois formatos no repositório; não substitui revisão acadêmica, execução das células ou validação pelo docente.</p></div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="footer-brand"><span class="brand-mark">A2</span><div><strong>Aqua Index</strong><small>Grupo 2 · ECAA08 · UNIFEI</small></div></div><p>Etapa 01 · Lógica formal e sistemas especialistas.</p><a href="../index.html">Voltar ao portal ↑</a></footer>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Portal técnico do Grupo 2: SCADA para uma máquina pneumática de envasamento de água em copos.">
+  <meta name="theme-color" content="#f4f1e8">
+  <title>Aqua Index | SCADA da Envasadora — Grupo 2</title>
+  <link rel="stylesheet" href="doc/css/styles.css">
+  <script defer src="doc/js/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+  <header class="site-header" data-header>
+    <a class="brand" href="index.html" aria-label="Aqua Index — página inicial">
+      <span class="brand-mark" aria-hidden="true">A2</span>
+      <span class="brand-copy"><strong>AQUA INDEX</strong><small>SCADA · GRUPO 2</small></span>
+    </a>
+
+    <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
+      <a class="active" href="index.html">Visão geral</a>
+      <a href="doc/etapa-01-logica.html">Etapa 01</a>
+      <a href="doc/planta-envasadora.html">A envasadora</a>
+      <a href="doc/diretrizes-github.html">GitHub & Entregas</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="icon-button" type="button" data-theme-toggle aria-label="Alternar tema" title="Alternar tema">
+        <span data-theme-icon aria-hidden="true">◐</span>
+      </button>
+      <button class="menu-button" type="button" data-menu-toggle aria-controls="main-nav" aria-expanded="false">
+        <span></span><span></span><span></span><span class="sr-only">Abrir menu</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="conteudo">
+    <section class="hero home-hero">
+      <div class="hero-copy reveal">
+        <p class="eyebrow"><span class="status-dot"></span> ECAA08 · Matemática discreta aplicada</p>
+        <h1>Uma linha de envase.<br><em>Cinco decisões seguras.</em></h1>
+        <p class="hero-lead">Portal técnico do sistema SCADA proposto para uma máquina pneumática de envasamento de água em copos, com mesa indexadora, cinco estações e diagnóstico lógico auditável.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="doc/etapa-01-logica.html">Explorar a Etapa 01 <span>↗</span></a>
+          <a class="button button-ghost" href="doc/etapa-01-logica.html#simulador">Abrir simulador</a>
+        </div>
+        <div class="hero-metrics" aria-label="Resumo do projeto">
+          <div><strong>05</strong><span>estações</span></div>
+          <div><strong>45</strong><span>variáveis mapeadas</span></div>
+          <div><strong>10</strong><span>aulas documentadas</span></div>
+        </div>
+      </div>
+
+      <div class="machine-orbit reveal" aria-label="Representação das cinco estações da mesa indexadora">
+        <div class="orbit-grid" aria-hidden="true"></div>
+        <div class="orbit-ring" aria-hidden="true"></div>
+        <div class="orbit-core">
+          <span>SE-001</span>
+          <strong>MESA</strong>
+          <small>INDEXADA</small>
+        </div>
+        <div class="orbit-station station-1"><span>01</span><strong>Dispensa</strong><small>XV-101</small></div>
+        <div class="orbit-station station-2"><span>02</span><strong>Envase</strong><small>XV-202</small></div>
+        <div class="orbit-station station-3"><span>03</span><strong>Tampa</strong><small>VAC-301</small></div>
+        <div class="orbit-station station-4"><span>04</span><strong>Selagem</strong><small>TIT-401</small></div>
+        <div class="orbit-station station-5"><span>05</span><strong>Ejeção</strong><small>XV-502</small></div>
+        <div class="orbit-caption"><span class="live-pulse"></span> Fluxo proposto · 150 mL por ciclo</div>
+      </div>
+    </section>
+
+    <section class="truth-strip" aria-label="Nota de escopo">
+      <strong>ESCOPO DE ENGENHARIA</strong>
+      <p>O portal descreve uma solução proposta e simulada. Não representa uma máquina física concluída nem um sistema de segurança certificado.</p>
+      <span>REV. 01 · 2026.2</span>
+    </section>
+
+    <section class="section" id="etapas">
+      <div class="section-heading reveal">
+        <div><p class="eyebrow">ROTEIRO DO SEMESTRE</p><h2>Quatro etapas,<br>uma arquitetura evolutiva.</h2></div>
+        <p>O projeto conecta os fundamentos de matemática discreta aos blocos internos de supervisão, sincronismo e diagnóstico da envasadora.</p>
+      </div>
+
+      <div class="stage-list">
+        <article class="stage-row stage-current reveal">
+          <div class="stage-index">01</div>
+          <div class="stage-main">
+            <div class="stage-title-line"><h3>Lógica formal & sistemas especialistas</h3><span class="tag tag-progress">Aulas 01–10</span></div>
+            <p>Proposições, tautologias, permissivos, formas normais, predicados, validade, base de conhecimento, motores de inferência e avaliação integrada.</p>
+            <ul class="compact-list"><li>Apresentação em 15 quadros</li><li>Simulador com injeção de falhas</li><li>Aula 10 validada em três cenários</li></ul>
+          </div>
+          <a class="circle-link" href="doc/etapa-01-logica.html" aria-label="Abrir Etapa 01">↗</a>
+        </article>
+
+        <article class="stage-row reveal">
+          <div class="stage-index">02</div>
+          <div class="stage-main"><div class="stage-title-line"><h3>Grafos & rotas de processo</h3><span class="tag">Planejada</span></div><p>Representação topológica de estações, transições e caminhos possíveis da mesa indexadora.</p></div>
+          <span class="stage-lock" aria-label="Conteúdo futuro">—</span>
+        </article>
+
+        <article class="stage-row reveal">
+          <div class="stage-index">03</div>
+          <div class="stage-main"><div class="stage-title-line"><h3>Árvores & hierarquia de alarmes</h3><span class="tag">Planejada</span></div><p>Estruturas hierárquicas para investigação de causa-raiz, eventos e decisões do operador.</p></div>
+          <span class="stage-lock" aria-label="Conteúdo futuro">—</span>
+        </article>
+
+        <article class="stage-row reveal">
+          <div class="stage-index">04</div>
+          <div class="stage-main"><div class="stage-title-line"><h3>Relações & permissões operacionais</h3><span class="tag">Planejada</span></div><p>Relações entre estados, usuários, comandos, permissões e sequências da máquina.</p></div>
+          <span class="stage-lock" aria-label="Conteúdo futuro">—</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="section feature-section">
+      <div class="feature-intro reveal">
+        <p class="eyebrow">DO PROCESSO AO DIAGNÓSTICO</p>
+        <h2>Informação técnica<br>que pode ser percorrida.</h2>
+      </div>
+      <div class="feature-grid">
+        <a class="feature-card feature-card-blue reveal" href="doc/planta-envasadora.html">
+          <span class="feature-number">A</span>
+          <div><p class="mono-label">PLANTA & TAGS</p><h3>Entenda o ciclo completo da envasadora.</h3><p>Insumos, cinco estações, arquitetura cliente-servidor, atuadores, sensores e catálogo de variáveis.</p></div>
+          <span class="feature-arrow">↗</span>
+        </a>
+        <a class="feature-card feature-card-orange reveal" href="doc/etapa-01-logica.html#simulador">
+          <span class="feature-number">B</span>
+          <div><p class="mono-label">LABORATÓRIO WEB</p><h3>Injete falhas e acompanhe as regras.</h3><p>Veja permissivos, fatos derivados, prioridade de diagnóstico e trilha de eventos sem comandar hardware real.</p></div>
+          <span class="feature-arrow">↗</span>
+        </a>
+        <a class="feature-card feature-card-dark reveal" href="doc/diretrizes-github.html">
+          <span class="feature-number">C</span>
+          <div><p class="mono-label">RASTREABILIDADE</p><h3>Organize autoria e entregas com GitHub.</h3><p>Estrutura do repositório, contribuição individual, commits atômicos e evidências de validação.</p></div>
+          <span class="feature-arrow">↗</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand"><span class="brand-mark">A2</span><div><strong>Aqua Index</strong><small>Grupo 2 · ECAA08 · UNIFEI</small></div></div>
+    <p>SCADA para máquina pneumática de envasamento de água em copos.</p>
+    <a href="https://github.com/poggerssLL/Automatica---Grupo-2" target="_blank" rel="noopener">Repositório no GitHub ↗</a>
+  </footer>
+</body>
+</html>
