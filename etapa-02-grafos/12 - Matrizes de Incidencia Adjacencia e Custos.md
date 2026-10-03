@@ -169,12 +169,3 @@ Resultado: $Q_1 = 26{,}78$ e $Q_2 = 17{,}81$ NL/min, iguais aos valores do noteb
 | M8 | Grafo da mesa: $A^k$, gargalo, takt, lead time ideal × real | liga a teoria de grafos à produtividade |
 
 ---
-
-## 7. Entregável da Aula 12
-
-* **Notebook `12 - Matrizes de Incidencia Adjacencia e Custos (1).ipynb`:**
-  1. Classes `ConsumidorPneumatico` e `GrafoPneumatico`: modelagem da rede de ar com consumo físico.
-  2. `CalculadorIncidencia`: geração de $B$, validação da soma nula, posto e graus.
-  3. Matrizes $A$ e $W$ e `floyd_warshall` com reconstrução de rotas.
-  4. `ciclos_fundamentais` e `resolver_vazoes`: balanço $B\vec{Q} = \vec{S}$ completado pela Lei das Malhas.
-  5. Detector de vazamento por resíduo, verificação do Laplaciano e análise de gargalo da mesa indexadora.
