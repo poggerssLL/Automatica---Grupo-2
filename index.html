@@ -7,9 +7,11 @@
   <meta name="theme-color" content="#f4f1e8">
   <title>Aqua Index | SCADA da Envasadora — Grupo 2</title>
   <link rel="stylesheet" href="doc/css/styles.css">
+  <link rel="stylesheet" href="doc/css/vendor/daisyui-5.7.50-portal.css">
+  <link rel="stylesheet" href="doc/css/portal.css">
   <script defer src="doc/js/main.js"></script>
 </head>
-<body>
+<body class="portal-ui">
   <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
 
   <header class="site-header" data-header>
@@ -19,8 +21,9 @@
     </a>
 
     <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
-      <a class="active" href="index.html">Visão geral</a>
+      <a aria-current="page" class="active" href="index.html">Visão geral</a>
       <a href="doc/etapa-01-logica.html">Etapa 01</a>
+      <a href="doc/etapa-02-grafos.html">Etapa 02</a>
       <a href="doc/planta-envasadora.html">A envasadora</a>
       <a href="doc/diretrizes-github.html">GitHub & Entregas</a>
     </nav>
@@ -42,13 +45,13 @@
         <h1>Uma linha de envase.<br><em>Cinco decisões seguras.</em></h1>
         <p class="hero-lead">Portal técnico do sistema SCADA proposto para uma máquina pneumática de envasamento de água em copos, com mesa indexadora, cinco estações e diagnóstico lógico auditável.</p>
         <div class="hero-actions">
-          <a class="button button-primary" href="doc/etapa-01-logica.html">Explorar a Etapa 01 <span>↗</span></a>
-          <a class="button button-ghost" href="doc/etapa-01-logica.html#simulador">Abrir simulador</a>
+          <a class="btn btn-primary" href="doc/etapa-02-grafos.html">Explorar a Etapa 02 <span aria-hidden="true">↗</span></a>
+          <a class="btn btn-outline" href="doc/etapa-01-logica.html#simulador">Abrir simulador da Etapa 01</a>
         </div>
         <div class="hero-metrics" aria-label="Resumo do projeto">
           <div><strong>05</strong><span>estações</span></div>
           <div><strong>45</strong><span>variáveis mapeadas</span></div>
-          <div><strong>10</strong><span>aulas documentadas</span></div>
+          <div><strong>18</strong><span>aulas documentadas</span></div>
         </div>
       </div>
 
@@ -92,10 +95,10 @@
           <a class="circle-link" href="doc/etapa-01-logica.html" aria-label="Abrir Etapa 01">↗</a>
         </article>
 
-        <article class="stage-row reveal">
+        <article class="stage-row stage-current reveal">
           <div class="stage-index">02</div>
-          <div class="stage-main"><div class="stage-title-line"><h3>Grafos & rotas de processo</h3><span class="tag">Planejada</span></div><p>Representação topológica de estações, transições e caminhos possíveis da mesa indexadora.</p></div>
-          <span class="stage-lock" aria-label="Conteúdo futuro">—</span>
+          <div class="stage-main"><div class="stage-title-line"><h3>Grafos & rotas de processo</h3><span class="tag tag-progress">Aulas 11–18</span></div><p>Oito aulas e 16 materiais para estudar redes, buscas, rotas, inspeção e logística como modelos didáticos separados.</p></div>
+          <a class="circle-link" href="doc/etapa-02-grafos.html" aria-label="Abrir Etapa 02">↗</a>
         </article>
 
         <article class="stage-row reveal">

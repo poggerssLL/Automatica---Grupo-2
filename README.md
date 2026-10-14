@@ -10,6 +10,8 @@ O processo selecionado como objeto de estudo é uma **máquina pneumática de en
 
 ---
 
+[Portal da Etapa 02 — Grafos](doc/etapa-02-grafos.html) · [Guia de UI local](doc/UI_DAISYUI_GUIDE.md)
+
 ## 2. Objetivo do sistema supervisório
 
 Desenvolver uma aplicação de supervisão para acompanhar a operação de uma máquina de envase de água em copos no automation studio.

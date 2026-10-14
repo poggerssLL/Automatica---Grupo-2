@@ -1,0 +1,161 @@
+/* Aqua Index portal layer. Every rule is isolated to pages that opt in with .portal-ui. */
+@scope (.portal-ui) {
+  :scope {
+    --color-base-100: var(--paper);
+    --color-base-200: var(--paper-2);
+    --color-base-300: var(--line);
+    --color-base-content: var(--ink);
+    --color-primary: var(--blue);
+    --color-primary-content: var(--paper);
+    --color-secondary: var(--teal);
+    --color-secondary-content: #062c2a;
+    --color-accent: var(--yellow);
+    --color-accent-content: #10202e;
+    --color-neutral: var(--ink);
+    --color-neutral-content: var(--paper);
+    --color-info: var(--blue);
+    --color-info-content: var(--paper);
+    --color-success: var(--teal);
+    --color-success-content: #062c2a;
+    --color-warning: var(--yellow);
+    --color-warning-content: #10202e;
+    --color-error: var(--red);
+    --color-error-content: #fff;
+    --radius-selector: .25rem;
+    --radius-field: .35rem;
+    --radius-box: .9rem;
+    --size-selector: .25rem;
+    --size-field: .25rem;
+    --border: 1px;
+    --depth: 0;
+    --noise: 0;
+    --fx-noise: none;
+    --focus-ring: var(--blue-deep);
+    --teal-foreground: color-mix(in srgb, var(--teal) 50%, var(--ink));
+  }
+
+  :scope .skip-link:focus,
+  :scope a:focus-visible,
+  :scope button:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  /* The legacy unlayered `a { color: inherit }` must not override daisyUI's layered button foreground. */
+  :scope a.btn { color: var(--btn-fg); }
+
+  :scope .site-header {
+    min-height: 76px;
+    grid-template-columns: auto 1fr auto;
+    gap: clamp(18px, 3vw, 40px);
+    border-bottom-color: var(--line);
+    box-shadow: none;
+  }
+
+  :scope .brand-mark { border-radius: 8px; background: var(--blue); color: var(--color-primary-content); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--paper) 32%, transparent); }
+  :scope .brand-copy strong { font-size: 12px; letter-spacing: .12em; }
+  :scope .brand-copy small { color: var(--teal-foreground); }
+  :scope .main-nav { justify-content: center; gap: clamp(14px, 2.2vw, 30px); }
+  :scope .main-nav a { font: 700 11px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .04em; text-transform: uppercase; }
+  :scope .main-nav a::after { height: 3px; background: var(--teal); }
+  :scope .main-nav a[aria-current="page"] { color: var(--ink); }
+  :scope .icon-button, :scope .menu-button { border-radius: 8px; }
+
+  :scope .home-hero { min-height: min(780px, calc(100vh - var(--header-height))); gap: clamp(32px, 6vw, 96px); }
+  :scope .home-hero::before { opacity: .7; background-size: 34px 34px; }
+  :scope .home-hero h1 { font-size: clamp(46px, 6vw, 84px); max-width: 760px; }
+  :scope .home-hero h1 em { color: var(--blue); }
+  :scope .hero-lead { max-width: 630px; font-size: clamp(16px, 1.35vw, 20px); }
+  :scope .hero-actions .btn { text-decoration: none; }
+  :scope .hero-actions .btn:hover { transform: translateY(-2px); }
+  :scope .hero-metrics { gap: clamp(18px, 3.5vw, 48px); }
+  :scope .hero-metrics strong { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--blue); }
+  :scope .machine-orbit { border-radius: 20px; background: var(--white); }
+  :scope .orbit-ring { animation-duration: 55s; }
+  :scope .orbit-caption { border-radius: 7px; }
+
+  :scope .truth-strip { background: var(--teal); color: #062c2a; border-color: #062c2a; }
+  :scope .truth-strip strong, :scope .truth-strip span { color: #062c2a; }
+  :scope .section-heading h2, :scope .feature-intro h2 { letter-spacing: -.06em; }
+  :scope .stage-current::before { border: 1px solid color-mix(in srgb, var(--blue) 26%, transparent); }
+  :scope .stage-current:hover::before { opacity: 1; }
+  :scope .stage-index { color: var(--blue); }
+  :scope .tag { border-radius: 4px; }
+  :scope .tag-progress { color: var(--teal-foreground); border-color: var(--teal-foreground); }
+  :scope .circle-link { border-radius: 8px; }
+  :scope .feature-card { border-radius: 10px; }
+  :scope .feature-card-blue { background: var(--blue); color: var(--color-primary-content); }
+  :scope .feature-card-orange { background: var(--teal); color: #062c2a; }
+  :scope .feature-card-dark { background: var(--ink); }
+  :scope .feature-card p:last-child { opacity: 1; }
+  :scope .site-footer { background: var(--paper-2); color: var(--ink); }
+  :scope .site-footer .footer-brand strong { color: var(--ink); }
+  :scope .site-footer p, :scope .site-footer .footer-brand small { color: var(--ink-soft); }
+  :scope .site-footer > a { color: var(--ink); }
+
+  :scope .page-hero { padding-top: clamp(70px, 9vw, 130px); }
+  :scope .breadcrumb { font: 700 11px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+  :scope .page-hero h1 em { color: var(--blue); }
+  :scope .spec-card, :scope .architecture-card, :scope .station-detail { border-radius: 10px; }
+  :scope .callout { border-radius: 8px; }
+  :scope .data-table th { color: var(--blue); }
+  :scope .doc-section { grid-template-columns: minmax(0, 86px) minmax(0, 1fr); }
+  :scope .doc-content, :scope .process-route, :scope .table-wrap { min-width: 0; }
+  :scope .process-route { max-width: 100%; }
+
+  :scope .portal-main { max-width: 1240px; margin: 0 auto; padding: clamp(54px, 8vw, 110px) clamp(20px, 5vw, 76px); }
+  :scope .portal-kicker, :scope .lesson-code { margin: 0; color: var(--blue); font: 800 11px/1.25 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; text-transform: uppercase; }
+  :scope .portal-title { max-width: 860px; margin: 17px 0 18px; font-size: clamp(42px, 6vw, 78px); line-height: .94; letter-spacing: -.065em; }
+  :scope .portal-lead { max-width: 760px; margin: 0; color: var(--ink-soft); font-size: clamp(17px, 2vw, 22px); }
+  :scope .portal-intro { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 42px; align-items: end; padding-bottom: 48px; border-bottom: 1px solid var(--line); }
+  :scope .portal-stamp { padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); font: 700 11px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--ink-soft); }
+  :scope .portal-stamp strong { display: block; color: var(--ink); font-size: 22px; }
+  :scope .portal-section { padding: clamp(50px, 7vw, 88px) 0; border-bottom: 1px solid var(--line); }
+  :scope .portal-section > header { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 24px; align-items: start; margin-bottom: 30px; }
+  :scope .portal-section h2 { margin: 0; font-size: clamp(28px, 4vw, 48px); line-height: 1; letter-spacing: -.05em; }
+  :scope .portal-section header p:last-child { max-width: 680px; margin: 16px 0 0; color: var(--ink-soft); }
+  :scope .route-diagram { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 22px; border: 1px solid var(--line); background: var(--paper-2); }
+  :scope .route-diagram div { min-height: 110px; padding: 14px; border-left: 3px solid var(--blue); background: var(--paper); }
+  :scope .route-diagram strong, :scope .route-diagram small { display: block; }
+  :scope .route-diagram small { margin-top: 10px; color: var(--ink-soft); font: 700 10px/1.35 ui-monospace, SFMono-Regular, Consolas, monospace; }
+  :scope .lesson-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  :scope .lesson-card { min-height: 218px; border-color: var(--line); background: var(--white); box-shadow: none; }
+  :scope .lesson-card .card-body { gap: 11px; }
+  :scope .lesson-card .card-title { letter-spacing: -.025em; }
+  :scope .lesson-card p { margin: 0; color: var(--ink-soft); }
+  :scope .lesson-card .card-actions { margin-top: 10px; }
+  :scope .lesson-card .btn { text-decoration: none; }
+  :scope .lesson-card .badge { border-radius: 4px; font: 700 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
+  :scope .portal-table { width: 100%; border-collapse: collapse; background: var(--white); }
+  :scope .portal-table th, :scope .portal-table td { padding: 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+  :scope .portal-table th { color: var(--blue); font: 800 10px/1.35 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+  :scope .portal-table td:first-child { width: 86px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  :scope .portal-note { padding: 20px; border-left: 4px solid var(--teal); background: color-mix(in srgb, var(--teal) 9%, var(--paper)); }
+  :scope .portal-note p:last-child { margin-bottom: 0; }
+  :scope .breadcrumbs { margin-bottom: 26px; color: var(--ink-soft); font-size: 12px; }
+  :scope .breadcrumbs a { color: var(--blue); }
+
+  @media (max-width: 1050px) {
+    :scope .site-header { grid-template-columns: 1fr auto; }
+    :scope .main-nav { z-index: 5; }
+  }
+  @media (max-width: 760px) {
+    :scope .home-hero { min-height: auto; grid-template-columns: 1fr; }
+    :scope .machine-orbit { min-width: 0; width: min(100%, 460px); }
+    :scope .hero-metrics { flex-wrap: wrap; }
+    :scope .truth-strip { grid-template-columns: 1fr; gap: 10px; }
+    :scope .feature-intro { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+    :scope .feature-intro h2 { min-width: 0; }
+    :scope .portal-intro, :scope .portal-section > header { grid-template-columns: 1fr; gap: 16px; }
+    :scope .route-diagram, :scope .lesson-grid { grid-template-columns: 1fr; }
+    :scope .portal-table { min-width: 690px; }
+    :scope .portal-table-wrap { overflow-x: auto; border: 1px solid var(--line); }
+    :scope .doc-section { grid-template-columns: minmax(0, 1fr); }
+    :scope .process-route { grid-template-columns: minmax(0, 1fr); overflow-x: visible; padding-bottom: 0; }
+    :scope .process-route article { min-width: 0; }
+    :scope .route-arrow { min-width: 0; min-height: 28px; transform: rotate(90deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :scope *, :scope *::before, :scope *::after { scroll-behavior: auto; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  }
+}

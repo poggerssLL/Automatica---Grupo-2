@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Etapa 02: materiais didáticos de teoria dos grafos aplicados ao contexto da envasadora Aqua Index.">
+  <meta name="theme-color" content="#f4f1e8">
+  <title>Etapa 02 — Grafos | Aqua Index</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/vendor/daisyui-5.7.50-portal.css">
+  <link rel="stylesheet" href="css/portal.css">
+  <script defer src="js/main.js"></script>
+</head>
+<body class="portal-ui">
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <header class="site-header" data-header>
+    <a class="brand" href="../index.html" aria-label="Aqua Index — página inicial"><span class="brand-mark">A2</span><span class="brand-copy"><strong>AQUA INDEX</strong><small>SCADA · GRUPO 2</small></span></a>
+    <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
+      <a href="../index.html">Visão geral</a><a href="etapa-01-logica.html">Etapa 01</a><a aria-current="page" class="active" href="etapa-02-grafos.html">Etapa 02</a><a href="planta-envasadora.html">A envasadora</a><a href="diretrizes-github.html">GitHub & Entregas</a>
+    </nav>
+    <div class="header-actions"><button class="icon-button" type="button" data-theme-toggle aria-label="Alternar tema"><span data-theme-icon aria-hidden="true">◐</span></button><button class="menu-button" type="button" data-menu-toggle aria-controls="main-nav" aria-expanded="false"><span></span><span></span><span></span><span class="sr-only">Abrir menu</span></button></div>
+  </header>
+
+  <main class="portal-main" id="conteudo">
+    <nav class="breadcrumbs" aria-label="Caminho de navegação"><ul><li><a href="../index.html">Início</a></li><li>Etapa 02</li></ul></nav>
+    <header class="portal-intro">
+      <div>
+        <p class="portal-kicker">Matemática discreta aplicada · aulas 11–18</p>
+        <span class="badge badge-outline">Etapa disponível</span>
+        <h1 class="portal-title">Grafos, rotas e decisões de processo.</h1>
+        <p class="portal-lead">Oito aulas organizam representações de redes, buscas, menores caminhos, inspeção, rotas e logística em modelos didáticos associados ao contexto da envasadora.</p>
+      </div>
+      <aside class="portal-stamp" aria-label="Resumo da etapa"><strong>08 aulas</strong>16 materiais versionados<br>02 formatos por aula</aside>
+    </header>
+
+    <section class="portal-section" aria-labelledby="contexto">
+      <header><p class="lesson-code">00 / contexto</p><div><h2 id="contexto">Cinco estações, várias perguntas.</h2><p>E1 dispensa o copo; E2 envasa; E3 posiciona a tampa; E4 sela; E5 ejeta. Cada grafo abaixo abstrai uma pergunta de estudo — não um controlador integrado, hardware validado, SCADA conectado ou garantia de segurança.</p></div></header>
+      <div class="route-diagram" aria-label="Contexto das estações E1 a E5">
+        <div><strong>E1</strong><small>Dispensa</small></div><div><strong>E2</strong><small>Envase</small></div><div><strong>E3</strong><small>Tampa</small></div><div><strong>E4</strong><small>Selagem</small></div><div><strong>E5</strong><small>Ejeção</small></div>
+      </div>
+    </section>
+
+    <section class="portal-section" aria-labelledby="aulas">
+      <header><p class="lesson-code">11–18 / índice</p><div><h2 id="aulas">Oito aulas, dezesseis materiais.</h2><p>Cada ficha reúne o roteiro conceitual e o notebook correspondente no repositório. A presença do arquivo não equivale à aprovação docente.</p></div></header>
+      <div class="lesson-grid">
+        <article class="card card-border lesson-card"><div class="card-body"><p class="lesson-code">Aula 11</p><h3 class="card-title">Modelagem de tubulação e instrumentos</h3><p>Dígrafo ponderado, vértices, conexões, graus, matriz de pesos e topologia proposta para água e copos.</p><div class="card-actions"><a class="btn btn-sm" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/11%20-%20Modelagem%20da%20Tubulacao%20e%20Instrumentos%20como%20Grafo.md">Roteiro</a><a class="btn btn-sm btn-outline" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/11%20-%20Modelagem%20da%20Tubulacao%20e%20Instrumentos%20como%20Grafo.ipynb">Notebook</a></div></div></article>
+        <article class="card card-border lesson-card"><div class="card-body"><p class="lesson-code">Aula 12</p><h3 class="card-title">Matrizes e custos da rede pneumática</h3><p>Incidência, adjacência, custos e Floyd-Warshall no modelo de rede pneumática da aula.</p><div class="card-actions"><a class="btn btn-sm" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/12%20-%20Matrizes%20de%20Incidencia%20Adjacencia%20e%20Custos.md">Roteiro</a><a class="btn btn-sm btn-outline" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/12_Matrizes_de_Incidencia_Adjacencia_e_Custos.ipynb">Notebook</a></div></div></article>
+        <article class="card card-border lesson-card"><div class="card-body"><p class="lesson-code">Aula 13</p><h3 class="card-title">BFS e DFS em grafo próprio</h3><p>BFS encontra o menor número de saltos; DFS enumera caminhos simples no grafo simplificado próprio da aula.</p><div class="card-actions"><a class="btn btn-sm" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/13%20-%20Algoritmos%20de%20Busca%20BFS%20e%20DFS%20em%20Tubulacoes.md">Roteiro</a><a class="btn btn-sm btn-outline" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/13_Algoritmos_de_Busca_BFS_e_DFS_em_Tubulacoes.ipynb">Notebook</a></div></div></article>
+        <article class="card card-border lesson-card"><div class="card-body"><p class="lesson-code">Aula 14</p><h3 class="card-title">Dijkstra e reponderação</h3><p>Menor caminho, desvio e indisponibilidade de rota no modelo dirigido de água e copos; 270 cm e 275 cm são exemplos didáticos publicados.</p><div class="card-actions"><a class="btn btn-sm" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/14%20-%20Menor%20Caminho%20Dijkstra%20e%20Roteamento%20Dinamico.md">Roteiro</a><a class="btn btn-sm btn-outline" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/14%20-%20Menor%20Caminho%20Dijkstra%20e%20Roteamento%20Dinamico.ipynb">Notebook</a></div></div></article>
+        <article class="card card-border lesson-card"><div class="card-body"><p class="lesson-code">Aula 15</p><h3 class="card-title">Falha manual e recálculo local</h3><p>Injeção manual de falha e recálculo de rota são um cenário didático; não descrevem desvio instantâneo, seguro ou industrial.</p><div class="card-actions"><a class="btn btn-sm" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/15%20-%20Simulacao%20de%20Vazamentos%20e%20Desvio%20Automatico.md">Roteiro</a><a class="btn btn-sm btn-outline" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/15%20-%20Simulacao%20de%20Vazamentos%20e%20Desvio%20Automatico.ipynb">Notebook</a></div></div></article>
+        <article class="card card-border lesson-card"><div class="card-body"><p class="lesson-code">Aula 16</p><h3 class="card-title">Problemas eulerianos e inspeção</h3><p>A visita à infraestrutura é não dirigida; o circuito CIP dirigido é um modelo separado, com sentido de fluxo próprio.</p><div class="card-actions"><a class="btn btn-sm" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/16%20-%20Problemas%20Eulerianos%20e%20Inspecao%20de%20Infraestrutura.md">Roteiro</a><a class="btn btn-sm btn-outline" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/16_Problemas_Eulerianos_e_Inspecao_de_Infraestrutura.ipynb">Notebook</a></div></div></article>
+        <article class="card card-border lesson-card"><div class="card-body"><p class="lesson-code">Aula 17</p><h3 class="card-title">Hamiltoniano, NN e 2-Opt</h3><p>Matriz ilustrativa e rotas candidatas: NN e 2-Opt não demonstram ótimo global, nem um AGV implantado.</p><div class="card-actions"><a class="btn btn-sm" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/17%20-%20Problemas%20Hamiltonianos%20e%20Roteamento%20de%20AGV.md">Roteiro</a><a class="btn btn-sm btn-outline" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/17_Problemas_Hamiltonianos_e_Roteamento_de_AGV.ipynb">Notebook</a></div></div></article>
+        <article class="card card-border lesson-card"><div class="card-body"><p class="lesson-code">Aula 18</p><h3 class="card-title">Materiais, veículos e precedências</h3><p>DAG e Kahn tratam materiais; circulação de veículos contém ciclos. Conectividade não substitui permissivos nem disponibilidade de insumos.</p><div class="card-actions"><a class="btn btn-sm" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/18%20-%20Grafos%20de%20Logistica%20de%20Insumos%20e%20Produtos%20Acabados.md">Roteiro</a><a class="btn btn-sm btn-outline" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-02-grafos/18%20-%20Grafos%20de%20Logistica%20de%20Insumos%20e%20Produtos%20Acabados.ipynb">Notebook</a></div></div></article>
+      </div>
+    </section>
+
+    <section class="portal-section" aria-labelledby="leitura">
+      <header><p class="lesson-code">mapa / leitura</p><div><h2 id="leitura">Escolha o modelo pela pergunta.</h2><p>Os mesmos nomes de planta não autorizam transportar resultados entre abstrações diferentes.</p></div></header>
+      <div class="portal-table-wrap"><table class="table portal-table"><caption class="sr-only">Relação entre objetivo didático, aulas e limite de interpretação</caption><thead><tr><th scope="col">Aulas</th><th scope="col">Pergunta de estudo</th><th scope="col">Limite importante</th></tr></thead><tbody>
+        <tr><td>11, 14, 15</td><td>Como representar uma rede dirigida e recalcular caminhos sob pesos ou bloqueios?</td><td>Os valores são parâmetros didáticos, não ensaios atuais.</td></tr>
+        <tr><td>12, 16</td><td>Como observar a rede pneumática por matrizes, visita de trechos e circuito CIP?</td><td>Ronda não dirigida e CIP dirigido permanecem separados.</td></tr>
+        <tr><td>13</td><td>Como comparar busca em largura e profundidade?</td><td>BFS minimiza arestas, não tempo; DFS pode crescer exponencialmente.</td></tr>
+        <tr><td>17</td><td>Como gerar e melhorar rotas em uma matriz ilustrativa?</td><td>Heurísticas geram candidatas sem prova de ótimo global.</td></tr>
+        <tr><td>18</td><td>Como separar fluxo de materiais de circulação interna?</td><td>34,2 m; 40 m e 65 m são exemplos publicados, não medições da instalação.</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section class="portal-section" aria-labelledby="execucao">
+      <header><p class="lesson-code">ambiente / cadernos</p><div><h2 id="execucao">Leitura e reprodução responsável.</h2><p>O README da etapa é a referência para o inventário e os limites. Cada notebook usa Python 3.10+ e biblioteca padrão; execute as células na ordem apresentada e não use <code>python -O</code>, pois os <code>assert</code> fazem parte das verificações didáticas.</p></div></header>
+      <div class="portal-note"><strong>Limite de evidência</strong><p>Arquivos e saídas versionadas apoiam o estudo e a reprodução local. Eles não comprovam operação física, desempenho industrial, telemetria SCADA ou validação de segurança.</p></div>
+      <p><a class="btn btn-primary" href="../etapa-02-grafos/README.md">Ler README da Etapa 02</a></p>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="footer-brand"><span class="brand-mark">A2</span><div><strong>Aqua Index</strong><small>Grupo 2 · ECAA08 · UNIFEI</small></div></div><p>Modelos didáticos para uma envasadora proposta.</p><a href="https://github.com/poggerssLL/Automatica---Grupo-2" target="_blank" rel="noopener">Repositório no GitHub ↗</a></footer>
+</body>
+</html>
