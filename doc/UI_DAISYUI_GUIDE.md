@@ -91,3 +91,7 @@ mediu 320px e 390px nos dois temas para os seis modos (24 pilhas corretas, sem
 overflow da página) e comparou a cor computada de cada seta direcionada,
 inclusive bloqueio, ao traço correspondente. `visual-final.mjs` também gerou
 os recortes finais de água a 390px e dos modos materiais/veículos em desktop.
+
+### Correção visual e versionamento de cache da apresentação
+
+A atualização do deck didático da Etapa 02 para layout em duas colunas e diagramas SVG vetorizados exigiu que `doc/etapa-02-grafos.html` utilize URL versionada ligada ao conteúdo para `css/etapa-02.css`, prevenindo inconsistência visual decorrente de cache HTTP intermediário (`Cache-Control: max-age=600` no GitHub Pages). O parâmetro `?v=` carrega o hash SHA-256 integral do arquivo CSS (`bc7915fcf21f13a1583d6b5b4cb881eb7762083e0ac6c7c34a4761c951f3f482`), garantindo que qualquer cliente receba imediatamente as regras escopadas `.e02-lesson-layout`, `.e02-lesson-figure`, preenchimentos dinâmicos com tokens de tema (`--paper`, `--ink`, `--blue-deep`) e regras responsivas para visualização em desktop e dispositivos móveis.
