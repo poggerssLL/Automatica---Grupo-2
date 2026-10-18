@@ -1,50 +1,80 @@
-# Guia Completo de Funcionamento — Portal e Simulador da Etapa 02 (Grafos)
+# Guia Didático e Verificável — Portal e Simulador da Etapa 02 (Grafos)
 
-Este documento explica, passo a passo e em linguagem acessível para um estudante iniciante, como funciona a página **`doc/etapa-02-grafos.html`** (*Portal da Etapa 02 — Grafos | Aqua Index*), como operar cada uma das **seis vistas interativas do simulador**, o que significa cada elemento visual na tela e como reproduzir com exatidão todos os resultados verificados nos testes e nos materiais das Aulas 11 a 18.
-
----
-
-## 1. Visão Geral: O que é a Página da Etapa 02 e qual o seu Papel no Projeto
-
-No projeto da disciplina **ECAA08 (Automática — UNIFEI, Grupo 2)**, estudamos uma **máquina pneumática de envasamento de água em copos** organizada sobre uma mesa giratória indexada com cinco estações sequenciais:
-
-1. **E1 — Dispensa do copo** (Cilindro A libera o copo do magazine `MAG-100_Copos` para a mesa);
-2. **E2 — Envase e dosagem de água** (Cilindro B de 3 vias, Cilindro C dosador de 150 ml `DOS-201_Dosador` e bico `BIC-202_Bico`);
-3. **E3 — Posicionamento da tampa** (manipulador *pick-and-place* com Cilindros D/E e ventosa a vácuo `EJT-301`);
-4. **E4 — Termosselagem** (prensa aquecida movida pelo Cilindro F);
-5. **E5 — Ejeção** (Cilindros G e H transferem o copo fechado para a esteira de saída `EST-500_Saida`).
-
-Na **Etapa 02**, aplicamos **Teoria dos Grafos** (Aulas 11 a 18) para responder perguntas específicas de engenharia sobre esse processo: como modelar tubulações e fluxos como dígrafos, como achar o menor caminho, como buscar rotas alternativas, como planejar uma ronda de inspeção sem repetir trechos, como roteirizar coletas com heurísticas e como separar a ordem lógica de fabricação (materiais) do tráfego de carrinhos (veículos).
-
-> **Regra de ouro para não confundir na apresentação:**
-> A página da Etapa 02 reúne **modelos matemáticos didáticos independentes** executados localmente no navegador. Clicar em um bloqueio ou calcular uma rota no simulador **recalcula apenas a estrutura de dados em JavaScript**; não envia comandos para CLP, não aciona válvulas no Automation Studio, não lê sensores reais de planta e não substitui os intertravamentos físicos da máquina.
+Este documento é o guia de referência didática, técnica e operacional da página **[`etapa-02-grafos.html`](etapa-02-grafos.html)** (*Portal da Etapa 02 — Grafos | Aqua Index*). Ele detalha a arquitetura do portal, o funcionamento de cada uma das **seis vistas interativas do simulador**, a semântica visual dos diagramas e a sequência reproduzível de cliques para cada cenário de estudo das Aulas 11 a 18 da disciplina **ECAA08 (Automática — UNIFEI, Grupo 2)**.
 
 ---
 
-## 2. Estrutura da Página: Cabeçalho e as Três Abas Principais
+## 1. Contexto e Papel da Etapa 02 no Projeto ECAA08 (Aqua Index)
 
-Ao abrir `doc/etapa-02-grafos.html` no navegador, você verá:
+O projeto estuda uma **máquina pneumática de envasamento de água em copos**, cujo processo fabril ocorre sobre uma **mesa giratória indexada** servocontrolada com cinco postos sequenciais:
 
-- **Cabeçalho superior (`site-header`)**: links para as páginas do portal (*Visão geral*, *Etapa 01*, *Etapa 02*, *A envasadora*, *GitHub & Entregas*) e o botão **`◐`** (`Alternar tema`) para alternar entre tema claro e escuro.
-- **Faixa de abertura (`e02-hero`)**: apresenta o título *"Grafos da envasadora."* e o resumo lateral: **`03` abas de leitura**, **`17` arquivos mapeados** e **`06` vistas interativas**.
-- **Barra das três abas principais (`[data-etapa02-tabs]`)**: você pode alternar clicando com o mouse ou, quando uma aba estiver focada, usando as setas **`←` / `→`**, **`Home`** e **`End`** do teclado. A URL também atualiza o hash (`#apresentacao`, `#arquivos`, `#simulador`).
+```text
+Magazine de copos (MAG-100)
+       │
+       ▼
+ [E1] Dispensa do copo (Cilindro A)
+       │
+       ▼
+ [E2] Envase e dosagem (Cilindro B, Cilindro C / DOS-201, Bico BIC-202)
+       │
+       ▼
+ [E3] Posicionamento de tampa (Manipulador pick-and-place D/E, Ventosa a vácuo EJT-301)
+       │
+       ▼
+ [E4] Termosselagem aquecida (Cilindro F)
+       │
+       ▼
+ [E5] Ejeção do copo fechado (Cilindros G e H) ──► Esteira de saída (EST-500)
+```
+
+Na **Etapa 02**, aplicamos conceitos de **Teoria dos Grafos** para responder perguntas de engenharia sobre topologia, rotas de escoamento, buscas, cobertura de inspeção, roteamento de veículos e ordem lógica de manufatura.
+
+> [!IMPORTANT]
+> **Regra de ouro e limites metodológicos fundamentais:**
+> 1. **Modelos matemáticos didáticos independentes:** Os grafos das aulas e do simulador representam recortes conceituais para estudo algorítmico, e não uma planta industrial integrada em regime permanente.
+> 2. **Execução 100% local no navegador:** O simulador roda integralmente em JavaScript no cliente via [`js/etapa-02-simulator.js`](js/etapa-02-simulator.js). Não há servidor, não há banco de dados e não há requisições HTTP de telemetria em segundo plano.
+> 3. **Isolamento estrito entre as vistas:** Cada uma das seis vistas possui estrutura de dados imutável própria (`Object.freeze`), unidade própria e algoritmo específico. A alteração de uma vista **nunca** transporta estado nem contamina as demais.
+> 4. **Sem atuação física:** Clicar em um bloqueio ou calcular uma rota recalcula apenas estruturas em memória no navegador; **não envia comandos para CLP**, não aciona atuadores no **Automation Studio**, não monitora sensores de bancada e não substitui os intertravamentos físicos e de segurança da máquina.
+
+---
+
+## 2. Estrutura do Portal: Cabeçalho, Abas e Interação
+
+Ao carregar [`etapa-02-grafos.html`](etapa-02-grafos.html), a página exibe:
+
+- **Cabeçalho superior (`site-header`)**: Links institucionais (*Visão geral*, *Etapa 01*, *Etapa 02*, *A envasadora*, *GitHub & Entregas*) e o botão **`◐`** (`Alternar tema`), que alterna entre os temas claro (`data-theme="light"`, padrão) e escuro (`data-theme="dark"`).
+- **Faixa de abertura (`e02-hero`)**: Apresenta o título *"Grafos da envasadora."* e os três indicadores de escopo: **`03` abas de leitura**, **`17` arquivos mapeados** e **`06` vistas interativas**.
+- **Barra de abas principais (`[data-etapa02-tabs]`)**: Organizada com acessibilidade ARIA (`role="tablist"`):
+  - **Navegação com mouse**: Clique sobre o nome da aba.
+  - **Navegação com teclado**: Com uma aba focada, as teclas **`←` / `→`** alternam ciclicamente entre as abas; as teclas **`Home`** e **`End`** saltam para a primeira e a última aba, respectivamente.
+  - **Sincronização de URL**: A navegação atualiza automaticamente o fragmento hash na barra de endereço (`#apresentacao`, `#arquivos` ou `#simulador`), permitindo salvar atalhos diretos.
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│  Apresentação          │  Arquivos [17]         │  Simulador [6 vistas]│
+└────────────────────────────────────────────────────────────────────────┘
+```
 
 ### 2.1. Aba 1 — `Apresentação`
-- Contém um **deck de 10 slides** (`01 / 10` a `10 / 10`), numerados na barra de botões rápidos como **`01`**, **`11`**, **`12`**, **`13`**, **`14`**, **`15`**, **`16`**, **`17`**, **`18`** e **`Σ`**.
-- **Como navegar nos slides**:
-  - Clicando diretamente nos botões **`01`** a **`Σ`** do índice do deck;
-  - Clicando nos botões **`Anterior`** (`[data-e02-prev]`) e **`Próximo`** (`[data-e02-next]`) abaixo do slide;
-  - Ou clicando dentro da caixa do deck (`.e02-deck`, que possui `tabindex="0"`) e usando as setas **`←`** e **`→`** do teclado.
-- Cada slide resume **uma pergunta por aula** e traz na faixa inferior (`data-viz`) uma síntese visual rápida (por exemplo, `E1 → E2 → E3 → E4 → E5` na Abertura e `270 cm  →  275 cm  →  sem rota` na Aula 14).
+- Contém um **deck interativo de 10 slides** (`01 / 10` a `10 / 10`), com índices rápidos: **`01`** (Abertura), **`11`** (Modelagem), **`12`** (Matrizes), **`13`** (Buscas), **`14`** (Dijkstra), **`15`** (Falhas), **`16`** (Euler), **`17`** (AGV), **`18`** (Logística) e **`Σ`** (Síntese).
+- **Operação**:
+  - Clique direto nos botões **`01`** a **`Σ`** no seletor horizontal;
+  - Clique nos botões **`Anterior`** (`[data-e02-prev]`) e **`Próximo`** (`[data-e02-next]`);
+  - Navegação com setas **`←`** e **`→`** do teclado quando o contêiner do deck (`.e02-deck`, com `tabindex="0"`) estiver com foco.
+- Cada slide possui um resumo conceitual da aula e uma faixa de síntese visual (`data-viz`), como `TK ── A 270 cm / B 275 cm ── DOS` na Aula 11 ou `NN 280 s → 2-Opt 260 s` na Aula 17.
 
 ### 2.2. Aba 2 — `Arquivos 17`
-- Funciona como um **inventário vivo e mapa de leitura** dos **17 arquivos** da pasta `etapa-02-grafos/`: o `README.md` geral da etapa mais os **8 pares de Roteiro (`.md`) e Notebook (`.ipynb`)** das Aulas 11 a 18 (`1 + 8 × 2 = 17`).
-- Na barra horizontal de seletores (`[data-e02-file-rail]`), basta clicar em `README`, `11 · Roteiro`, `11 · Notebook`, ..., `18 · Notebook` para exibir o cartão correspondente com a **Pergunta**, **Modelo/Funções**, **Achado/Resultado**, **Limite** e o botão para abrir o documento-fonte.
-- É importante conhecer essa aba porque **alguns modelos das aulas estão documentados nos arquivos e slides, mas não possuem uma tela própria no simulador de 6 vistas** (por exemplo: as matrizes $B$, $A$, $W$ $13\times 13$ da rede de ar comprimido e o ciclo $C_5$ da mesa na Aula 12; a caça a vazamentos de 57,8 min e o circuito CIP dirigido de 20,0 min na Aula 16; e a conversão de distância para tempo de 20 min vs. 6,5 min ou a quarentena booleana na Aula 18).
+- Apresenta o **inventário completo e mapa de leitura** dos **17 arquivos** versionados da Etapa 02: o `README.md` da etapa e os 8 pares de roteiro (`.md`) e notebook (`.ipynb`) das Aulas 11 a 18 ($1 + 8 \times 2 = 17$).
+- A barra de seleção horizontal (`[data-e02-file-rail]`) permite alternar entre os cartões com mouse ou setas do teclado. Cada cartão expõe a **Pergunta**, o **Modelo**, o **Achado** e o **Limite metodológico**.
+- **Comportamento de links**: O botão `Abrir README` usa caminho relativo local (`../etapa-02-grafos/README.md`); já os botões `Abrir roteiro` e `Abrir notebook` abrem URLs externas no GitHub (`target="_blank" rel="noopener"`).
+- **Modelos documentados nos arquivos sem vista dedicada no simulador**:
+  - *Aula 12*: Matrizes $13\times 13$ $B, A, W$ da rede pneumática, anel de equalização entre ilhas, resíduo simulado de vazamento e ciclo $C_5$ da mesa;
+  - *Aula 16*: Caça a vazamentos com Carteiro Chinês (10 vértices ímpares, 57,8 min) e o circuito de limpeza CIP dirigido (20,0 min);
+  - *Aula 18*: Conversão de metros para minutos de circulação (20 min vs. 6,5 min) e checagem booleana de quarentena.
 
 ### 2.3. Aba 3 — `Simulador 6 vistas`
-- É o laboratório interativo (`#e02-sim-workbench`), precedido pela **Nota metodológica** que lembra que os controles recalculam estruturas didáticas no navegador.
-- Possui **6 botões de vista** na barra superior (`.e02-mode-list`):
+- O laboratório computacional de grafos, acessível pelo botão de aba `Simulador 6 vistas` ou pelo hash `#simulador`.
+- Contém a **Nota metodológica** alertando sobre a natureza didática dos cálculos e reúne os seis botões de vista:
   1. **`Água / copos · Dijkstra`** (`data-e02-mode="water"`)
   2. **`Busca · BFS · DFS`** (`data-e02-mode="search"`)
   3. **`Inspeção · Euler`** (`data-e02-mode="round"`)
@@ -52,208 +82,396 @@ Ao abrir `doc/etapa-02-grafos.html` no navegador, você verá:
   5. **`Materiais · Kahn`** (`data-e02-mode="materials"`)
   6. **`Veículos · Dijkstra`** (`data-e02-mode="vehicles"`)
 
-> **Isolamento entre vistas:** Cada vista possui seu próprio grafo imutável (`Object.freeze`), sua unidade de medida e seu algoritmo. Ao trocar de uma vista para outra, a função `changeMode()` limpa todos os bloqueios e reinicia o estado da nova vista. Alterar uma vista **nunca** afeta as demais.
-
 ---
 
-## 3. Como Ler e Operar a Interface do Simulador
+## 3. Anatomia da Interface do Simulador e Mecânica de Operação
 
-Dentro da aba **`Simulador`**, a tela é dividida em cinco áreas principais:
+Dentro da bancada (`#e02-sim-workbench`), a tela organiza-se em quatro seções principais:
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│  Cabeçalho da Vista: Código da Aula, Título, Descrição e Selo Unidade │
+├───────────────────────────────────────┬────────────────────────────────┤
+│                                       │  Controles de Consulta         │
+│  Diagrama do Grafo em SVG             │  - Seletores Origem / Destino  │
+│  - Nós (retângulos com rótulos)       │  - Bloqueios (Checkboxes)      │
+│  - Arestas com arcos e setas          │  - Ações: Calcular / Restaurar │
+│  - Legenda e dica responsiva          │                                │
+├───────────────────────────────────────┴────────────────────────────────┤
+│  Resultado Atual: Título Principal, Frase Explicativa e Lista de Rota  │
+├────────────────────────────────────────────────────────────────────────┤
+│  Diário Curto: Histórico das últimas 4 ações da vista                  │
+└────────────────────────────────────────────────────────────────────────┘
+```
 
 ### 3.1. Cabeçalho da Vista (`.e02-sim-head`)
-Mostra:
-- O **código da aula** (`14 / 15`, `13 / busca`, `16 / inspeção`, `17 / AGV`, `18 / materiais`, `18 / veículos`);
-- O **título e a descrição curta** da pergunta que aquela vista resolve;
-- O **selo (badge) de unidade e sentido** no canto direito (`[data-e02-mode-unit]`), por exemplo: `cm · dirigido`, `s · dirigido`, `min · não dirigido`, `s · não dirigido`, `m · dirigido`.
+- **Código da aula** (`[data-e02-mode-code]`): Exibe `14 / 15`, `13 / busca`, `16 / inspeção`, `17 / AGV`, `18 / materiais` ou `18 / veículos`.
+- **Título e descrição** (`[data-e02-mode-title]`, `[data-e02-mode-description]`): Enunciam a pergunta que aquele modelo responde.
+- **Selo de unidade e sentido** (`[data-e02-mode-unit]`): Identifica a métrica e a topologia (`cm · dirigido`, `s · dirigido`, `min · não dirigido`, `s · não dirigido` ou `m · dirigido`).
 
-### 3.2. Diagrama do Grafo em SVG e Rolagem Horizontal (`.e02-graph-panel`)
-À esquerda fica o desenho vetorial (`<svg data-e02-graph viewBox="0 0 1100 580">`) dentro de um contêiner com rolagem horizontal (`.e02-graph-scroll`):
-- **Rolagem horizontal**: o SVG tem largura mínima de `900px` (`min-width: 900px`). Em telas menores ou janelas divididas, aparece a instrução abaixo do gráfico: *"Em telas estreitas, arraste ou role horizontalmente para ler o diagrama."* Basta rolar horizontalmente para enxergar todos os nós até a extremidade direita.
-- **Como interpretar os Nós (`.e02-node`)**:
-  - Cada nó é um retângulo (`132 × 40`) representando um equipamento, estação, setor ou área logística.
-  - Se o identificador do nó tiver mais de 17 caracteres (como `Estacao_Inspecao` na vista Busca, que tem 16, ou caso algum nome ultrapasse 17), o rótulo visual no retângulo é truncado nos 16 primeiros caracteres seguido de `…`, mas o nome completo aparece nos seletores e na lista do resultado.
-  - **Cor normal**: fundo claro e borda azul (`--blue`).
-  - **Nó na rota calculada (`.is-route`)**: fundo esverdeado suave e borda grossa verde-azulada (`--teal`).
-  - **Nó bloqueado (`.is-blocked`)**: fundo avermelhado suave e borda tracejada vermelha (`--red`).
-- **Como interpretar os Arcos / Arestas (`.e02-edge`)**:
-  - Cada linha curva liga dois nós e exibe um rótulo no meio no formato **`<id> · <peso>`** (por exemplo, `a3 · 80` significa aresta `a3` com peso `80` na unidade da vista).
-  - **Sentido**: quando o grafo é **`dirigido`** (`Água / copos`, `Busca`, `Materiais`, `Veículos`), a linha possui uma **seta na ponta** (`marker-end="url(#e02-arrow)"`) indicando o único sentido permitido. Quando o grafo é **`não dirigido`** (`Inspeção` e `AGV`), **não há seta**, pois o trecho pode ser percorrido nos dois sentidos.
-  - **Aresta na rota calculada (`.is-route`)**: linha mais espessa (`stroke-width: 5`) em verde-azulado (`--teal`). Note que na vista `Materiais` (Kahn) todos os 16 vértices ficam destacados na ordem topológica, mas nenhuma aresta recebe destaque `.is-route` porque Kahn produz uma ordenação de vértices e não um único caminho simples.
-  - **Aresta bloqueada (`.is-blocked`)**: linha tracejada vermelha (`--red`), seja porque a própria aresta foi bloqueada, seja porque um de seus nós extremos foi bloqueado.
-- **Legenda abaixo do gráfico (`[data-e02-legend]`)**:
-  - Mostra sempre três itens: **`aresta`** (cinza), **`rota calculada`** (verde-azulado) e, no terceiro item, **`bloqueio acionável`** (tracejado vermelho, nas 4 vistas que aceitam bloqueios: `Água / copos`, `Busca`, `Inspeção` e `Veículos`) ou **`fonte didática`** (nas 2 vistas sem bloqueios interativos: `AGV` e `Materiais`).
+### 3.2. Diagrama do Grafo em SVG e Layout Responsivo (`.e02-graph-panel`)
+O grafo é gerado via DOM SVG (`viewBox="0 0 1100 580"`):
+- **Comportamento responsivo**:
+  - *Em telas desktop (> 760px)*: O SVG ajusta-se automaticamente à largura da coluna esquerda sem barra de rolagem horizontal (`min-width: 0`, altura limitada a 360px). A dica de rolagem fica oculta.
+  - *Em telas estreitas ou janelas divididas (≤ 760px)*: A grade passa para uma coluna vertical, o SVG ganha largura mínima de 680px e o contêiner `.e02-graph-scroll` ativa a rolagem horizontal (`overflow-x: auto`), exibindo a mensagem: *"Em telas estreitas, arraste ou role horizontalmente para ler o diagrama."*
+- **Representação visual dos Nós (`.e02-node`)**:
+  - Retângulos de $132 \times 40\text{ px}$. Se o identificador tiver mais de 17 caracteres, o texto no retângulo é abreviado para 16 caracteres seguidos de `…` (ex.: `Estacao_Inspecao` tem 16 e cabe inteiro; nomes maiores são truncados apenas visualmente, mantendo o nome íntegro nos seletores e na lista de resultado).
+  - *Normal*: Fundo `--paper` e borda azul (`--blue`).
+  - *Na rota calculada (`.is-route`)*: Fundo verde-azulado suave (`color-mix(in srgb, var(--teal) 17%, var(--paper))`) e borda espessa `--teal`.
+  - *Bloqueado (`.is-blocked`)*: Fundo avermelhado e borda tracejada vermelha (`--red`).
+- **Representação visual das Arestas (`.e02-edge`)**:
+  - Curvas de Bézier quadráticas com rótulos centralizados no formato `<id> · <peso>`.
+  - *Sentido*: Nos grafos dirigidos (`water`, `search`, `materials`, `vehicles`), cada aresta termina em uma seta orientada. Nos grafos não dirigidos (`round`, `agv`), a linha é contínua sem marcador de seta.
+  - *Na rota calculada (`.is-route`)*: Traço alargado (`stroke-width: 5`) em cor `--teal`.
+  - *Bloqueada (`.is-blocked`)*: Traço tracejado vermelho (`stroke-dasharray: 7 6`).
+  - *Marcadores de ponta de seta*: Três definições SVG dedicadas (`#e02-arrow` normal, `#e02-arrow-route` verde-azulado e `#e02-arrow-blocked` vermelho).
 
-### 3.3. Painel de Controles à Direita (`.e02-controls`)
-1. **Seletores de `Origem`, `Destino` ou `Partida` (`[data-e02-selection]`)**:
-   - Nas vistas **`Água / copos`**, **`Busca`** e **`Veículos`**, aparecem dois menus `<select>`: **`Origem`** e **`Destino`**.
-   - Na vista **`AGV`**, aparece um único menu `<select>`: **`Partida (matriz ilustrativa)`**.
-   - Nas vistas **`Inspeção`** e **`Materiais`**, não há menu `<select>`, apenas uma frase explicativa (*"Bloqueie trechos para testar paridade e conectividade."* ou *"A ordenação considera o DAG completo."*).
-   - **Atenção ao detalhe de operação**: quando você muda o valor de **`Origem`**, **`Destino`** ou **`Partida`** no menu `<select>`, **é necessário clicar no botão `Calcular`** para atualizar o resultado! O menu `<select>` sozinho não dispara o cálculo automaticamente.
-2. **Caixa de `Bloqueios` (`[data-e02-blocks]`)**:
-   - Nas vistas **`Água / copos`**, **`Busca`**, **`Inspeção`** e **`Veículos`**, exibe caixas de seleção (`checkbox`) para os nós ou arestas de estudo daquela aula.
-   - **Recálculo automático nos bloqueios**: ao marcar ou desmarcar qualquer `checkbox` de bloqueio, a função `run()` é chamada **imediatamente**, sem precisar clicar em `Calcular`.
-   - **Clique direto nas arestas do SVG**: nessas mesmas 4 vistas interativas (`water`, `search`, `round`, `vehicles`), todas as arestas do desenho SVG também são botões clicáveis (`role="button"`, `tabindex="0"`). Clicar em uma aresta no SVG alterna o bloqueio daquela aresta e recalcula na hora. Se a aresta tiver um checkbox correspondente na lista lateral (como `a3`, `a4` ou `t1`..`t10`), o checkbox marca/desmarca junto.
-   - Nas vistas **`AGV`** e **`Materiais`**, a seção `Bloqueios` mostra a mensagem `"Esta vista não tem bloqueios interativos."` e as arestas do SVG não são clicáveis.
-3. **Botões de Ação (`.e02-control-actions`)**:
-   - **`Calcular`** (`[data-e02-run]`): executa o algoritmo da vista atual com a `Origem`/`Destino`/`Partida` e os bloqueios ativos, registrando uma nova linha no Diário curto.
-   - **`Restaurar vista`** (`[data-e02-reset]`): recarrega a vista atual do zero, limpando todos os bloqueios de nós e arestas, voltando os seletores `Origem`/`Destino` para os valores nominais padrão e recalculando o resultado original.
+### 3.3. Interatividade no SVG e Painel de Controles
 
-### 3.4. Painel de `Resultado atual` (`.e02-result`) e `Diário curto` (`.e02-log`)
-- **`Resultado atual`**:
-  - **Título grande (`[data-e02-result-title]`)**: mostra o número principal ou status (ex.: `270 cm`, `5 arestas por BFS`, `Circuito · 24.5 min`, `NN 280 s → 2-Opt 260 s`, `16 vértices ordenados`, `40 m` ou `Sem rota`).
-  - **Frase explicativa (`[data-e02-result]`)**: explica como o algoritmo obteve aquele resultado ou o motivo da falha (`sem rota`, `paridade inválida`, `subgrafo desconexo`, `origem ou destino bloqueado`).
-  - **Lista de blocos (`[data-e02-route]`)**: exibe na ordem exata cada vértice do caminho, circuito ou ordenação topológica calculada.
-- **`Diário curto`**:
-  - Lista ordenada (`<ol data-e02-log>`) que guarda **as últimas 4 ações executadas** na vista atual, sempre colocando o evento mais recente no topo (`1.`).
+A interatividade divide-se com precisão técnica entre os elementos clicáveis no diagrama e os controles laterais:
+
+1. **Arestas clicáveis no SVG**:
+   - Nas 4 vistas que admitem bloqueios (`water`, `search`, `round`, `vehicles`), **todas as arestas do SVG são botões acessíveis** (`e02-svg-edge`, `role="button"`, `tabindex="0"`).
+   - Podem ser ativadas com clique do mouse ou com as teclas **`Enter`** ou **`Espaço`** do teclado.
+   - Alternar uma aresta recalcula a solução instantaneamente.
+2. **Nós clicáveis no SVG**:
+   - No SVG, **somente são clicáveis os nós explicitamente cadastrados na lista de bloqueios daquela vista** (`blockNodes = meta().blocks`):
+     - Em `water`: apenas o nó `MAN-200_Agua`.
+     - Em `search`: apenas os nós `V1` e `V2`.
+     - Em `round`: nenhum nó (todos os bloqueios são nas arestas `t1` a `t10`).
+     - Em `vehicles`: apenas os nós `CORREDOR_B` e `VIA_EXTERNA`.
+     - Em `agv` e `materials`: nenhum nó é bloqueável.
+   - Nós não pertencentes à lista de bloqueios possuem `pointer-events: none` em seus textos e retângulos informativos, sem manipulador de clique.
+3. **Aviso dinâmico de arestas bloqueadas fora da barra lateral (`data-e02-extra-blocks`)**:
+   - Na barra lateral de `water`, aparecem apenas os checkboxes de `a3`, `a4` e `MAN-200_Agua`.
+   - Se o usuário clicar diretamente no diagrama SVG em uma aresta que não possui checkbox na lista lateral (como `a1`, `a2`, `a5`, `a6`, `a7`, `a8` ou `a9`), a função `syncBlocks()` insere dinamicamente um aviso acessível logo abaixo dos bloqueios:
+     `<p data-e02-extra-blocks="" aria-live="polite">Arestas bloqueadas no diagrama: a1.</p>`
+   - Ao desmarcar a aresta no diagrama, esse parágrafo é automaticamente removido do DOM.
+4. **Seletores de Origem, Destino e Partida (`[data-e02-selection]`)**:
+   - Nas vistas `water`, `search` e `vehicles`, exibe dois menus `<select>`: `Origem` e `Destino`.
+   - Na vista `agv`, exibe um menu `<select>`: `Partida (matriz ilustrativa)`.
+   - Nas vistas `round` e `materials`, exibe texto explicativo fixo.
+   - **Disparo de cálculo**: Mudar a opção em qualquer menu `<select>` **recalcula o resultado imediatamente** via evento `change`. O botão `Calcular` continua disponível para forçar reexecução ou registrar uma nova linha no Diário.
+5. **Botões de Ação**:
+   - **`Calcular`** (`[data-e02-run]`): Executa a função `run()` da vista ativa e adiciona uma linha de registro ao Diário curto.
+   - **`Restaurar vista`** (`[data-e02-reset]`): Limpa todos os conjuntos de bloqueios (`blockedEdges` e `blockedNodes`), restabelece os valores nominais padrão de origem/destino e recalcula a solução padrão original.
+
+### 3.4. Painel de Resultado Atual e Diário Curto
+- **`Resultado atual` (`.e02-result`)**:
+  - `[data-e02-result-title]`: Destaque em fonte grande do custo ou status (`270 cm`, `5 arestas por BFS`, `Circuito · 24.5 min`, `NN 280 s → 2-Opt 260 s`, `16 vértices ordenados`, `40 m` ou `Sem rota`).
+  - `[data-e02-result]`: Frase contextualizada emitida pelo algoritmo, detalhando a rota percorrida ou o motivo formal do insucesso (`sem rota`, `paridade inválida`, `subgrafo desconexo`, `origem ou destino bloqueado`).
+  - `[data-e02-route]`: Lista ordenada contendo os blocos com o nome de cada nó do trajeto ou da ordenação topológica calculada.
+- **`Diário curto` (`.e02-log`)**:
+  - Lista `<ol data-e02-log>` que mantém **as últimas 4 ações** da vista em ordem cronológica inversa (a ação mais recente fica sempre na posição `1.`).
 
 ---
 
-## 4. As Seis Vistas do Simulador: Sequências Exatas de Cliques e Resultados Verificáveis
-
-Abaixo estão os dados, o significado físico/didático e o passo a passo exato de cliques para cada uma das 6 vistas do produto atual.
+## 4. As Seis Vistas Interativas: Dados, Algoritmos, Unidades e Cenários Didáticos Verificáveis
 
 ---
 
 ### Vista 1 — `Água / copos · Dijkstra` (Aulas 11, 14 e 15)
 
-- **Código e Título na tela**: `14 / 15` — *Água e copos: menor caminho*
-- **Unidade e Tipo**: `cm · dirigido`
-- **Algoritmo**: Dijkstra para caminho mínimo com pesos não negativos.
-- **O que o grafo representa**:
-  - Possui os **9 nós** e **9 conexões dirigidas** modelados na Aula 11:
-    - Hidráulica (água): `TK-101_Agua` $\xrightarrow{a1:\,150\text{ cm (XV-101A)}}$ `P-101_BombaA`, `TK-101_Agua` $\xrightarrow{a2:\,150\text{ cm (XV-101B)}}$ `P-102_BombaB`, `P-101_BombaA` $\xrightarrow{a3:\,80\text{ cm (XV-200A)}}$ `MAN-200_Agua`, `P-102_BombaB` $\xrightarrow{a4:\,85\text{ cm (XV-200B)}}$ `MAN-200_Agua`, `MAN-200_Agua` $\xrightarrow{a5:\,40\text{ cm (XV-201)}}$ `DOS-201_Dosador`, `DOS-201_Dosador` $\xrightarrow{a6:\,20\text{ cm (XV-202)}}$ `BIC-202_Bico`, `BIC-202_Bico` $\xrightarrow{a7:\,10\text{ cm (gravidade)}}$ `MESA-000_Index`.
-    - Mecânica (copos): `MAG-100_Copos` $\xrightarrow{a8:\,15\text{ cm (cil A)}}$ `MESA-000_Index`, `MESA-000_Index` $\xrightarrow{a9:\,50\text{ cm (cil H)}}$ `EST-500_Saida`.
-  - **Por que os menus `Origem` e `Destino` só listam 6 nós?** Conforme explicado na descrição da vista (*"Consulta até o dosador; somente os trechos de água entram no cálculo."*), os menus `<select>` restringem a escolha aos 6 nós hidráulicos (`TK-101_Agua` até `BIC-202_Bico`) para evitar misturar tubulação de água com o transporte mecânico de copos (`MAG-100_Copos`, `MESA-000_Index`, `EST-500_Saida`), embora os 9 nós apareçam desenhados no SVG para preservar a visão completa da Aula 11.
+- **Identificação na tela**: Código `14 / 15` — *Água e copos: menor caminho*.
+- **Métrica e Topologia**: `cm · dirigido`.
+- **Algoritmo**: Algoritmo de Dijkstra sobre grafo dirigido ponderado com custos não negativos.
+- **Significado físico e topológico**:
+  - Representa o **dígrafo de 9 vértices e 9 conexões** formalizado na Aula 11 e estudado nas Aulas 14 e 15:
+    - *Ramo hidráulico*: `TK-101_Agua` alimentando as bombas redundantes `P-101_BombaA` ($a_1: 150\text{ cm}$) e `P-102_BombaB` ($a_2: 150\text{ cm}$); as bombas convergem para o manifold `MAN-200_Agua` por $a_3: 80\text{ cm}$ e $a_4: 85\text{ cm}$; o manifold alimenta o cilindro dosador `DOS-201_Dosador` por $a_5: 40\text{ cm}$; o dosador alimenta o bico `BIC-202_Bico` por $a_6: 20\text{ cm}$; o bico descarrega por gravidade na mesa `MESA-000_Index` por $a_7: 10\text{ cm}$.
+    - *Ramo mecânico de copos*: `MAG-100_Copos` dispensa copos na mesa por $a_8: 15\text{ cm}$ (Cilindro A); e a mesa transfere os copos fechados para a esteira `EST-500_Saida` por $a_9: 50\text{ cm}$ (Cilindro H).
+  - **Filtro didático nos menus `<select>`**: Os menus `Origem` e `Destino` disponibilizam apenas os **6 nós da linha de água** (`TK-101_Agua`, `P-101_BombaA`, `P-102_BombaB`, `MAN-200_Agua`, `DOS-201_Dosador`, `BIC-202_Bico`), pois somar o comprimento de tubulações de água com o transporte físico de copos na mesa seria fisicamente inconsistente. Os 9 nós permanecem desenhados no diagrama SVG para preservar a visão global do dígrafo da Aula 11.
 
-#### Sequência exata de cliques e resultados verificáveis:
-1. **Cenário Nominal (via Bomba A — 270 cm)**:
-   - **Cliques**: Abra a aba **`Simulador`** (a vista **`Água / copos · Dijkstra`** já abre selecionada com `Origem = TK-101_Agua`, `Destino = DOS-201_Dosador` e nenhum bloqueio). Se já tiver mexido na tela, clique em **`Restaurar vista`**.
+#### Tabela de Conexões da Vista 1
+| ID Aresta | Origem | Destino | Peso | Válvula / Atuador | Tipo de Bloqueio |
+| :---: | :--- | :--- | :---: | :---: | :--- |
+| `a1` | `TK-101_Agua` | `P-101_BombaA` | 150 cm | XV-101A | Clique no SVG |
+| `a2` | `TK-101_Agua` | `P-102_BombaB` | 150 cm | XV-101B | Clique no SVG |
+| `a3` | `P-101_BombaA` | `MAN-200_Agua` | 80 cm | XV-200A | Checkbox lateral ou SVG |
+| `a4` | `P-102_BombaB` | `MAN-200_Agua` | 85 cm | XV-200B | Checkbox lateral ou SVG |
+| `a5` | `MAN-200_Agua` | `DOS-201_Dosador` | 40 cm | XV-201 | Clique no SVG (aresta ponte) |
+| `a6` | `DOS-201_Dosador` | `BIC-202_Bico` | 20 cm | XV-202 | Clique no SVG |
+| `a7` | `BIC-202_Bico` | `MESA-000_Index` | 10 cm | Gravidade | Clique no SVG |
+| `a8` | `MAG-100_Copos` | `MESA-000_Index` | 15 cm | Cilindro A | Clique no SVG |
+| `a9` | `MESA-000_Index` | `EST-500_Saida` | 50 cm | Cilindro H | Clique no SVG |
+
+#### Cenários Reproduzíveis da Vista 1
+
+1. **Cenário 1.1 — Nominal: Abastecimento via Bomba A (270 cm)**
+   - **Sequência de cliques**: Acesse a aba **`Simulador 6 vistas`** e certifique-se de que a vista **`Água / copos · Dijkstra`** está selecionada (estado inicial padrão). Se houver modificações anteriores, clique em **`Restaurar vista`**.
    - **Resultado exibido**:
-     - Título: **`270 cm`**
-     - Texto: `TK-101_Agua → DOS-201_Dosador; Dijkstra respeitou direção, pesos e bloqueios.`
-     - Rota: `TK-101_Agua` $\to$ `P-101_BombaA` $\to$ `MAN-200_Agua` $\to$ `DOS-201_Dosador` ($150 + 80 + 40 = 270\text{ cm}$, arestas `a1`, `a3`, `a5`).
-2. **Cenário de Contingência / Falha na Linha A (desvio via Bomba B — 275 cm)**:
-   - **Cliques**: Na seção **Bloqueios**, marque a caixa **`a3 · P-101_BombaA → MAN-200_Agua · 80 cm`** (ou clique diretamente sobre a linha `a3 · 80` no diagrama SVG).
+     - *Título*: **`270 cm`**
+     - *Texto*: `TK-101_Agua → DOS-201_Dosador; Dijkstra respeitou direção, pesos e bloqueios.`
+     - *Rota destacada*: `TK-101_Agua` $\to$ `P-101_BombaA` $\to$ `MAN-200_Agua` $\to$ `DOS-201_Dosador` (arestas `a1`, `a3`, `a5`).
+     - *Diário curto*: `Dijkstra: 270 cm.`
+   - **Verificação analítica**: $150 + 80 + 40 = 270\text{ cm}$. O caminho via Bomba B somaria $150 + 85 + 40 = 275\text{ cm}$, sendo corretamente preterido pelo Dijkstra.
+
+2. **Cenário 1.2 — Contingência: Bloqueio da Linha Principal A (Desvio via Bomba B — 275 cm)**
+   - **Sequência de cliques**: Na coluna **Bloqueios**, marque a caixa **`a3 · P-101_BombaA → MAN-200_Agua · 80 cm`** (ou clique na aresta `a3` no diagrama SVG).
    - **Resultado exibido (imediato)**:
-     - Título: **`275 cm`**
-     - Texto: `TK-101_Agua → DOS-201_Dosador; Dijkstra respeitou direção, pesos e bloqueios.`
-     - Rota: `TK-101_Agua` $\to$ `P-102_BombaB` $\to$ `MAN-200_Agua` $\to$ `DOS-201_Dosador` ($150 + 85 + 40 = 275\text{ cm}$, arestas `a2`, `a4`, `a5`).
-3. **Cenário de Falha Dupla ou Bloqueio do Manifold (`Sem rota`)**:
-   - **Cliques**: Mantendo `a3` marcado, marque também **`a4 · P-102_BombaB → MAN-200_Agua · 85 cm`** (ou marque **`Nó · MAN-200_Agua`**).
+     - *Título*: **`275 cm`**
+     - *Texto*: `TK-101_Agua → DOS-201_Dosador; Dijkstra respeitou direção, pesos e bloqueios.`
+     - *Rota destacada*: `TK-101_Agua` $\to$ `P-102_BombaB` $\to$ `MAN-200_Agua` $\to$ `DOS-201_Dosador` (arestas `a2`, `a4`, `a5`).
+     - *Diário curto*: `Dijkstra: 275 cm.`
+
+3. **Cenário 1.3 — Falha Dupla: Isolamento das Duas Bombas (`Sem rota`)**
+   - **Sequência de cliques**: Mantendo `a3` marcado, marque também a caixa **`a4 · P-102_BombaB → MAN-200_Agua · 85 cm`**.
    - **Resultado exibido (imediato)**:
-     - Título: **`Sem rota`**
-     - Texto: `sem rota. Nenhum caminho é exibido.`
-     - Rota: *(vazia — confirma que a redundância das bombas A e B não protege contra falha simultânea nas duas linhas nem contra bloqueio no nó comum `MAN-200_Agua`)*.
-4. **Restauração**:
-   - **Cliques**: Clique no botão **`Restaurar vista`**. O resultado volta para **`270 cm`**.
+     - *Título*: **`Sem rota`**
+     - *Texto*: `sem rota. Nenhum caminho é exibido.`
+     - *Rota destacada*: Lista vazia.
+     - *Diário curto*: `Dijkstra: sem rota.`
+   - **Significado**: Mostra que a redundância em paralelo suporta falha simples em uma das bombas, mas não protege contra perda simultânea das duas alimentações.
+
+4. **Cenário 1.4 — Ponto Único de Falha: Bloqueio do Manifold (`Sem rota`)**
+   - **Sequência de cliques**: Clique em **`Restaurar vista`**. Em **Bloqueios**, marque a caixa **`Nó · MAN-200_Agua`** (ou clique no retângulo do nó `MAN-200_Agua` no SVG).
+   - **Resultado exibido (imediato)**:
+     - *Título*: **`Sem rota`**
+     - *Texto*: `sem rota. Nenhum caminho é exibido.`
+     - *Rota destacada*: Lista vazia.
+     - *Diário curto*: `Dijkstra: sem rota.`
+   - **Significado didático**: O `MAN-200_Agua` é um **vértice de articulação (nó crítico)**; mesmo com ambas as bombas operacionais, o bloqueio do nó convergente interrompe todo o escoamento.
+
+5. **Cenário 1.5 — Aresta-Ponte Crítica Bloqueada no SVG com Aviso Dinâmico (`Sem rota`)**
+   - **Sequência de cliques**: Clique em **`Restaurar vista`**. No diagrama SVG, clique diretamente sobre a aresta **`a5 · 40`** (`MAN-200_Agua → DOS-201_Dosador`).
+   - **Resultado exibido (imediato)**:
+     - *Título*: **`Sem rota`**
+     - *Texto*: `sem rota. Nenhum caminho é exibido.`
+     - *Aviso dinâmico lateral*: Surge o parágrafo `<p data-e02-extra-blocks="" aria-live="polite">Arestas bloqueadas no diagrama: a5.</p>`.
+     - *Diário curto*: `Dijkstra: sem rota.`
+   - **Significado didático**: `a5` é uma **aresta ponte (aresta crítica)**. Sua interdição isola o dosador da fonte.
+
+6. **Cenário 1.6 — Consulta Estendida até o Bico de Envase (290 cm)**
+   - **Sequência de cliques**: Clique em **`Restaurar vista`**. No seletor **`Destino`**, selecione **`BIC-202_Bico`**.
+   - **Resultado exibido (imediato)**:
+     - *Título*: **`290 cm`**
+     - *Texto*: `TK-101_Agua → BIC-202_Bico; Dijkstra respeitou direção, pesos e bloqueios.`
+     - *Rota destacada*: `TK-101_Agua` $\to$ `P-101_BombaA` $\to$ `MAN-200_Agua` $\to$ `DOS-201_Dosador` $\to$ `BIC-202_Bico` (arestas `a1`, `a3`, `a5`, `a6`).
+     - *Diário curto*: `Dijkstra: 290 cm.`
+   - **Verificação**: $270 + 20 = 290\text{ cm}$.
+
+7. **Cenário 1.7 — Origem Igual ao Destino (0 cm)**
+   - **Sequência de cliques**: No seletor **`Origem`**, selecione **`DOS-201_Dosador`** (com `Destino = DOS-201_Dosador`).
+   - **Resultado exibido (imediato)**:
+     - *Título*: **`0 cm`**
+     - *Texto*: `DOS-201_Dosador → DOS-201_Dosador; Dijkstra respeitou direção, pesos e bloqueios.`
+     - *Rota destacada*: `DOS-201_Dosador` (distância nula, nenhuma aresta).
 
 ---
 
 ### Vista 2 — `Busca · BFS · DFS` (Aula 13)
 
-- **Código e Título na tela**: `13 / busca` — *BFS e DFS: saltos e caminhos*
-- **Unidade e Tipo**: `s · dirigido`
-- **Algoritmos**: **BFS** (Busca em Largura — encontra o caminho com o menor número de arestas/saltos) e **DFS** (Busca em Profundidade — enumera todos os caminhos simples possíveis entre origem e destino, até o limite de segurança de 40 caminhos).
-- **O que o grafo representa**:
-  - É um **grafo simplificado próprio de 7 nós** da Aula 13 (`Reservatorio`, `Bomba`, `V1`, `V2`, `Envasadora`, `Estacao_Inspecao`, `Empacotadora`) e 7 arestas dirigidas (`b1` a `b7`) com pesos em segundos (`5 s`, `2 s`, `3 s`, `4 s`, `6 s`, `3 s`, `2 s`).
-  - **Ponto conceitual importante**: embora as arestas tenham pesos em segundos (`s`), **a BFS ignora completamente os pesos em segundos** e conta apenas o **número de arestas (saltos)**. Como tanto o ramo por `V1` quanto o ramo por `V2` têm exatamente 5 arestas da origem até a `Empacotadora`, a BFS escolhe `V1` porque `V1` foi cadastrada antes na lista de adjacência.
+- **Identificação na tela**: Código `13 / busca` — *BFS e DFS: saltos e caminhos*.
+- **Métrica e Topologia**: `s · dirigido`.
+- **Algoritmos**:
+  - **BFS (Busca em Largura)**: Explora em camadas por fila FIFO, determinando o caminho com o menor número de arestas/saltos ($O(|V|+|E|)$).
+  - **DFS (Busca em Profundidade)**: Explora com retrocesso (*backtracking*), enumerando caminhos simples entre origem e destino (com teto preventivo de 40 caminhos).
+- **Significado físico e topológico**:
+  - Modela o grafo didático simplificado próprio da Aula 13 com 7 nós (`Reservatorio`, `Bomba`, `V1`, `V2`, `Envasadora`, `Estacao_Inspecao`, `Empacotadora`) e 7 arcos dirigidos (`b1` a `b7`).
+  - **Ponto conceitual crítico (BFS ignora pesos)**: As arestas possuem pesos expressos em segundos ($5\text{ s}, 2\text{ s}, 3\text{ s}, 4\text{ s}, 6\text{ s}, 3\text{ s}, 2\text{ s}$), mas **o algoritmo BFS ignora totalmente os pesos em segundos** e minimiza apenas o **número de saltos**. Como os ramos via `V1` e via `V2` contêm exatamente 5 saltos cada, a BFS desempata pelo critério determinístico de ordem de inserção na lista de adjacência (ramo por `V1`).
 
-#### Sequência exata de cliques e resultados verificáveis:
-1. **Cenário Nominal (5 saltos por BFS e 2 rotas por DFS)**:
-   - **Cliques**: Clique no botão de vista **`Busca · BFS · DFS`** (`#e02-mode-search`). Ele abre com `Origem = Reservatorio` e `Destino = Empacotadora`.
+#### Tabela de Conexões da Vista 2
+| ID Aresta | Origem | Destino | Peso | Descrição do Trecho | Bloqueio |
+| :---: | :--- | :--- | :---: | :--- | :--- |
+| `b1` | `Reservatorio` | `Bomba` | 5 s | Sucção do reservatório | Clique no SVG |
+| `b2` | `Bomba` | `V1` | 2 s | Linha de alimentação via Válvula 1 | Clique no SVG |
+| `b3` | `Bomba` | `V2` | 3 s | Linha de alimentação via Válvula 2 | Clique no SVG |
+| `b4` | `V1` | `Envasadora` | 4 s | Descarga da V1 na envasadora | Clique no SVG |
+| `b5` | `V2` | `Envasadora` | 6 s | Descarga da V2 na envasadora | Clique no SVG |
+| `b6` | `Envasadora` | `Estacao_Inspecao` | 3 s | Transferência para inspeção | Clique no SVG |
+| `b7` | `Estacao_Inspecao` | `Empacotadora` | 2 s | Transferência para empacotadora | Clique no SVG |
+
+#### Cenários Reproduzíveis da Vista 2
+
+1. **Cenário 2.1 — Nominal: Menor Número de Saltos por BFS e Duas Rotas por DFS**
+   - **Sequência de cliques**: Clique no botão de vista **`Busca · BFS · DFS`** (`#e02-mode-search`). Ele inicializa com `Origem = Reservatorio` e `Destino = Empacotadora`. Se necessário, clique em **`Restaurar vista`**.
    - **Resultado exibido**:
-     - Título: **`5 arestas por BFS`**
-     - Texto: `DFS encontrou 2 caminho(s) simples; BFS ignora os pesos em s.`
-     - Rota destacada: `Reservatorio` $\to$ `Bomba` $\to$ `V1` $\to$ `Envasadora` $\to$ `Estacao_Inspecao` $\to$ `Empacotadora` (5 arestas: `b1`, `b2`, `b4`, `b6`, `b7`).
-     - Diário curto: `BFS: 5 saltos; DFS: 2 caminho(s).`
-2. **Bloqueio de `V1` (desvio por `V2`)**:
-   - **Cliques**: Em **Bloqueios**, marque **`Nó · V1`**.
+     - *Título*: **`5 arestas por BFS`**
+     - *Texto*: `DFS encontrou 2 caminho(s) simples: Reservatorio → Bomba → V1 → Envasadora → Estacao_Inspecao → Empacotadora | Reservatorio → Bomba → V2 → Envasadora → Estacao_Inspecao → Empacotadora; BFS ignora os pesos em s.`
+     - *Rota destacada*: `Reservatorio` $\to$ `Bomba` $\to$ `V1` $\to$ `Envasadora` $\to$ `Estacao_Inspecao` $\to$ `Empacotadora` (5 arestas: `b1`, `b2`, `b4`, `b6`, `b7`).
+     - *Diário curto*: `BFS: 5 saltos; DFS: 2 caminho(s).`
+   - **Nota sobre pesos**: Se somássemos os segundos, a rota por V1 custaria $5+2+4+3+2 = 16\text{ s}$ e por V2 custaria $5+3+6+3+2 = 19\text{ s}$. Contudo, a BFS reporta `5 arestas por BFS` porque seu critério é estritamente topológico por camadas, e não ponderado.
+
+2. **Cenário 2.2 — Bloqueio do Nó `V1` (Desvio por `V2`)**
+   - **Sequência de cliques**: Na seção **Bloqueios**, marque a caixa **`Nó · V1`** (ou clique no retângulo do nó `V1` no SVG).
    - **Resultado exibido (imediato)**:
-     - Título: **`5 arestas por BFS`**
-     - Texto: `DFS encontrou 1 caminho(s) simples; BFS ignora os pesos em s.`
-     - Rota destacada: `Reservatorio` $\to$ `Bomba` $\to$ `V2` $\to$ `Envasadora` $\to$ `Estacao_Inspecao` $\to$ `Empacotadora`.
-3. **Bloqueio simultâneo de `V1` e `V2` (`Sem rota`)**:
-   - **Cliques**: Mantendo `Nó · V1` marcado, marque também **`Nó · V2`**.
+     - *Título*: **`5 arestas por BFS`**
+     - *Texto*: `DFS encontrou 1 caminho(s) simples: Reservatorio → Bomba → V2 → Envasadora → Estacao_Inspecao → Empacotadora; BFS ignora os pesos em s.`
+     - *Rota destacada*: `Reservatorio` $\to$ `Bomba` $\to$ `V2` $\to$ `Envasadora` $\to$ `Estacao_Inspecao` $\to$ `Empacotadora` (5 arestas: `b1`, `b3`, `b5`, `b6`, `b7`).
+     - *Diário curto*: `BFS: 5 saltos; DFS: 1 caminho(s).`
+
+3. **Cenário 2.3 — Bloqueio Simultâneo de `V1` e `V2` (`Sem rota`)**
+   - **Sequência de cliques**: Mantendo `Nó · V1` marcado, marque também a caixa **`Nó · V2`** (ou clique no retângulo do nó `V2` no SVG).
    - **Resultado exibido (imediato)**:
-     - Título: **`Sem rota`**
-     - Texto: `sem rota.`
-     - Rota: *(vazia)*.
-4. **Restauração**:
-   - **Cliques**: Clique em **`Restaurar vista`** para voltar a **`5 arestas por BFS`** e `2 caminho(s) simples`.
+     - *Título*: **`Sem rota`**
+     - *Texto*: `sem rota.`
+     - *Rota destacada*: Lista vazia.
+     - *Diário curto*: `Busca: sem rota.`
+
+4. **Cenário 2.4 — Bloqueio de Vértice Intermediário Crítico (ex.: `Bomba`)**
+   - **Sequência de cliques**: Clique em **`Restaurar vista`**. No SVG, bloqueie a aresta de sucção **`b1`** (`Reservatorio → Bomba`).
+   - **Resultado exibido (imediato)**:
+     - *Título*: **`Sem rota`**
+     - *Texto*: `sem rota.`
+     - *Aviso dinâmico*: `Arestas bloqueadas no diagrama: b1.`
+     - *Diário curto*: `Busca: sem rota.`
 
 ---
 
 ### Vista 3 — `Inspeção · Euler` (Aula 16)
 
-- **Código e Título na tela**: `16 / inspeção` — *Ronda: circuito Euleriano*
-- **Unidade e Tipo**: `min · não dirigido`
-- **Algoritmo**: Verificação de conectividade + paridade dos graus + **Algoritmo de Hierholzer por ID de aresta**.
-- **O que o grafo representa**:
-  - Modela a **ronda preventiva não dirigida** do técnico de manutenção por **8 pontos de inspeção** (`PAINEL`, `FRL-001`, `S100`, `S200`, `S300`, `S400`, `S500`, `MESA`) e **10 trechos físicos** (`t1` a `t10`: mangueiras, chicotes de sensores, cabo IO-Link e chicotes do motor/encoder da mesa), com tempos em minutos que somam **24,5 min** (`24.5 min`).
-  - No estado nominal, todos os 8 vértices têm **grau par** (`S200` e `S400` têm grau 4; os outros seis têm grau 2) e o grafo é conexo, satisfazendo o **Teorema de Euler** para um circuito fechado sem repetir nenhuma aresta.
-  - *(Nota: os outros dois problemas estudados na Aula 16 — a caça a vazamentos na rede pneumática com Carteiro Chinês de 57,8 min e a lavagem CIP dirigida de 20,0 min — estão explicados nos slides e na aba `Arquivos`, pois usam grafos diferentes).*
+- **Identificação na tela**: Código `16 / inspeção` — *Ronda: circuito Euleriano*.
+- **Métrica e Topologia**: `min · não dirigido`.
+- **Algoritmo**: Verificação de componentes conexos ativos + paridade de graus + **Algoritmo de Hierholzer por ID de aresta** ($O(|E|)$).
+- **Significado físico e topológico**:
+  - Modela a **ronda preventiva de manutenção** por **8 postos físicos** (`PAINEL`, `FRL-001`, `S100`, `S200`, `S300`, `S400`, `S500`, `MESA`) e **10 trechos não dirigidos** (`t1` a `t10`), somando **24,5 minutos** de inspeção.
+  - A estrutura é composta por dois anéis acoplados: o anel externo (`PAINEL` $\to$ `FRL` $\to$ estações $\to$ `PAINEL`) e o anel interno (`MESA` com chicotes do motor `M-001`, encoder e cabo IO-Link ligando a `S200` e `S400`).
+  - No estado nominal, todos os 8 nós possuem **grau par**: `S200` e `S400` têm grau 4; os outros seis nós têm grau 2. Por conseguinte, pelo **Teorema de Euler**, existe um **circuito euleriano fechado** que percorre todos os 10 trechos exatamente uma vez e retorna à origem.
+  - *(Diferenciação importante: a caça a vazamentos com Carteiro Chinês de 57,8 min e o circuito CIP de 20 min pertencem a outros modelos da Aula 16 e estão documentados na aba `Arquivos`).*
 
-#### Sequência exata de cliques e resultados verificáveis:
-1. **Cenário Nominal (Circuito Euleriano completo — 24,5 min)**:
-   - **Cliques**: Clique no botão de vista **`Inspeção · Euler`** (`#e02-mode-round`).
+#### Tabela de Trechos da Vista 3
+| ID Trecho | Vértice 1 | Vértice 2 | Tempo (min) | Elemento Físico Inspecionado |
+| :---: | :--- | :--- | :---: | :--- |
+| `t1` | `PAINEL` | `FRL-001` | 3,0 min | Alimentação e filtro principal de ar |
+| `t2` | `FRL-001` | `S100` | 2,0 min | Linha pneumática para estação E1 |
+| `t3` | `S100` | `S200` | 2,5 min | Chicote de sensores E1 para E2 |
+| `t4` | `S200` | `S300` | 3,0 min | Chicote e válvulas E2 para E3 |
+| `t5` | `S300` | `S400` | 2,5 min | Linha de vácuo e controle E3 para E4 |
+| `t6` | `S400` | `S500` | 3,5 min | Alimentação pneumática da prensa e ejeção E4 para E5 |
+| `t7` | `S500` | `PAINEL` | 3,0 min | Retorno de cabeamento de esteira ao painel |
+| `t8` | `MESA` | `S200` | 1,5 min | Cabo de encoder e servomotor da mesa indexadora |
+| `t9` | `S200` | `S400` | 2,0 min | Barramento central de comunicação IO-Link |
+| `t10` | `S400` | `MESA` | 1,5 min | Chicote de aterramento e sensores de indexação |
+
+#### Cenários Reproduzíveis da Vista 3
+
+1. **Cenário 3.1 — Nominal: Circuito Euleriano Fechado (24,5 min)**
+   - **Sequência de cliques**: Clique no botão de vista **`Inspeção · Euler`** (`#e02-mode-round`). Se necessário, clique em **`Restaurar vista`**.
    - **Resultado exibido**:
-     - Título: **`Circuito · 24.5 min`**
-     - Texto: `Hierholzer usou 10 IDs uma vez cada.`
-     - Rota (11 paradas, começando e terminando em `PAINEL`): `PAINEL` $\to$ `FRL-001` $\to$ `S100` $\to$ `S200` $\to$ `S300` $\to$ `S400` $\to$ `S200` $\to$ `MESA` $\to$ `S400` $\to$ `S500` $\to$ `PAINEL`.
-2. **Quebra de Paridade para 2 Vértices Ímpares (Trilha Euleriana aberta)**:
-   - **Cliques**: Em **Bloqueios**, marque apenas um trecho, por exemplo **`t9 · S200 — S400 · 2 min`** (ou **`t1 · PAINEL — FRL-001 · 3 min`**).
+     - *Título*: **`Circuito · 24.5 min`**
+     - *Texto*: `Hierholzer usou 10 IDs uma vez cada (t1 → t2 → t3 → t4 → t5 → t9 → t8 → t10 → t6 → t7).`
+     - *Rota destacada (11 paradas, iniciando e concluindo em `PAINEL`)*:
+       `PAINEL` $\to$ `FRL-001` $\to$ `S100` $\to$ `S200` $\to$ `S300` $\to$ `S400` $\to$ `S200` $\to$ `MESA` $\to$ `S400` $\to$ `S500` $\to$ `PAINEL`.
+     - *Diário curto*: `Euler: circuito, 24.5 min.`
+   - **Verificação analítica**: Soma dos 10 trechos: $3,0 + 2,0 + 2,5 + 3,0 + 2,5 + 3,5 + 3,0 + 1,5 + 2,0 + 1,5 = 24,5\text{ min}$. Todos os 10 IDs foram consumidos uma única vez sem repetição de aresta.
+
+2. **Cenário 3.2 — Bloqueio Simples: Quebra para 2 Vértices Ímpares (Trilha Euleriana Aberta de 22,5 min)**
+   - **Sequência de cliques**: Na seção **Bloqueios**, marque a caixa **`t9 · S200 — S400 · 2 min`** (ou clique na aresta `t9` no SVG).
    - **Resultado exibido (imediato)**:
-     - Se marcou `t9`: os nós `S200` e `S400` passam a ter grau 3 (exatamente 2 vértices ímpares). O título muda para **`Trilha · 22.5 min`** (`Hierholzer usou 9 IDs uma vez cada.`), pois ainda existe uma trilha euleriana aberta começando em um vértice ímpar e terminando no outro.
-3. **Paridade Inválida (> 2 vértices ímpares) ou Subgrafo Desconexo**:
-   - **Cliques**: Com `t9` desmarcado (ou clicando antes em **`Restaurar vista`**), marque **`t1 · PAINEL — FRL-001 · 3 min`** e **`t4 · S200 — S300 · 3 min`** (criando 4 vértices de grau ímpar: `PAINEL`, `FRL-001`, `S200`, `S300`).
+     - *Título*: **`Trilha · 22.5 min`**
+     - *Texto*: `Hierholzer usou 9 IDs uma vez cada (t3 → t2 → t1 → t7 → t6 → t5 → t4 → t8 → t10).`
+     - *Rota destacada (10 paradas, aberta)*:
+       `S200` $\to$ `S100` $\to$ `FRL-001` $\to$ `PAINEL` $\to$ `S500` $\to$ `S400` $\to$ `S300` $\to$ `S200` $\to$ `MESA` $\to$ `S400`.
+     - *Diário curto*: `Euler: trilha, 22.5 min.`
+   - **Significado didático**: A remoção de `t9` reduz o grau de `S200` de 4 para 3 e o de `S400` de 4 para 3. Havendo **exatamente dois vértices de grau ímpar**, o Teorema de Euler assegura a existência de uma **trilha euleriana aberta**, que obrigatoriamente tem início em um vértice ímpar (`S200`) e término no outro (`S400`), somando $24,5 - 2,0 = 22,5\text{ min}$.
+
+3. **Cenário 3.3 — Quebra de Paridade com > 2 Vértices Ímpares (`Rota Euleriana indisponível`)**
+   - **Sequência de cliques**: Clique em **`Restaurar vista`**. Em **Bloqueios**, marque **`t1 · PAINEL — FRL-001 · 3 min`** e marque também **`t4 · S200 — S300 · 3 min`**.
    - **Resultado exibido (imediato)**:
-     - Título: **`Rota Euleriana indisponível`**
-     - Texto: `paridade inválida; não há rota exibida.`
-   - *(Bloquear `t1` e `t7` deixa `PAINEL` isolado, mas os oito trechos ativos restantes ainda formam uma **trilha** de `18.5 min`; não é subgrafo desconexo. O resultado **`subgrafo desconexo; não há rota exibida.`** ocorre quando há arestas ativas em componentes separados: por exemplo, bloquear `t2` e `t7` mantém `t1` ativo em um componente e os demais trechos ativos em outro.)*.
-4. **Restauração**:
-   - **Cliques**: Clique em **`Restaurar vista`** para voltar a **`Circuito · 24.5 min`**.
+     - *Título*: **`Rota Euleriana indisponível`**
+     - *Texto*: `paridade inválida; não há rota exibida.`
+     - *Rota destacada*: Lista vazia.
+     - *Diário curto*: `Euler: paridade inválida.`
+   - **Significado didático**: O bloqueio simultâneo de `t1` e `t4` gera 4 vértices de grau ímpar (`PAINEL`, `FRL-001`, `S200`, `S300`), inviabilizando qualquer percurso euleriano sem duplicação de trechos.
+
+4. **Cenário 3.4 — Subgrafo Desconexo (`Rota Euleriana indisponível`)**
+   - **Sequência de cliques**: Clique em **`Restaurar vista`**. Marque **`t2 · FRL-001 — S100 · 2 min`** e marque **`t7 · S500 — PAINEL · 3 min`**.
+   - **Resultado exibido (imediato)**:
+     - *Título*: **`Rota Euleriana indisponível`**
+     - *Texto*: `subgrafo desconexo; não há rota exibida.`
+     - *Rota destacada*: Lista vazia.
+     - *Diário curto*: `Euler: subgrafo desconexo.`
+   - **Significado didático**: A aresta ativa `t1` (`PAINEL — FRL-001`) fica isolada em uma componente conexa separada dos demais 7 trechos ativos. Um passeio euleriano não pode saltar no espaço vazio entre componentes disjuntas.
+
+5. **Cenário 3.5 — Ausência Total de Trechos Ativos (`sem trechos ativos`)**
+   - **Sequência de cliques**: No código ([`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs)), quando todas as arestas são bloqueadas simultaneamente, o simulador retorna `{ ok: false, reason: "sem trechos ativos" }`. Na interface, isso pode ser alcançado marcando todos os checkboxes `t1` a `t10`.
 
 ---
 
 ### Vista 4 — `AGV · NN · 2-Opt` (Aula 17)
 
-- **Código e Título na tela**: `17 / AGV` — *Matriz legada: NN e 2-Opt*
-- **Unidade e Tipo**: `s · não dirigido`
-- **Algoritmos**: Heurística construtiva do **Vizinho Mais Próximo (Nearest Neighbor — NN)** seguida de refinamento por busca local **2-Opt** (que inverte segmentos da rota e aceita apenas trocas que reduzam estritamente o custo total).
-- **Cuidado essencial com os nomes dos nós**:
-  - Os 6 vértices desta vista (`Lab`, `TK301`, `TK302`, `R101`, `TK303`, `GRAN201`) e as 15 arestas (`g1` a `g15`, grafo completo $K_6$ simétrico em segundos) vêm da **matriz ilustrativa legada do notebook da Aula 17**.
-  - **Não diga que `TK301`, `R101` ou `GRAN201` são tags físicas da envasadora de copos!** A própria interface destaca isso no título (*"Matriz legada: NN e 2-Opt"*) e na descrição (*"Rótulos e custos da matriz ilustrativa do notebook; resultado é candidato, não ótimo global."*).
-  - Além disso, NN + 2-Opt são **heurísticas**: o resultado de `260 s` é uma **rota candidata melhorada**, e não uma prova matemática de ótimo global para qualquer instância do Problema do Caixeiro-Viajante (TSP).
+- **Identificação na tela**: Código `17 / AGV` — *Matriz legada: NN e 2-Opt*.
+- **Métrica e Topologia**: `s · não dirigido`.
+- **Algoritmos**: Heurística construtiva do **Vizinho Mais Próximo (Nearest Neighbor — NN)** com desempate determinístico, seguida de refinamento por busca local **2-Opt** com critério de melhoria estrita.
+- **Rigor sobre a proveniência dos dados**:
+  - Os 6 vértices (`Lab`, `TK301`, `TK302`, `R101`, `TK303`, `GRAN201`) e as 15 arestas (`g1` a `g15`, formando um grafo completo $K_6$ simétrico) foram **adotados diretamente da matriz ilustrativa legada do notebook da Aula 17**.
+  - **Não confunda esses nomes com equipamentos da envasadora!** `TK301` e `GRAN201` pertencem ao exercício didático de Caixeiro-Viajante (TSP) disponibilizado para estudo de heurísticas.
+  - **Heurística vs. Ótimo Global**: O Problema do Caixeiro-Viajante é NP-difícil. A rota obtida de **`260 s`** é uma **solução candidata válida e melhorada**, e não uma garantia matemática de ótimo global para instâncias genéricas.
 
-#### Sequência exata de cliques e resultados verificáveis:
-1. **Cenário Padrão (Partida = `Lab`, melhoria de 280 s para 260 s)**:
-   - **Cliques**: Clique no botão de vista **`AGV · NN · 2-Opt`** (`#e02-mode-agv`). Ele já abre com `Partida (matriz ilustrativa) = Lab`.
+#### Tabela de Arestas da Matriz Ilustrativa ($K_6$)
+| ID | Vértices Conectados | Custo (s) | ID | Vértices Conectados | Custo (s) | ID | Vértices Conectados | Custo (s) |
+| :---: | :--- | :---: | :---: | :--- | :---: | :---: | :--- | :---: |
+| `g1` | `Lab` — `TK301` | 45 s | `g6` | `TK301` — `TK302` | 20 s | `g11` | `TK302` — `TK303` | 50 s |
+| `g2` | `Lab` — `TK302` | 50 s | `g7` | `TK301` — `R101` | 55 s | `g12` | `TK302` — `GRAN201` | 85 s |
+| `g3` | `Lab` — `R101` | 80 s | `g8` | `TK301` — `TK303` | 60 s | `g13` | `R101` — `TK303` | 25 s |
+| `g4` | `Lab` — `TK303` | 75 s | `g9` | `TK301` — `GRAN201` | 95 s | `g14` | `R101` — `GRAN201` | 40 s |
+| `g5` | `Lab` — `GRAN201` | 110 s | `g10` | `TK302` — `R101` | 45 s | `g15` | `TK303` — `GRAN201` | 35 s |
+
+#### Cenários Reproduzíveis da Vista 4
+
+1. **Cenário 4.1 — Nominal: Partida em `Lab` (Melhoria 2-Opt de 280 s para 260 s)**
+   - **Sequência de cliques**: Clique no botão de vista **`AGV · NN · 2-Opt`** (`#e02-mode-agv`). A vista abre com `Partida (matriz ilustrativa) = Lab`. Se necessário, clique em **`Restaurar vista`**.
    - **Resultado exibido**:
-     - Título: **`NN 280 s → 2-Opt 260 s`**
-     - Texto: `A melhoria aceita apenas troca estritamente melhor; é candidata, não ótimo global.`
-     - Rota exibida (após o refinamento 2-Opt): `Lab` $\to$ `TK301` $\to$ `TK302` $\to$ `R101` $\to$ `GRAN201` $\to$ `TK303` $\to$ `Lab` ($45 + 20 + 45 + 40 + 35 + 75 = 260\text{ s}$).
-     - *(O Vizinho Mais Próximo inicial fazia `Lab → TK301 → TK302 → R101 → TK303 → GRAN201 → Lab`, que custava $45 + 20 + 45 + 25 + 35 + 110 = 280\text{ s}$ por causa do salto longo final de `GRAN201` até `Lab`; o 2-Opt inverteu `TK303` e `GRAN201`, economizando 20 segundos).*
-2. **Testando outra Partida**:
-   - **Cliques**: Mude o menu **`Partida (matriz ilustrativa)`** para outro vértice (ex.: `TK301` ou `TK303`); a troca recalcula imediatamente, e o botão **`Calcular`** continua disponível para repetir a consulta. Para voltar ao padrão (`Lab`), clique em **`Restaurar vista`**.
+     - *Título*: **`NN 280 s → 2-Opt 260 s`**
+     - *Texto*: `NN inicial (Lab → TK301 → TK302 → R101 → TK303 → GRAN201 → Lab) refinada por 2-Opt; a melhoria aceita apenas troca estritamente melhor e é candidata, não ótimo global.`
+     - *Rota final destacada*:
+       `Lab` $\to$ `TK301` $\to$ `TK302` $\to$ `R101` $\to$ `GRAN201` $\to$ `TK303` $\to$ `Lab` (arestas `g1`, `g6`, `g10`, `g14`, `g15`, `g4`).
+     - *Diário curto*: `NN 280 s; 2-Opt 260 s.`
+   - **Mecanismo da melhoria**:
+     - O Vizinho Mais Próximo construiu a rota gulosa: `Lab` $\xrightarrow{45}$ `TK301` $\xrightarrow{20}$ `TK302` $\xrightarrow{45}$ `R101` $\xrightarrow{25}$ `TK303` $\xrightarrow{35}$ `GRAN201` $\xrightarrow{110}$ `Lab`, totalizando **$280\text{ s}$**. Note o salto longo de retorno `GRAN201 → Lab` (110 s).
+     - A busca local 2-Opt testou as inversões de 2 arestas e identificou que inverter a ordem dos dois últimos vértices (`GRAN201` com `TK303`) produz: `R101` $\xrightarrow{40}$ `GRAN201` $\xrightarrow{35}$ `TK303` $\xrightarrow{75}$ `Lab`, totalizando **$260\text{ s}$** ($45 + 20 + 45 + 40 + 35 + 75 = 260\text{ s}$).
+     - A economia obtida foi de **$20\text{ s}$**. Como uma nova rodada de 2-Opt não encontra nenhuma redução estrita, o algoritmo estaciona no mínimo local.
+
+2. **Cenário 4.2 — Testando Outros Vértices de Partida**
+   - **Sequência de cliques**: No seletor **`Partida (matriz ilustrativa)`**, escolha outro vértice (ex.: `TK301` ou `TK303`).
+   - **Resultado exibido**: O simulador recalcula a rota e o custo de forma imediata (evento `change`). Para retornar à configuração padrão de referência, clique em **`Restaurar vista`**.
 
 ---
 
 ### Vista 5 — `Materiais · Kahn` (Aula 18 — Camada de Materiais)
 
-- **Código e Título na tela**: `18 / materiais` — *Precedências: ordenação de Kahn*
-- **Unidade e Tipo**: `m · dirigido`
-- **Algoritmo**: **Algoritmo de Kahn** para ordenação topológica em um **DAG** (Grafo Acíclico Dirigido).
-- **O que o grafo representa**:
-  - Possui **16 vértices** e **15 arestas dirigidas** (`m1` a `m15`) representando o fluxo lógico de insumos desde os três recebimentos (`RECEB_COPOS`, `RECEB_AGUA`, `RECEB_TAMPAS`), passando pelos estoques intermediários, entrando nas **cinco estações obrigatórias da envasadora (`E1_DISPENSA` $\to$ `E2_ENVASE` $\to$ `E3_TAMPA` $\to$ `E4_SELAGEM` $\to$ `E5_EJECAO`)**, até `EST-500_Saida` $\to$ `EMBALAGEM` $\to$ `ESTOQUE_PRODUTO` $\to$ `DOCA_EXPEDICAO`.
-  - **Cuidado conceitual**: a convergência de arestas no DAG mostra a **ordem de precedência estrutural** (o que precisa vir antes do quê) e confirma que não há ciclos dirigidos no fluxo normal do produto. Porém, **convergência topológica não prova sozinha a disponibilidade simultânea (operação lógica AND) de água, copo, tampa e ar comprimido**, nem substitui a verificação de quarentena/qualidade demonstrada no notebook da Aula 18.
+- **Identificação na tela**: Código `18 / materiais` — *Precedências: ordenação de Kahn*.
+- **Métrica e Topologia**: `m · dirigido`.
+- **Algoritmo**: Algoritmo de Kahn para ordenação topológica em **DAG** (Grafo Acíclico Dirigido).
+- **Significado físico e topológico**:
+  - Modela a **precedência lógica de fabricação** do produto desde os três recebimentos de insumos até a doca de expedição:
+    - *Copos*: `RECEB_COPOS` $\xrightarrow{8\text{ m}}$ `ESTOQUE_COPOS` $\xrightarrow{6\text{ m}}$ `MAG-100_Copos` $\xrightarrow{1\text{ m}}$ `E1_DISPENSA`;
+    - *Água*: `RECEB_AGUA` $\xrightarrow{10\text{ m}}$ `TK-101_Agua` $\xrightarrow{2.7\text{ m}}$ `E2_ENVASE`;
+    - *Tampas*: `RECEB_TAMPAS` $\xrightarrow{7\text{ m}}$ `ESTOQUE_TAMPAS` $\xrightarrow{5\text{ m}}$ `E3_TAMPA`;
+    - *Espinha dorsal de transformação na mesa indexadora*: `E1_DISPENSA` $\xrightarrow{0.6\text{ m}}$ `E2_ENVASE` $\xrightarrow{0.6\text{ m}}$ `E3_TAMPA` $\xrightarrow{0.6\text{ m}}$ `E4_SELAGEM` $\xrightarrow{0.6\text{ m}}$ `E5_EJECAO`;
+    - *Expedição final*: `E5_EJECAO` $\xrightarrow{0.8\text{ m}}$ `EST-500_Saida` $\xrightarrow{3\text{ m}}$ `EMBALAGEM` $\xrightarrow{5\text{ m}}$ `ESTOQUE_PRODUTO` $\xrightarrow{8\text{ m}}$ `DOCA_EXPEDICAO`.
+  - **Destaque visual comprovado no código**:
+    - O algoritmo de Kahn ordena todos os 16 vértices.
+    - No diagrama SVG, **as 4 arestas da espinha dorsal da máquina (`m8`, `m9`, `m10`, `m11`), que unem `E1_DISPENSA` $\to$ `E2_ENVASE` $\to$ `E3_TAMPA` $\to$ `E4_SELAGEM` $\to$ `E5_EJECAO`, recebem destaque visual na cor verde-azulada (`.is-route`)**, evidenciando o caminho produtivo central da máquina no DAG.
+- **Ressalva conceitual essencial**: A ordenação topológica comprova ausência de ciclos dirigidos e determina uma sequência viável de tarefas. No entanto, **a convergência de arcos no DAG não comprova disponibilidade conjunta (operação lógica AND)** de copos, água, tampas e ar comprimido, nem substitui os sensores de barreira e intertravamentos de segurança física da máquina.
 
-#### Sequência exata de cliques e resultados verificáveis:
-1. **Cenário Único na Vista (16 vértices ordenados mantendo E1–E5)**:
-   - **Cliques**: Clique no botão de vista **`Materiais · Kahn`** (`#e02-mode-materials`). Não há seletores nem bloqueios interativos nesta vista.
+#### Tabela de Precedências do DAG de Materiais (16 Vértices, 15 Arestas)
+| ID Aresta | Origem | Destino | Peso (m) | Significado no Processo |
+| :---: | :--- | :--- | :---: | :--- |
+| `m1` | `RECEB_COPOS` | `ESTOQUE_COPOS` | 8,0 m | Recepção e armazenamento de copos |
+| `m2` | `ESTOQUE_COPOS` | `MAG-100_Copos` | 6,0 m | Abastecimento do magazine de copos |
+| `m3` | `MAG-100_Copos` | `E1_DISPENSA` | 1,0 m | Liberação do copo para o alojamento da mesa |
+| `m4` | `RECEB_AGUA` | `TK-101_Agua` | 10,0 m | Captação e enchimento do reservatório de água |
+| `m5` | `TK-101_Agua` | `E2_ENVASE` | 2,7 m | Conexão da rede de água ao dosador de 150 ml |
+| `m6` | `RECEB_TAMPAS` | `ESTOQUE_TAMPAS` | 7,0 m | Recepção e guarda de tampas seláveis |
+| `m7` | `ESTOQUE_TAMPAS` | `E3_TAMPA` | 5,0 m | Alimentação do magazine de tampas |
+| `m8` | `E1_DISPENSA` | `E2_ENVASE` | 0,6 m | Avanço da mesa indexadora da dispensa ao envase |
+| `m9` | `E2_ENVASE` | `E3_TAMPA` | 0,6 m | Avanço da mesa do envase ao posicionamento de tampa |
+| `m10` | `E3_TAMPA` | `E4_SELAGEM` | 0,6 m | Avanço da mesa da tampa à prensa de termosselagem |
+| `m11` | `E4_SELAGEM` | `E5_EJECAO` | 0,6 m | Avanço da mesa da termosselagem à estação de ejeção |
+| `m12` | `E5_EJECAO` | `EST-500_Saida` | 0,8 m | Ejeção do copo pronto para a esteira motorizada |
+| `m13` | `EST-500_Saida` | `EMBALAGEM` | 3,0 m | Transporte por esteira até a célula de encaixotamento |
+| `m14` | `EMBALAGEM` | `ESTOQUE_PRODUTO` | 5,0 m | Paletização e envio ao estoque de produtos acabados |
+| `m15` | `ESTOQUE_PRODUTO` | `DOCA_EXPEDICAO` | 8,0 m | Transferência para a doca de expedição |
+
+#### Cenários Reproduzíveis da Vista 5
+
+1. **Cenário 5.1 — Ordenação Topológica Completa Preservando E1–E5**
+   - **Sequência de cliques**: Clique no botão de vista **`Materiais · Kahn`** (`#e02-mode-materials`). Não há seletores de origem/destino nem bloqueios nesta vista.
    - **Resultado exibido**:
-     - Título: **`16 vértices ordenados`**
-     - Texto: `Kahn ordenou precedências; E1_DISPENSA → E2_ENVASE → E3_TAMPA → E4_SELAGEM → E5_EJECAO (E1–E5) permanece no DAG.`
-     - Lista ordenada dos 16 vértices:
+     - *Título*: **`16 vértices ordenados`**
+     - *Texto*: `Kahn ordenou precedências; E1_DISPENSA → E2_ENVASE → E3_TAMPA → E4_SELAGEM → E5_EJECAO (E1–E5) permanece no DAG.`
+     - *Arestas destacadas no SVG*: `m8`, `m9`, `m10`, `m11` em verde-azulado (`.is-route`).
+     - *Lista ordenada de 16 vértices*:
        1. `RECEB_AGUA`
        2. `RECEB_COPOS`
        3. `ESTOQUE_COPOS`
@@ -270,95 +488,185 @@ Abaixo estão os dados, o significado físico/didático e o passo a passo exato 
        14. `EMBALAGEM`
        15. `ESTOQUE_PRODUTO`
        16. `DOCA_EXPEDICAO`
+     - *Diário curto*: `Kahn: 16 vértices.`
+   - **Verificação**: A ordem respeita rigorosamente as precedências: os insumos são preparados antes das estações de montagem, a cadeia $E_1 \to E_2 \to E_3 \to E_4 \to E_5$ é respeitada e a expedição aparece ao final.
+
+2. **Cenário de Teste — Detecção de Ciclo em Grafo Dirigido Inválido (`ciclo detectado`)**
+   - O algoritmo de Kahn em [`js/etapa-02-simulator.js`](js/etapa-02-simulator.js) verifica se a contagem de nós ordenados iguala o número total de vértices. Nos testes automatizados ([`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs)), submeter um grafo cíclico retorna `{ ok: false, reason: "ciclo detectado" }`. Na interface web nominal, o DAG de materiais é estritamente acíclico.
 
 ---
 
 ### Vista 6 — `Veículos · Dijkstra` (Aula 18 — Camada de Circulação Interna)
 
-- **Código e Título na tela**: `18 / veículos` — *Veículos: menor caminho*
-- **Unidade e Tipo**: `m · dirigido`
-- **Algoritmo**: Dijkstra sobre o dígrafo de circulação de veículos internos (carrinhos de movimentação).
-- **Por que é separado da vista `Materiais`?**
-  - Porque um veículo interno circula por **corredores, portaria, recebimento, estoque final, via externa e doca** (`9 vértices` e `14 arestas dirigidas`, `v1` a `v14`), onde existem **vias de mão dupla e ciclos legítimos** (por exemplo, `CORREDOR_A` $\leftrightarrow$ `CORREDOR_B` e o retorno `DOCA_EXPEDICAO` $\to$ `SAIDA` $\to$ `PORTARIA`). Um carrinho não passa por dentro do cilindro dosador ou da prensa térmica!
+- **Identificação na tela**: Código `18 / veículos` — *Veículos: menor caminho*.
+- **Métrica e Topologia**: `m · dirigido`.
+- **Algoritmo**: Dijkstra sobre dígrafo de vias e corredores industriais.
+- **Por que esta vista é separada da vista de Materiais?**:
+  - Um veículo de transporte interno (carrinho ou empilhadeira) transita por **corredores e vias físicas de mão dupla** e por **anéis de retorno à portaria**. Esse grafo possui **ciclos legítimos** (ex.: `CORREDOR_A` $\leftrightarrow$ `CORREDOR_B` e `DOCA_EXPEDICAO` $\to$ `SAIDA` $\to$ `PORTARIA`).
+  - Tentar modelar materiais e veículos no mesmo grafo provocaria um paradoxo matemático: o algoritmo de Kahn falharia devido aos ciclos dos corredores, e o Dijkstra de veículos calcularia trajetos impossíveis que atravessariam cilindros pneumáticos ou bicos dosadores de água.
 
-#### Sequência exata de cliques e resultados verificáveis:
-1. **Cenário Nominal (pelos corredores internos — 40 m)**:
-   - **Cliques**: Clique no botão de vista **`Veículos · Dijkstra`** (`#e02-mode-vehicles`). Ele abre com `Origem = RECEBIMENTO` e `Destino = DOCA_EXPEDICAO`.
+#### Tabela de Conexões da Camada de Veículos (9 Vértices, 14 Arestas)
+| ID Aresta | Origem | Destino | Peso (m) | Descrição da Via | Bloqueio |
+| :---: | :--- | :--- | :---: | :--- | :--- |
+| `v1` | `PORTARIA` | `RECEBIMENTO` | 20 m | Acesso da portaria ao recebimento | Clique no SVG |
+| `v2` | `RECEBIMENTO` | `CORREDOR_A` | 10 m | Entrada do recebimento para Corredor A | Clique no SVG |
+| `v3` | `CORREDOR_A` | `RECEBIMENTO` | 10 m | Retorno do Corredor A para recebimento | Clique no SVG |
+| `v4` | `CORREDOR_A` | `ABASTECIMENTO` | 8 m | Ramo para área de abastecimento | Clique no SVG |
+| `v5` | `ABASTECIMENTO` | `CORREDOR_A` | 8 m | Retorno do abastecimento para Corredor A | Clique no SVG |
+| `v6` | `CORREDOR_A` | `CORREDOR_B` | 12 m | Interligação interna Corredor A $\to$ B | Clique no SVG |
+| `v7` | `CORREDOR_B` | `CORREDOR_A` | 12 m | Interligação interna Corredor B $\to$ A | Clique no SVG |
+| `v8` | `CORREDOR_B` | `ESTOQUE_FINAL` | 8 m | Acesso ao estoque final de produtos | Clique no SVG |
+| `v9` | `ESTOQUE_FINAL` | `CORREDOR_B` | 8 m | Saída do estoque final para Corredor B | Clique no SVG |
+| `v10` | `ESTOQUE_FINAL` | `DOCA_EXPEDICAO` | 10 m | Transferência final para doca | Clique no SVG |
+| `v11` | `DOCA_EXPEDICAO` | `SAIDA` | 15 m | Saída dos veículos da doca | Clique no SVG |
+| `v12` | `SAIDA` | `PORTARIA` | 10 m | Retorno externo à portaria principal | Clique no SVG |
+| `v13` | `RECEBIMENTO` | `VIA_EXTERNA` | 30 m | Acesso direto pelo pátio externo | Clique no SVG |
+| `v14` | `VIA_EXTERNA` | `DOCA_EXPEDICAO` | 35 m | Contorno externo até a doca de expedição | Clique no SVG |
+
+#### Cenários Reproduzíveis da Vista 6
+
+1. **Cenário 6.1 — Nominal: Transporte Interno pelos Corredores A e B (40 m)**
+   - **Sequência de cliques**: Clique no botão de vista **`Veículos · Dijkstra`** (`#e02-mode-vehicles`). Abre com `Origem = RECEBIMENTO` e `Destino = DOCA_EXPEDICAO`. Se necessário, clique em **`Restaurar vista`**.
    - **Resultado exibido**:
-     - Título: **`40 m`**
-     - Texto: `RECEBIMENTO → DOCA_EXPEDICAO; Dijkstra respeitou direção, pesos e bloqueios.`
-     - Rota: `RECEBIMENTO` $\to$ `CORREDOR_A` $\to$ `CORREDOR_B` $\to$ `ESTOQUE_FINAL` $\to$ `DOCA_EXPEDICAO` ($10 + 12 + 8 + 10 = 40\text{ m}$, arestas `v2`, `v6`, `v8`, `v10`).
-2. **Cenário de Contingência / Corredor B interditado (desvio pela Via Externa — 65 m)**:
-   - **Cliques**: Em **Bloqueios**, marque **`Nó · CORREDOR_B`**.
+     - *Título*: **`40 m`**
+     - *Texto*: `RECEBIMENTO → DOCA_EXPEDICAO; Dijkstra respeitou direção, pesos e bloqueios.`
+     - *Rota destacada*: `RECEBIMENTO` $\to$ `CORREDOR_A` $\to$ `CORREDOR_B` $\to$ `ESTOQUE_FINAL` $\to$ `DOCA_EXPEDICAO` (arestas `v2`, `v6`, `v8`, `v10`).
+     - *Diário curto*: `Dijkstra: 40 m.`
+   - **Verificação analítica**: $10 + 12 + 8 + 10 = 40\text{ m}$. A alternativa pela Via Externa somaria $30 + 35 = 65\text{ m}$, sendo rejeitada por ter maior distância.
+
+2. **Cenário 6.2 — Contingência: Interdição do Corredor B (Desvio pela Via Externa — 65 m)**
+   - **Sequência de cliques**: Na seção **Bloqueios**, marque a caixa **`Nó · CORREDOR_B`** (ou clique no retângulo do nó `CORREDOR_B` no SVG).
    - **Resultado exibido (imediato)**:
-     - Título: **`65 m`**
-     - Texto: `RECEBIMENTO → DOCA_EXPEDICAO; Dijkstra respeitou direção, pesos e bloqueios.`
-     - Rota: `RECEBIMENTO` $\to$ `VIA_EXTERNA` $\to$ `DOCA_EXPEDICAO` ($30 + 35 = 65\text{ m}$, arestas `v13`, `v14`).
-3. **Cenário de Bloqueio Duplo (`CORREDOR_B` + `VIA_EXTERNA` — `Sem rota`)**:
-   - **Cliques**: Mantendo `Nó · CORREDOR_B` marcado, marque também **`Nó · VIA_EXTERNA`**.
+     - *Título*: **`65 m`**
+     - *Texto*: `RECEBIMENTO → DOCA_EXPEDICAO; Dijkstra respeitou direção, pesos e bloqueios.`
+     - *Rota destacada*: `RECEBIMENTO` $\to$ `VIA_EXTERNA` $\to$ `DOCA_EXPEDICAO` (arestas `v13`, `v14`).
+     - *Diário curto*: `Dijkstra: 65 m.`
+
+3. **Cenário 6.3 — Falha Dupla: Bloqueio do Corredor B e da Via Externa (`Sem rota`)**
+   - **Sequência de cliques**: Mantendo `Nó · CORREDOR_B` marcado, marque também **`Nó · VIA_EXTERNA`** (ou clique no nó `VIA_EXTERNA` no SVG).
    - **Resultado exibido (imediato)**:
-     - Título: **`Sem rota`**
-     - Texto: `sem rota. Nenhum caminho é exibido.`
-     - Rota: *(vazia)*.
-4. **Restauração**:
-   - **Cliques**: Clique em **`Restaurar vista`** para retornar a **`40 m`**.
+     - *Título*: **`Sem rota`**
+     - *Texto*: `sem rota. Nenhum caminho é exibido.`
+     - *Rota destacada*: Lista vazia.
+     - *Diário curto*: `Dijkstra: sem rota.`
+
+4. **Cenário 6.4 — Ciclo de Retorno Completo até a Portaria (25 m)**
+   - **Sequência de cliques**: Clique em **`Restaurar vista`**. No menu **`Origem`**, escolha **`DOCA_EXPEDICAO`**; no menu **`Destino`**, escolha **`PORTARIA`**.
+   - **Resultado exibido (imediato)**:
+     - *Título*: **`25 m`**
+     - *Texto*: `DOCA_EXPEDICAO → PORTARIA; Dijkstra respeitou direção, pesos e bloqueios.`
+     - *Rota destacada*: `DOCA_EXPEDICAO` $\to$ `SAIDA` $\to$ `PORTARIA` (arestas `v11`, `v12`).
+     - *Diário curto*: `Dijkstra: 25 m.`
+   - **Verificação analítica**: $15 + 10 = 25\text{ m}$. Comprova que o dígrafo de circulação contempla circuitos de retorno e vias de tráfego que seriam incompatíveis com um grafo acíclico.
 
 ---
 
-## 5. Resumo Comparativo Rápido das 6 Vistas do Simulador
+## 5. Quadro Comparativo Consolidado das Seis Vistas
 
-| Botão da Vista | Aulas | Tipo e Unidade | Algoritmo no JS | Controles na Tela | Resultado Nominal e com Bloqueios |
-| :--- | :---: | :---: | :--- | :--- | :--- |
-| **`Água / copos`** | 11, 14, 15 | Dirigido · `cm` | `dijkstra()` | `Origem`, `Destino` (6 nós hidráulicos); bloqueios `a3`, `a4`, `MAN-200_Agua` + clique em arestas | Nominal: **`270 cm`** (via A) $\to$ Bloq. `a3`: **`275 cm`** (via B) $\to$ Bloq. `a3`+`a4` ou `MAN-200_Agua`: **`Sem rota`** |
-| **`Busca`** | 13 | Dirigido · `s` | `bfs()` + `dfsPaths()` | `Origem`, `Destino` (7 nós); bloqueios `V1`, `V2` + clique em arestas | Nominal: **`5 arestas por BFS`** (`2 caminho(s)` na DFS) $\to$ Bloq. `V1`: **`5 arestas por BFS`** via `V2` (`1 caminho`) $\to$ Bloq. `V1`+`V2`: **`Sem rota`** |
-| **`Inspeção`** | 16 | Não dirigido · `min` | `euler()` (Hierholzer por ID) | Sem `<select>`; bloqueios `t1` a `t10` + clique em arestas | Nominal: **`Circuito · 24.5 min`** (10 IDs) $\to$ 1 trecho como `t9` bloqueado: **`Trilha · 22.5 min`** $\to$ >2 ímpares ou desconexo: **`Rota Euleriana indisponível`** |
-| **`AGV`** | 17 | Não dirigido · `s` | `nearestNeighbor()` + `twoOpt()` | `Partida (matriz ilustrativa)` (`Lab` padrão); **sem bloqueios** | Nominal (`Lab`): **`NN 280 s → 2-Opt 260 s`** (`Lab → TK301 → TK302 → R101 → GRAN201 → TK303 → Lab`) |
-| **`Materiais`** | 18 | Dirigido (DAG) · `m` | `kahn()` | Sem `<select>`; **sem bloqueios** | **`16 vértices ordenados`** preservando `E1_DISPENSA → E2_ENVASE → E3_TAMPA → E4_SELAGEM → E5_EJECAO` |
-| **`Veículos`** | 18 | Dirigido · `m` | `dijkstra()` | `Origem`, `Destino` (9 nós); bloqueios `CORREDOR_B`, `VIA_EXTERNA` + clique em arestas | Nominal: **`40 m`** (via Corredores A/B) $\to$ Bloq. `CORREDOR_B`: **`65 m`** (via Externa) $\to$ Bloq. ambos: **`Sem rota`** |
-
----
-
-## 6. O que NÃO Existe no Simulador (Para Não Inventar Durante a Apresentação)
-
-Para manter rigor técnico total diante do professor, **nunca prometa nem procure na tela** recursos que não fazem parte do escopo estático do simulador:
-1. **Não há edição livre de pesos na tela web**: a alteração de peso (como mudar `P-101_BombaA → MAN-200_Agua` de `80 cm` para `100 cm` na Aula 14, ou converter metros para minutos na Aula 18) existe e está validada **nos notebooks Python**, mas no simulador HTML/JS os grafos são imutáveis (`Object.freeze`) e a interação ocorre por seleção de terminais e bloqueio/restauração.
-2. **Não há botões de "presets de falha" automáticos nem simulação temporal/animação**: os bloqueios são marcados manualmente pelo usuário nos checkboxes (ou clicando nas arestas do SVG).
-3. **Não há comunicação com CLP, SCADA real ou Automation Studio**: o cálculo das 6 vistas ocorre localmente no navegador sem backend; porém, note que na aba **`Arquivos`** os botões `Abrir roteiro` e `Abrir notebook` das Aulas 11 a 18 (assim como o link do rodapé) apontam para URLs externas do GitHub (`https://github.com/...`, exigindo internet apenas se você clicar para sair da página), enquanto `Abrir README` usa caminho relativo local (`../etapa-02-grafos/README.md`). Além disso, os estilos em `doc/css/etapa-02.css` usam a regra moderna `@scope`, portanto utilize um navegador atualizado compatível (Chrome, Edge ou Firefox recente).
-4. **Não há garantia de ótimo global no AGV**: o 2-Opt melhora a solução gulosa do Vizinho Mais Próximo (`280 s → 260 s`), mas continua sendo uma heurística local.
+| Botão da Vista | Aulas | Sentido e Unidade | Algoritmo | Controles e Bloqueios | Resultado Nominal | Estados de Desvio / Falha |
+| :--- | :---: | :---: | :--- | :--- | :--- | :--- |
+| **`Água / copos`** | 11, 14, 15 | Dirigido · `cm` | `dijkstra()` | Menus: 6 nós hidráulicos.<br>Bloqueios: `a3`, `a4`, `MAN-200_Agua` + SVG. | **`270 cm`** (via Bomba A) | Bloq. `a3`: **`275 cm`** (Bomba B).<br>Bloq. `a3`+`a4` ou `MAN`: **`Sem rota`**. |
+| **`Busca`** | 13 | Dirigido · `s` | `bfs()` + `dfsPaths()` | Menus: 7 nós.<br>Bloqueios: `V1`, `V2` + SVG. | **`5 arestas por BFS`**<br>(DFS: 2 caminhos simples) | Bloq. `V1`: **`5 arestas por BFS`** via `V2` (DFS: 1 caminho).<br>Bloq. `V1`+`V2`: **`Sem rota`**. |
+| **`Inspeção`** | 16 | Não dirigido · `min` | `euler()` (Hierholzer por ID) | Sem `<select>`.<br>Bloqueios: `t1` a `t10` + SVG. | **`Circuito · 24.5 min`**<br>(10 IDs, graus pares) | 1 trecho (`t9`): **`Trilha · 22.5 min`**.<br>>2 ímpares ou desconexo: **`Rota Euleriana indisponível`**. |
+| **`AGV`** | 17 | Não dirigido · `s` | `nearestNeighbor()` + `twoOpt()` | Menu: `Partida` (`Lab` padrão).<br>Sem bloqueios. | **`NN 280 s → 2-Opt 260 s`**<br>(Partindo do `Lab`) | Partida em outros vértices calcula ciclicamente sobre a matriz $K_6$. |
+| **`Materiais`** | 18 | Dirigido (DAG) · `m` | `kahn()` | Sem `<select>`.<br>Sem bloqueios. | **`16 vértices ordenados`**<br>(Espinha $E_1$ a $E_5$ destacada) | DAG estrutural invariante; rejeita ciclos nos testes. |
+| **`Veículos`** | 18 | Dirigido · `m` | `dijkstra()` | Menus: 9 áreas fabris.<br>Bloqueios: `CORREDOR_B`, `VIA_EXTERNA` + SVG. | **`40 m`**<br>(Corredores A e B) | Bloq. `CORREDOR_B`: **`65 m`** (Via Externa).<br>Bloq. ambos: **`Sem rota`**. |
 
 ---
 
-## 7. Mini Glossário para Estudantes Iniciantes
+## 6. Diferenciação de Modelos, Hipóteses e Limites Metodológicos
 
-- **Vértice (ou Nó)**: cada ponto do grafo (representado por um retângulo no diagrama), como um tanque (`TK-101_Agua`), uma bomba (`P-101_BombaA`), uma estação da máquina (`E1_DISPENSA`) ou um corredor (`CORREDOR_A`).
-- **Aresta / Arco**: a ligação entre dois vértices. Quando tem sentido obrigatório (seta), costuma ser chamada de **arco** (em um **dígrafo**); quando pode ser percorrida nos dois sentidos (sem seta), é uma **aresta não dirigida**.
-- **Ponte vs. Vértice de Articulação**: uma **ponte** é uma **aresta** cuja remoção interrompe a conectividade (por exemplo, o trecho único `a5: MAN-200_Agua → DOS-201_Dosador` ou `DOS-201_Dosador → BIC-202_Bico`); já um **vértice de articulação (nó crítico)** é um **vértice** cuja remoção/bloqueio desconecta o caminho entre origem e destino (como o nó `MAN-200_Agua`).
-- **Peso (Custo)**: o número associado a cada aresta (`cm`, `m`, `s` ou `min`). Só faz sentido somar pesos quando todas as arestas do grafo estão na mesma unidade e são não negativas.
-- **Grau de um Vértice**: em um grafo não dirigido (como na `Inspeção`), é o número de arestas conectadas ao vértice. Em um dígrafo, divide-se em **grau de entrada ($\deg^-$)** (quantas setas chegam) e **grau de saída ($\deg^+$)** (quantas setas saem).
-- **Matriz de Incidência ($B$), Adjacência ($A$) e Custos ($W$)** *(Aula 12)*: três formas matriciais de representar o mesmo grafo. $B$ ($n \times m$, com $-1, 0, +1$) representa quem sai e quem entra em cada aresta e é usada no modelo didático da Aula 12 para equacionar o balanço de ar ($B\vec{Q} = \vec{S}$) e calcular um **resíduo de vazamento simulado** (que não é telemetria real de planta); $A$ ($n \times n$, com $0$ e $1$) mostra quem se conecta a quem; $W$ ($n \times n$) guarda os custos das conexões diretas ($\infty$ quando não há ligação).
-- **BFS (*Breadth-First Search* — Busca em Largura)**: explora o grafo por camadas usando uma fila (FIFO). Encontra o caminho com o **menor número de arestas (saltos)**, ignorando os pesos numéricos.
-- **DFS (*Depth-First Search* — Busca em Profundidade)**: avança até o fim de cada ramo antes de retroceder (*backtracking*). No simulador, é usada para listar todos os caminhos simples possíveis sem repetir vértices.
-- **Algoritmo de Dijkstra**: encontra o caminho de **menor soma de pesos** desde a origem até o destino, exigindo que todos os pesos sejam finitos e **não negativos** ($\ge 0$).
-- **Circuito Euleriano e Trilha Euleriana**: um passeio que percorre **cada aresta exatamente uma vez**. Se começa e termina no mesmo vértice, é um **circuito euleriano** (exige grafo conexo e todos os vértices com grau par). Se começa em um vértice e termina em outro, é uma **trilha euleriana** (ocorre quando há exatamente 2 vértices de grau ímpar). O **Algoritmo de Hierholzer** constrói esse percurso em tempo linear $O(|E|)$.
-- **Ciclo Hamiltoniano e TSP (Caixeiro-Viajante)**: diferente de Euler (que foca nas *arestas*), o ciclo hamiltoniano exige visitar **cada vértice exatamente uma vez** e voltar à origem. Encontrar o de menor custo (TSP) é um problema NP-difícil, resolvido na prática com heurísticas como **Vizinho Mais Próximo (NN)** e **2-Opt**.
-- **DAG (*Directed Acyclic Graph* — Grafo Acíclico Dirigido)**: um dígrafo sem nenhum ciclo fechado. Representa precedências (etapas que dependem de outras).
-- **Ordenação Topológica (Algoritmo de Kahn)**: coloca os vértices de um DAG em uma fila linear onde toda etapa aparece depois de todos os seus pré-requisitos.
+Ao apresentar ou documentar o projeto, mantenha total rigor sobre os seguintes limites técnicos:
+
+1. **Grafos Independentes vs. "Planta Unificada"**:
+   - O simulador não resolve um problema global único; ele reúne seis modelos didáticos criados para responder a perguntas acadêmicas isoladas. Não tente mesclar a água em centímetros com os corredores em metros ou os tempos de inspeção em minutos.
+2. **BFS Minimiza Saltos, Não Segundos**:
+   - Na Vista 2 (`Busca`), as arestas possuem tempos hipotéticos em segundos, mas o algoritmo de Busca em Largura (BFS) opera exclusivamente em níveis topológicos (fila FIFO). Para encontrar o menor tempo acumulado em segundos, o algoritmo matemático correto é o **Dijkstra**, como implementado nas Vistas 1 e 6.
+3. **Heurística de AGV vs. Ótimo Global**:
+   - O refinamento 2-Opt encontra um mínimo local estritamente melhor a partir da rota gulosa do Vizinho Mais Próximo ($280\text{ s} \to 260\text{ s}$). Ele é uma rota candidata de alta qualidade, mas não constitui prova matemática de ótimo global para o Caixeiro-Viajante (problema NP-difícil).
+   - Além disso, os nós `TK301`, `R101` e `GRAN201` são herdados da matriz ilustrativa didática e não representam instrumentação física da envasadora.
+4. **Precedências de Kahn vs. Disponibilidade Conjunta de Insumos**:
+   - A ordenação topológica de Kahn no DAG de materiais confirma que não há impasses circulares na sequência fabril e que $E_1$ antecede $E_2$, que antecede $E_3$, etc.
+   - Contudo, a convergência topológica de água em $E_2$ e de tampas em $E_3$ não garante, por si só, que haja insumos físicos suficientes nos estoques (operação lógica AND). No notebook da Aula 18, essa verificação é feita por um modelo separado de quarentena booleana.
+5. **Simulação Local em Navegador vs. Automação em Tempo Real**:
+   - A execução em [`js/etapa-02-simulator.js`](js/etapa-02-simulator.js) não gera tráfego de rede para CLP, não se comunica via OPC UA / Modbus e não aciona atuadores pneumáticos no software Automation Studio. Trata-se de uma ferramenta analítica de projeto executada localmente no navegador.
 
 ---
 
-## 8. Perguntas Típicas do Professor e Respostas Curtas Baseadas nas Fontes
+## 7. Correção de Divergências Encontradas em Relação ao Guia Anterior
 
-1. **"Por que na vista Busca (Aula 13) as arestas têm pesos em segundos, mas a BFS escolhe V1 dizendo '5 arestas por BFS'?"**
-   - **Resposta**: Porque a BFS usa uma fila por camadas e minimiza apenas a **quantidade de arestas (saltos)**, ignorando os pesos em segundos. Para minimizar a soma de pesos não negativos, o algoritmo correto é o **Dijkstra** (visto nas Aulas 14, 15 e 18).
-2. **"E se houvesse um peso negativo na rede da Aula 14? O Dijkstra funcionaria?"**
-   - **Resposta**: Não. A prova de correção do Dijkstra depende de que adicionar uma aresta nunca diminua a distância já acumulada. Por isso, tanto o notebook da Aula 14 quanto o simulador rejeitam pesos negativos; se existissem pesos negativos, seria necessário usar um algoritmo como Bellman-Ford.
-3. **"Se vocês têm duas bombas em paralelo (P-101 e P-102) na vista Água/copos, por que a máquina ainda pode ficar 'Sem rota'?"**
-   - **Resposta**: Por dois motivos topológicos: primeiro, se houver falha simultânea nas duas arestas de entrada (`a3` e `a4`); segundo, porque as duas bombas convergem para um único **vértice de articulação (nó crítico)**, o `MAN-200_Agua`, seguido por uma **ponte (aresta crítica)** `a5` (`MAN-200_Agua → DOS-201_Dosador`). Bloquear o nó crítico `MAN-200_Agua` ou a aresta ponte `a5` corta todas as rotas até o dosador.
-4. **"Qual a diferença prática entre o problema da Aula 16 (Inspeção/Euler) e o da Aula 17 (AGV/Hamiltoniano)?"**
-   - **Resposta**: Na Aula 16 (Euler), o objetivo é inspecionar **todas as arestas (mangueiras e chicotes)** uma única vez, podendo passar mais de uma vez pelo mesmo nó; isso tem critério exato e rápido em $O(|V|+|E|)$ (conectividade e graus pares). Na Aula 17 (Hamiltoniano/TSP), o objetivo é visitar **todos os vértices (pontos de coleta)** uma única vez; é um problema NP-difícil, no qual usamos a heurística do Vizinho Mais Próximo (`280 s`) refinada pelo 2-Opt (`260 s`) sobre a matriz ilustrativa do notebook.
-5. **"Por que na Aula 16 a ronda no simulador dá 24,5 min sem repetir trechos, enquanto a caça a vazamentos no notebook dá 57,8 min?"**
-   - **Resposta**: Porque são dois grafos diferentes. A ronda preventiva (8 nós, 10 trechos) é formada por dois anéis acoplados onde todos os nós têm grau par, permitindo um circuito euleriano puro de `24,5 min`. Já a rede pneumática de caça a vazamentos tem 10 cilindros terminais de grau 1 (ímpares); pelo Problema do Carteiro Chinês, o técnico precisa repetir a ida e a volta nas mangueiras terminais (`21,4 min` extras sobre `36,4 min`, totalizando `57,8 min`).
-6. **"Por que a Aula 18 separa o grafo de Materiais (Kahn) do grafo de Veículos (Dijkstra)?"**
-   - **Resposta**: Porque eles respondem perguntas com regras topológicas opostas. O fluxo de transformação do produto (`Materiais`) não pode voltar para trás nem pular as estações `E1_DISPENSA` a `E5_EJECAO`, logo precisa ser um **DAG** validado pela ordenação topológica de Kahn. Já a circulação de carrinhos (`Veículos`) ocorre em corredores de mão dupla e anéis de retorno à portaria, que possuem **ciclos legítimos** onde o algoritmo de Kahn falharia, mas o Dijkstra calcula o menor caminho normalmente (`40 m` pelo Corredor B ou `65 m` pela Via Externa).
-7. **"O DAG de materiais convergir em E2 e E3 garante que a máquina pode produzir o copo?"**
-   - **Resposta**: Não. A convergência de arestas no DAG mostra apenas de onde vêm a água (`TK-101_Agua → E2_ENVASE`) e a tampa (`ESTOQUE_TAMPAS → E3_TAMPA`). Ela não substitui uma condição lógica `AND` de disponibilidade simultânea de estoque nem os permissivos e sensores do controle da máquina.
+A revisão comparativa entre o guia textual anterior e a implementação real no código fonte ([`js/etapa-02-simulator.js`](js/etapa-02-simulator.js)), nas folhas de estilo ([`css/etapa-02.css`](css/etapa-02.css)) e nos testes ([`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs)) permitiu identificar e sanar cinco divergências fundamentais:
+
+| Tópico | Afirmação no Guia Anterior | Comportamento Real no Código / Testes | Evidência no Código |
+| :--- | :--- | :--- | :--- |
+| **Disparo ao Mudar `<select>`** | Afirmava na Seção 3.3 que alterar menus `<select>` não disparava o cálculo e exigia obrigatoriamente clicar no botão `Calcular`. | O listener de evento `change` está associado aos seletores de origem, destino e partida, executando a função `run()` imediatamente ao selecionar uma opção. | Linha 56 de `js/etapa-02-simulator.js`: `one.addEventListener("change", run); two.addEventListener("change", run);`. |
+| **Destaque de Arestas em `Materiais`** | Afirmava na Seção 3.2 que nenhuma aresta recebia destaque `.is-route` na vista de Materiais por Kahn gerar apenas ordem de vértices. | O simulador passa explicitamente `["m8", "m9", "m10", "m11"]` em `edgeIds`, destacando em verde-azulado a espinha dorsal de estações $E_1$ a $E_5$ no SVG. | Linha 60 de `js/etapa-02-simulator.js`: `result(..., answer.order, answer.ok ? ["m8","m9","m10","m11"] : []);`. |
+| **Largura Responsiva do SVG** | Afirmava na Seção 3.2 que o SVG tinha sempre largura mínima fixa de 900px, exigindo rolagem em telas pequenas. | Em desktop, o SVG ajusta-se sem rolagem (`min-width: 0`, altura 360px). Apenas em telas $\le 760\text{ px}$ ativa-se a rolagem com largura mínima de 680px e dica visível. | Linhas 32-34 e 47-54 de `css/etapa-02.css` e guia [`UI_DAISYUI_GUIDE.md`](UI_DAISYUI_GUIDE.md). |
+| **Feedback de Arestas Bloqueadas no SVG** | Não documentava a mensagem textual gerada quando arestas fora dos checkboxes são bloqueadas no SVG. | A função `syncBlocks()` insere dinamicamente `<p data-e02-extra-blocks>` no DOM informando quais arestas extras estão ativas no bloqueio. | Linha 58 de `js/etapa-02-simulator.js`: `note.textContent = "Arestas bloqueadas no diagrama: " + extras.join(", ") + ".";`. |
+| **Nós Clicáveis no SVG** | Sugeria genericamente que nós podiam ser clicados no diagrama para alternar bloqueios. | Somente os nós explicitamente pertencentes a `meta().blocks` (`MAN-200_Agua`, `V1`, `V2`, `CORREDOR_B`, `VIA_EXTERNA`) possuem `tabindex="0"`, `role="button"` e tratador de clique. Os demais nós são puramente visuais. | Linha 57 de `js/etapa-02-simulator.js`: `blockNodes = new Set((meta().blocks || []).filter(id => g.nodes.includes(id))); clickable = blockNodes.has(node);`. |
+
+---
+
+## 8. Matriz de Validação e Verificação da Execução
+
+Para garantir integridade técnica perante qualquer auditoria, declaramos com transparência o status de execução de cada item:
+
+### 8.1. Cenários Efetivamente Reproduzidos
+Os seguintes cenários foram **executados e aprovados** via ambiente Node e testes automatizados:
+1. `Dijkstra`: Menor caminho nominal em água ($270\text{ cm}$), desvio por bloqueio em $a_3$ ($275\text{ cm}$), ausência de rota em falha dupla $a_3 + a_4$ e sentido inverso direcionado (validado na suíte [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs) e oráculo de teste);
+2. `Dijkstra Trativas de Borda`: Origem igual ao destino ($0\text{ cm}$), nó de origem ou destino bloqueado, nó desconhecido e pesos zero (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
+3. `BFS e DFS`: Minimização de saltos (5 arestas por BFS), contagem de caminhos simples por DFS (2 nominais, 1 com $V_1$ bloqueada) e interrupção completa com $V_1 + V_2$ bloqueadas (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
+4. `Veículos`: Menor caminho nominal ($40\text{ m}$), desvio pela via externa com `CORREDOR_B` bloqueado ($65\text{ m}$) e sem rota com bloqueio duplo (`CORREDOR_B` e `VIA_EXTERNA`) (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
+5. `Hierholzer (Euler)`: Circuito fechado nominal com 10 IDs e $24,5\text{ min}$, trilha aberta com $t_9$ bloqueado ($22,5\text{ min}$), rejeição de paridade inválida e detecção de subgrafo desconexo (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
+6. `NN e 2-Opt`: Rota construtiva do Vizinho Mais Próximo ($280\text{ s}$), refinamento estrito por 2-Opt ($260\text{ s}$) e teste de invariância sem ciclos abertos (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
+7. `Kahn`: Ordenação topológica dos 16 vértices mantendo $E_1$ a $E_5$ e detecção de ciclos em dígrafos inválidos (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs)).
+
+### 8.2. Cenários Inferidos Diretamente do Código
+Os seguintes comportamentos foram **inspecionados e verificados analiticamente** por confronto estrito com a lógica do código em [`js/etapa-02-simulator.js`](js/etapa-02-simulator.js) e folhas de estilo CSS:
+1. Atualização reativa de interface via eventos `change` nos seletores `<select>` e checkboxes;
+2. Comportamento visual dos marcadores de seta SVG (`#e02-arrow`, `#e02-arrow-route`, `#e02-arrow-blocked`);
+3. Exibição e remoção dinâmica do elemento textual `<p data-e02-extra-blocks>` para arestas bloqueadas via SVG;
+4. Truncamento textual visual a 16 caracteres com reticências para nós com identificadores extensos;
+5. Mecânica de histórico FIFO limitada a 4 linhas no Diário curto (`state.logs.slice(0, 4)`).
+
+### 8.3. Cenários Declaradamente Não Executados
+Nenhum dos seguintes procedimentos foi realizado, por estarem fora do escopo estático desta intervenção ou dependerem de ambiente externo:
+1. Não foram executados testes físicos em CLP real ou bancadas de bancada;
+2. Não foram disparados comandos via OLE/OPC para o software Automation Studio;
+3. Não foi realizada inspeção visual interativa com navegador real via protocolo CDP ou webdriver;
+4. Não foram adicionados pacotes npm, dependências CDN ou rotinas de compilação.
+
+---
+
+## 9. Mini Glossário Técnico de Engenharia e Grafos
+
+- **Vértice (ou Nó)**: Ponto de conexão física ou lógica da rede, representando tanques, atuadores, postos da mesa indexadora ou áreas logísticas da planta.
+- **Aresta (ou Arco)**: Conexão entre dois vértices. Quando orientada com sentido definido de escoamento, denomina-se **arco** em um **dígrafo**; quando bidirecional, denomina-se **aresta não dirigida**.
+- **Vértice de Articulação (Nó Crítico)**: Vértice cuja remoção desconecta o grafo ou impede a comunicação entre a fonte e o consumidor (ex.: o nó `MAN-200_Agua` na rede de abastecimento).
+- **Aresta-Ponte (Aresta Crítica)**: Aresta cuja desconexão interrompe a ligação entre componentes (ex.: a aresta $a_5$ entre o manifold e o dosador).
+- **Grau de um Vértice**: Em grafos não dirigidos, é a quantidade de arestas incidentes no nó. Em dígrafos, decompõe-se em **grau de entrada ($\deg^-$)** (arcos que chegam) e **grau de saída ($\deg^+$)** (arcos que partem).
+- **BFS (*Breadth-First Search* — Busca em Largura)**: Travessia em camadas via fila FIFO. Encontra o percurso com a menor contagem de arestas (saltos), desconsiderando grandezas ponderadas de tempo ou distância.
+- **DFS (*Depth-First Search* — Busca em Profundidade)**: Travessia com aprofundamento máximo e retrocesso (*backtracking*). Utilizada para enumerar todos os caminhos simples entre dois pontos.
+- **Algoritmo de Dijkstra**: Método ótimo para encontrar o caminho de menor soma de pesos em grafos ponderados com custos estritamente não negativos ($w \ge 0$).
+- **Circuito Euleriano vs. Trilha Euleriana**: Passeio que consome cada aresta do grafo exatamente uma vez. Se termina no nó de partida, é um **circuito** (exige grafo conexo e todos os nós de grau par); se parte de um nó e encerra em outro distinto, é uma **trilha** (exige exatamente 2 nós de grau ímpar).
+- **Ciclo Hamiltoniano e TSP (*Traveling Salesperson Problem*)**: Ao contrário de Euler (que visita arestas), o ciclo hamiltoniano exige visitar **cada vértice exatamente uma vez** e retornar à origem. O problema do Caixeiro-Viajante busca o ciclo de custo mínimo, sendo de classe NP-difícil.
+- **Heurística do Vizinho Mais Próximo (NN) e 2-Opt**: Heurística construtiva gulosa para o TSP que a cada parada escolhe o ponto mais próximo, refinada pela busca local 2-Opt, que inverte segmentos de rota para desfazer cruzamentos e reduzir a soma de tempos.
+- **DAG (*Directed Acyclic Graph* — Grafo Acíclico Dirigido)**: Grafo orientado sem ciclos fechados, ideal para representar cronogramas, dependências e fluxos de montagem em que uma etapa não pode retroagir.
+- **Ordenação Topológica (Algoritmo de Kahn)**: Procedimento que alinha linearmente os nós de um DAG com base nos graus de entrada, assegurando que nenhum nó apareça antes de suas dependências prévias.
+
+---
+
+## 10. Perguntas Típicas da Banca e Respostas Fundamentadas
+
+1. **"Por que na Vista 2 (Busca) a BFS escolhe a rota por V1 dizendo '5 arestas por BFS', mesmo as arestas possuindo pesos em segundos?"**
+   - **Resposta**: Porque o algoritmo BFS explora a rede estritamente por camadas de adjacência (fila FIFO), minimizando o **número de saltos (arestas)** e ignorando grandezas ponderadas. Como os trajetos por V1 e por V2 possuem rigorosamente 5 arestas, a BFS seleciona V1 em virtude da ordem determinística de cadastro na lista de adjacência. Para minimizar o tempo em segundos, o algoritmo correto a ser empregado é o Dijkstra.
+2. **"Se a rede possui duas bombas em paralelo (P-101 e P-102), por que a máquina ainda pode ficar em estado 'Sem rota'?"**
+   - **Resposta**: Por dois motivos topológicos: primeiro, se houver falha simultânea nas duas tubulações de entrada ($a_3$ e $a_4$); segundo, porque ambas as bombas convergem para um ponto comum — o manifold `MAN-200_Agua` —, que é um **vértice de articulação**, sucedido pela aresta-ponte crítica $a_5$ (`MAN-200_Agua → DOS-201_Dosador`). Bloquear o manifold ou a tubulação $a_5$ corta todo e qualquer suprimento até o dosador.
+3. **"Qual é a distinção teórica e prática entre a Aula 16 (Inspeção/Euler) e a Aula 17 (AGV/Hamiltoniano)?"**
+   - **Resposta**: Na Aula 16 (Euleriano), o foco reside na cobertura de **todas as arestas** (inspecionar todas as mangueiras e cabos sem repetição), admitindo revisitar vértices; trata-se de um problema solúvel em tempo linear $O(|E|)$ pelo Algoritmo de Hierholzer. Na Aula 17 (Hamiltoniano/TSP), o foco é visitar **todos os nós** (postos de coleta do AGV) exatamente uma vez; trata-se de um problema NP-difícil resolvido via heurísticas (Vizinho Mais Próximo refinado por 2-Opt).
+4. **"Por que na Aula 16 o circuito do simulador fecha em 24,5 min, enquanto no notebook a caça a vazamentos soma 57,8 min?"**
+   - **Resposta**: Porque são dois grafos independentes. A ronda preventiva do simulador possui 8 nós em dois anéis acoplados, onde todos os nós têm grau par, permitindo um circuito euleriano direto de $24,5\text{ min}$. Já a rede de caça a vazamentos da Aula 12/16 possui 10 cilindros terminais de grau ímpar ($\deg = 1$), exigindo a duplicação de trechos pelo Algoritmo do Carteiro Chinês ($36,4\text{ min}$ de base $+ 21,4\text{ min}$ de retorno repetido $= 57,8\text{ min}$).
+5. **"Por que a Aula 18 separa o modelo de Materiais (Kahn) do modelo de Veículos (Dijkstra)?"**
+   - **Resposta**: Porque eles possuem restrições topológicas antagônicas. A transformação física do produto (`Materiais`) não pode retroceder nem saltar estações ($E_1$ a $E_5$), exigindo um Grafo Acíclico Dirigido (DAG) validado por Kahn. Já a movimentação logística (`Veículos`) transita por vias bidirecionais de mão dupla e circuitos de retorno à portaria, apresentando **ciclos legítimos** nos quais o algoritmo de Kahn falharia, mas que são naturalmente resolvidos pelo algoritmo de Dijkstra.
+6. **"O DAG de materiais comprova que a envasadora está apta a produzir?"**
+   - **Resposta**: Não. O DAG comprova unicamente a consistência lógica da ordem de precedência estrutural. Ele não atesta a disponibilidade simultânea (condição lógica AND) de copos, água e tampas, não mede volume de estoque e não substitui os sensores de presença e os intertravamentos do controlador de bancada.
