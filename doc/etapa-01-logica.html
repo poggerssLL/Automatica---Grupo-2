@@ -7,18 +7,20 @@
   <meta name="theme-color" content="#f4f1e8">
   <title>Etapa 01 — Lógica Formal | Aqua Index</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/vendor/daisyui-5.7.50-portal.css">
+  <link rel="stylesheet" href="css/portal.css?v=31b42385dc6ad532689d4398884cbff9bb67171713d782ce8c535a9982f3a1bd">
   <script defer src="js/main.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
-  <header class="site-header" data-header>
+  <header class="site-header portal-ui" data-header>
     <a class="brand" href="../index.html" aria-label="Aqua Index — página inicial"><span class="brand-mark">A2</span><span class="brand-copy"><strong>AQUA INDEX</strong><small>SCADA · GRUPO 2</small></span></a>
     <nav class="main-nav" id="main-nav" aria-label="Navegação principal"><a href="../index.html">Visão geral</a><a class="active" href="etapa-01-logica.html">Etapa 01</a><a href="etapa-02-grafos.html">Etapa 02</a><a href="planta-envasadora.html">A envasadora</a><a href="diretrizes-github.html">GitHub & Entregas</a></nav>
     <div class="header-actions"><button class="icon-button" type="button" data-theme-toggle aria-label="Alternar tema"><span data-theme-icon>◐</span></button><button class="menu-button" type="button" data-menu-toggle aria-controls="main-nav" aria-expanded="false"><span></span><span></span><span></span><span class="sr-only">Abrir menu</span></button></div>
   </header>
 
   <main id="conteudo">
-    <header class="page-hero page-hero-logic">
+    <header class="page-hero page-hero-logic portal-ui">
       <div class="page-hero-copy reveal">
         <p class="breadcrumb"><a href="../index.html">Início</a><span>/</span> Etapa 01</p>
         <p class="eyebrow">MÓDULO 01 · AULAS 01–10</p>
@@ -36,9 +38,9 @@
       </div>
     </header>
 
-    <nav class="anchor-nav" aria-label="Seções da Etapa 01"><a href="#apresentacao">Apresentação</a><a href="#aula-10">Aula 10</a><a href="#simulador">Simulador</a><a href="#regras">Base de regras</a><a href="#aulas">Memorial das aulas</a></nav>
+    <nav class="anchor-nav portal-ui" aria-label="Seções da Etapa 01"><a href="#apresentacao">Apresentação</a><a href="#aula-10">Aula 10</a><a href="#simulador">Simulador</a><a href="#regras">Base de regras</a><a href="#aulas">Memorial das aulas</a></nav>
 
-    <section class="section" id="apresentacao">
+    <section class="section portal-ui" id="apresentacao">
       <div class="section-heading reveal"><div><p class="eyebrow">APRESENTAÇÃO INTERATIVA</p><h2>Etapa 01 em<br>15 quadros.</h2></div><p>Use os botões, os indicadores ou as setas ← → do teclado. Cada quadro resume uma decisão matemática aplicada ao processo.</p></div>
 
       <div class="slide-deck reveal" data-slide-deck tabindex="0" aria-label="Apresentação com 15 quadros">
@@ -94,7 +96,7 @@
       </div>
     </section>
 
-    <section class="section module-assessment" id="aula-10">
+    <section class="section module-assessment portal-ui" id="aula-10">
       <div class="section-heading reveal"><div><p class="eyebrow">NOVO NO REPOSITÓRIO · AULA 10</p><h2>Avaliação integrada<br>do Módulo 1.</h2></div><p>O novo notebook reúne o mapeamento da telemetria, a base de conhecimento e o forward chaining em um único ciclo de scan verificável.</p></div>
 
       <div class="assessment-panel reveal">
@@ -109,6 +111,23 @@
           <span>EXECUÇÃO VERIFICADA</span><strong>3/3</strong><p>cenários aprovados</p><small>Saída registrada: 100% de sucesso</small>
         </aside>
       </div>
+
+      <figure class="portal-figure" aria-label="Diagrama da arquitetura de decisão em três camadas da Aula 10">
+        <svg viewBox="0 0 760 150" role="img" aria-labelledby="aula10-svg-title">
+          <title id="aula10-svg-title">Arquitetura de decisão: Sinais brutos da telemetria → Discretização booleana → Motor de inferência dedutivo</title>
+          <defs>
+            <marker id="aula10-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0L10 5L0 10z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <path class="portal-edge" d="M195 65L225 65" marker-end="url(#aula10-arrow)"/>
+          <path class="portal-edge" d="M435 65L465 65" marker-end="url(#aula10-arrow)"/>
+          <rect x="15" y="35" width="180" height="60" rx="8"/><text x="105" y="60">01 · Telemetria</text><text x="105" y="78" class="portal-weight">Sensores de campo</text>
+          <rect x="225" y="35" width="210" height="60" rx="8"/><text x="330" y="60">02 · Discretização</text><text x="330" y="78" class="portal-weight">Fatos booleanos (t₁, s₁…s₅)</text>
+          <rect x="465" y="35" width="280" height="60" rx="8"/><text x="605" y="60">03 · Inferência</text><text x="605" y="78" class="portal-weight">Forward Chaining (R-01…R-05)</text>
+        </svg>
+        <figcaption>Três camadas de processamento lógico: o SCADA-Core converte dados brutos em proposições e executa o ciclo de inferência com prioridades explícitas.</figcaption>
+      </figure>
 
       <div class="assessment-scenarios reveal">
         <article><span>CENÁRIO A</span><h3>Falta de copo</h3><p><code>falta_copo</code> gera <code>alarme_sem_copo</code> e, em cascata, <code>bloqueia_dosador</code>.</p><strong>TRIP ATIVO · APROVADO</strong></article>
@@ -259,7 +278,7 @@
       </div>
     </section>
 
-    <section class="section" id="regras">
+    <section class="section portal-ui" id="regras">
       <div class="section-heading reveal"><div><p class="eyebrow">BASE DE CONHECIMENTO</p><h2>Sete regras.<br>Uma ordem explícita.</h2></div><p>A prioridade de 1 a 10 é uma convenção interna do projeto, não uma classificação SIL.</p></div>
       <div class="rule-catalog reveal">
         <article><span>R-01 / 10</span><h3>Colisão da mesa</h3><code>SOLICITA_GIRO_MESA ∧ PRENSA_NAO_RECUADA</code><strong>→ TRIP_COLISAO_MESA</strong></article>
@@ -272,7 +291,7 @@
       </div>
     </section>
 
-    <section class="section alt-surface" id="aulas">
+    <section class="section alt-surface portal-ui" id="aulas">
       <div class="section-heading reveal"><div><p class="eyebrow">MEMORIAL DA ETAPA 01</p><h2>Aulas, conteúdos<br>e arquivos reais.</h2></div><p>O quadro diferencia arquivos presentes, entregas parciais e o material ainda pendente, sem antecipar resultados inexistentes.</p></div>
       <div class="table-wrap reveal"><table class="data-table lesson-table"><thead><tr><th>Aula</th><th>Conteúdo aplicado</th><th>Entregáveis no repositório</th><th>Status</th></tr></thead><tbody>
         <tr><td><strong>01</strong></td><td>Insumos e definição da máquina</td><td><a href="../etapa-01-logica/01%20-%20Insumos.md">01 - Insumos.md</a></td><td><span class="lesson-status partial">Somente MD</span></td></tr>
@@ -290,6 +309,6 @@
     </section>
   </main>
 
-  <footer class="site-footer"><div class="footer-brand"><span class="brand-mark">A2</span><div><strong>Aqua Index</strong><small>Grupo 2 · ECAA08 · UNIFEI</small></div></div><p>Etapa 01 · Lógica formal e sistemas especialistas.</p><a href="../index.html">Voltar ao portal ↑</a></footer>
+  <footer class="site-footer portal-ui"><div class="footer-brand"><span class="brand-mark">A2</span><div><strong>Aqua Index</strong><small>Grupo 2 · ECAA08 · UNIFEI</small></div></div><p>Etapa 01 · Lógica formal e sistemas especialistas.</p><a href="../index.html">Voltar ao portal ↑</a></footer>
 </body>
 </html>

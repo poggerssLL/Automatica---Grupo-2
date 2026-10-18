@@ -96,9 +96,62 @@
   :scope .page-hero { padding-top: clamp(70px, 9vw, 130px); }
   :scope .breadcrumb { font: 700 11px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
   :scope .page-hero h1 em { color: var(--blue); }
-  :scope .spec-card, :scope .architecture-card, :scope .station-detail { border-radius: 10px; }
-  :scope .callout { border-radius: 8px; }
-  :scope .data-table th { color: var(--blue); }
+  :scope .spec-card { border-radius: 10px; border: 1px solid var(--line); background: var(--white); padding: 16px 20px; box-shadow: 4px 4px 0 color-mix(in srgb, var(--blue) 8%, transparent); }
+  :scope .spec-card span { font: 800 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace; text-transform: uppercase; letter-spacing: .1em; color: var(--blue); }
+  :scope .spec-card strong { font-size: 20px; color: var(--ink); display: block; margin-top: 6px; }
+
+  :scope .architecture-card { border-radius: 12px; border: 1px solid var(--line); background: var(--white); box-shadow: 8px 8px 0 color-mix(in srgb, var(--blue) 8%, transparent); padding: 24px; }
+  :scope .architecture-card .architecture-label { font: 800 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; color: var(--blue); }
+  :scope .architecture-card h3 { margin: 8px 0 10px; font-size: 22px; }
+  :scope .architecture-card.architecture-card-accent { border-color: var(--teal); background: color-mix(in srgb, var(--teal) 6%, var(--white)); }
+  :scope .architecture-card.architecture-card-accent .architecture-label { color: var(--teal-foreground); }
+  :scope .architecture-link { font: 700 11px ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--blue); }
+
+  :scope .station-detail { border-radius: 10px; border: 1px solid var(--line); background: var(--white); margin-bottom: 12px; overflow: hidden; box-shadow: 4px 4px 0 color-mix(in srgb, var(--blue) 6%, transparent); }
+  :scope .station-detail summary { padding: 14px 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  :scope .station-detail summary span:first-child { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; background: color-mix(in srgb, var(--blue) 14%, var(--paper)); color: var(--blue); font: 800 12px ui-monospace, monospace; }
+  :scope .station-detail summary small { font: 700 11px ui-monospace, monospace; color: var(--teal-foreground); margin-left: auto; }
+  :scope .station-detail div { padding: 16px 20px; border-top: 1px solid var(--line); background: var(--paper); }
+  :scope .station-detail ol { margin: 10px 0 0; padding-left: 20px; }
+
+  :scope .callout { border-radius: 8px; border: 1px solid var(--line); border-left: 4px solid var(--teal); background: color-mix(in srgb, var(--teal) 9%, var(--paper)); padding: 18px 22px; margin: 20px 0; }
+  :scope .callout strong { display: block; font: 800 11px ui-monospace, SFMono-Regular, Consolas, monospace; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; color: var(--ink); }
+  :scope .callout p:last-child { margin-bottom: 0; }
+  :scope .callout.callout-warning { border-left-color: var(--yellow); background: color-mix(in srgb, var(--yellow) 10%, var(--paper)); }
+  :scope .callout.callout-critical { border-left-color: var(--red); background: color-mix(in srgb, var(--red) 8%, var(--paper)); }
+
+  :scope .table-tabs { margin-top: 20px; }
+  :scope .tab-buttons { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+  :scope .tab-buttons button { border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft); font: 700 11px ui-monospace, SFMono-Regular, Consolas, monospace; padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: all .2s ease; }
+  :scope .tab-buttons button:hover { border-color: var(--blue); color: var(--ink); }
+  :scope .tab-buttons button.active, :scope .tab-buttons button[aria-selected="true"] { background: var(--blue); color: var(--paper); border-color: var(--blue); }
+
+  :scope .data-table { width: 100%; border-collapse: collapse; background: var(--white); }
+  :scope .data-table th { padding: 12px 14px; text-align: left; color: var(--blue); font: 800 11px ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; background: color-mix(in srgb, var(--paper-2) 70%, var(--paper)); border-bottom: 2px solid var(--line); }
+  :scope .data-table td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  :scope .data-table tbody tr:hover { background: color-mix(in srgb, var(--blue) 4%, var(--white)); }
+  :scope .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--white); margin: 16px 0; }
+
+  :scope .repo-principles article, :scope .metric-grid article, :scope .delivery-board article { border: 1px solid var(--line); border-radius: 10px; background: var(--white); box-shadow: 6px 6px 0 color-mix(in srgb, var(--blue) 6%, transparent); padding: 20px; }
+  :scope .repo-principles article span, :scope .metric-grid article strong, :scope .delivery-board article span { font: 800 12px ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--blue); }
+  :scope .commit-conventions { border: 1px solid var(--line); border-radius: 10px; background: var(--white); padding: 20px; margin-top: 20px; box-shadow: 6px 6px 0 color-mix(in srgb, var(--blue) 6%, transparent); }
+  :scope .commit-conventions code { font-weight: 700; color: var(--blue); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+
+  :scope .portal-figure { display: block; margin: 24px 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); box-shadow: 8px 8px 0 color-mix(in srgb, var(--blue) 8%, transparent); }
+  :scope .portal-figure svg { display: block; width: 100%; height: auto; overflow: visible; color: var(--blue-deep); }
+  :scope .portal-figure rect { fill: var(--paper); stroke: var(--blue-deep); stroke-width: 1.8; }
+  :scope .portal-figure text { fill: var(--ink); text-anchor: middle; font: 700 12px ui-monospace, SFMono-Regular, Consolas, monospace; }
+  :scope .portal-figure .portal-edge { fill: none; stroke: currentColor; stroke-width: 2; }
+  :scope .portal-figure .portal-weight { font-size: 11px; paint-order: stroke; stroke: var(--paper); stroke-width: 4px; stroke-linejoin: round; fill: var(--ink-soft); }
+  :scope .portal-figure figcaption { padding: 12px 6px 2px; margin-top: 10px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
+
+  :scope .assessment-chain article, :scope .assessment-scenarios article, :scope .assessment-rules article, :scope .rule-catalog article, :scope .assessment-score { border: 1px solid var(--line); border-radius: 10px; background: var(--white); box-shadow: 6px 6px 0 color-mix(in srgb, var(--blue) 6%, transparent); padding: 18px; }
+  :scope .assessment-chain article span, :scope .assessment-scenarios article span, :scope .assessment-rules article span, :scope .rule-catalog article span, :scope .assessment-score span { font: 800 10px ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .1em; color: var(--blue); }
+  :scope .logic-expression { border: 1px solid var(--line); border-radius: 12px; background: var(--white); box-shadow: 8px 8px 0 color-mix(in srgb, var(--blue) 8%, transparent); padding: 22px; }
+  :scope .anchor-nav { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+  :scope .anchor-nav a { padding: 8px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); font: 700 11px ui-monospace, SFMono-Regular, Consolas, monospace; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; }
+  :scope .anchor-nav a:hover { border-color: var(--blue); color: var(--blue); }
+
   :scope .doc-section { grid-template-columns: minmax(0, 86px) minmax(0, 1fr); }
   :scope .doc-content, :scope .process-route, :scope .table-wrap { min-width: 0; }
   :scope .process-route { max-width: 100%; }

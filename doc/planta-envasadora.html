@@ -8,7 +8,7 @@
   <title>A Envasadora | Aqua Index — Grupo 2</title>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/vendor/daisyui-5.7.50-portal.css">
-  <link rel="stylesheet" href="css/portal.css">
+  <link rel="stylesheet" href="css/portal.css?v=31b42385dc6ad532689d4398884cbff9bb67171713d782ce8c535a9982f3a1bd">
   <script defer src="js/main.js"></script>
 </head>
 <body class="portal-ui">
@@ -56,6 +56,29 @@
       <div class="section-number">02</div>
       <div class="doc-content">
         <div class="section-heading compact-heading reveal"><div><p class="eyebrow">FLUXO MATERIAL</p><h2>Uma volta completa pela mesa.</h2></div><p>Cada indexação só deve acontecer depois que os mecanismos retornarem a posições compatíveis com o movimento global.</p></div>
+
+        <figure class="portal-figure" aria-label="Diagrama do fluxo contínuo das cinco estações da envasadora">
+          <svg viewBox="0 0 760 150" role="img" aria-labelledby="planta-svg-title">
+            <title id="planta-svg-title">Fluxo em ciclo da envasadora: E1 Dispensa → E2 Envase → E3 Tampa → E4 Selagem → E5 Ejeção → Saída na esteira</title>
+            <defs>
+              <marker id="planta-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 0L10 5L0 10z" fill="currentColor"/>
+              </marker>
+            </defs>
+            <path class="portal-edge" d="M110 65L128 65" marker-end="url(#planta-arrow)"/>
+            <path class="portal-edge" d="M238 65L256 65" marker-end="url(#planta-arrow)"/>
+            <path class="portal-edge" d="M366 65L384 65" marker-end="url(#planta-arrow)"/>
+            <path class="portal-edge" d="M494 65L512 65" marker-end="url(#planta-arrow)"/>
+            <path class="portal-edge" d="M622 65L640 65" marker-end="url(#planta-arrow)"/>
+            <rect x="10" y="35" width="100" height="60" rx="8"/><text x="60" y="60">E1 Dispensa</text><text x="60" y="78" class="portal-weight">XV-101 · ZS-102</text>
+            <rect x="138" y="35" width="100" height="60" rx="8"/><text x="188" y="60">E2 Envase</text><text x="188" y="78" class="portal-weight">150 mL · DOS-201</text>
+            <rect x="266" y="35" width="100" height="60" rx="8"/><text x="316" y="60">E3 Tampa</text><text x="316" y="78" class="portal-weight">VAC-301 · PIT-301</text>
+            <rect x="394" y="35" width="100" height="60" rx="8"/><text x="444" y="60">E4 Selagem</text><text x="444" y="78" class="portal-weight">≥ 180 °C · TIT-401</text>
+            <rect x="522" y="35" width="100" height="60" rx="8"/><text x="572" y="60">E5 Ejeção</text><text x="572" y="78" class="portal-weight">XV-501 · XV-502</text>
+            <rect x="650" y="35" width="95" height="60" rx="8"/><text x="697" y="60">Saída</text><text x="697" y="78" class="portal-weight">Esteira M-002</text>
+          </svg>
+          <figcaption>Diagrama esquemático do processo sequencial: cada estação conclui seu ciclo antes da autorização de nova indexação da mesa (SE-001).</figcaption>
+        </figure>
 
         <div class="process-route reveal" aria-label="Fluxo das cinco estações">
           <article><span class="route-number">E1</span><div><small>SETOR 100</small><h3>Dispensação</h3><p>O Cilindro A libera um copo do magazine; ZS-102 confirma a presença.</p></div></article>

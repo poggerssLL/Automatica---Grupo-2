@@ -75,4 +75,19 @@
   :scope .e02-lesson-figure figcaption{padding:12px 4px 2px;border-top:1px solid var(--line);font-size:13px;line-height:1.55;color:var(--ink-muted)}
   @media(max-width:900px){:scope .e02-lesson-layout{grid-template-columns:minmax(0,1fr)}:scope .e02-lesson-figure{width:100%;max-width:640px;justify-self:center}}
   @media(max-width:480px){:scope .e02-lesson-figure{padding:6px}:scope .e02-lesson-copy ul{font-size:15px}:scope .e02-deck-meta{flex-wrap:wrap}}
+  :scope .e02-fullscreen-btn{display:inline-flex;align-items:center;gap:6px;font:700 11px/1 ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;white-space:nowrap;padding:6px 12px;border:1px solid var(--line);background:var(--paper);color:var(--ink-muted);border-radius:4px;transition:background .2s ease,border-color .2s ease,color .2s ease}
+  :scope .e02-fullscreen-btn:hover{background:var(--blue);border-color:var(--blue);color:var(--paper)}
+  :scope .e02-fullscreen-btn:focus-visible{outline:3px solid var(--blue-deep);outline-offset:2px}
+  :scope .e02-deck:fullscreen,:scope .e02-deck.is-fullscreen{position:fixed;inset:0;width:100vw;height:100vh;max-width:100vw;max-height:100vh;box-sizing:border-box;margin:0;border:0;border-radius:0;box-shadow:none;padding:clamp(16px,2.5vh,32px) clamp(24px,4vw,60px);display:flex;flex-direction:column;justify-content:space-between;background:var(--paper);color:var(--ink);overflow-y:auto;z-index:99999}
+  :scope .e02-deck:fullscreen::before,:scope .e02-deck.is-fullscreen::before{background-size:40px 40px;opacity:.4}
+  :scope .e02-deck:fullscreen .e02-deck-meta,:scope .e02-deck.is-fullscreen .e02-deck-meta{font-size:13px;align-items:center}
+  :scope .e02-deck:fullscreen .e02-slide-index,:scope .e02-deck.is-fullscreen .e02-slide-index{margin:10px 0 14px}
+  :scope .e02-deck:fullscreen .e02-slide.is-current,:scope .e02-deck.is-fullscreen .e02-slide.is-current{display:flex;flex-direction:column;justify-content:center;flex:1 1 auto;max-width:1440px;margin:0 auto;width:100%}
+  :scope .e02-deck:fullscreen .e02-slide h3,:scope .e02-deck.is-fullscreen .e02-slide h3{font-size:clamp(26px,2.8vw,42px);margin:.2rem 0 .4rem}
+  :scope .e02-deck:fullscreen .e02-slide .e02-slide-lead,:scope .e02-deck.is-fullscreen .e02-slide .e02-slide-lead{font-size:clamp(15px,1.2vw,18px);max-width:90ch}
+  :scope .e02-deck:fullscreen .e02-lesson-layout,:scope .e02-deck.is-fullscreen .e02-lesson-layout{margin-top:10px;align-items:center}
+  :scope .e02-deck:fullscreen .e02-lesson-copy ul,:scope .e02-deck.is-fullscreen .e02-lesson-copy ul{font-size:clamp(14px,1.1vw,16px);gap:10px}
+  :scope .e02-deck:fullscreen .e02-lesson-figure,:scope .e02-deck.is-fullscreen .e02-lesson-figure{max-height:calc(100vh - 290px);display:flex;flex-direction:column;justify-content:center}
+  :scope .e02-deck:fullscreen .e02-lesson-figure svg,:scope .e02-deck.is-fullscreen .e02-lesson-figure svg{max-height:calc(100vh - 350px);width:auto;margin:0 auto}
+  :scope .e02-deck:fullscreen .e02-deck-actions,:scope .e02-deck.is-fullscreen .e02-deck-actions{margin-top:auto;padding-top:10px;border-top:1px solid var(--line)}
 }

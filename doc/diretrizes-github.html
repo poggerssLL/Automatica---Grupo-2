@@ -8,7 +8,7 @@
   <title>GitHub & Entregas | Aqua Index — Grupo 2</title>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/vendor/daisyui-5.7.50-portal.css">
-  <link rel="stylesheet" href="css/portal.css">
+  <link rel="stylesheet" href="css/portal.css?v=31b42385dc6ad532689d4398884cbff9bb67171713d782ce8c535a9982f3a1bd">
   <script defer src="js/main.js"></script>
 </head>
 <body class="portal-ui">
@@ -66,6 +66,27 @@
             <article><span>03</span><div><h3>Portal na raiz</h3><p>O arquivo index.html torna o mesmo conteúdo navegável no GitHub Pages.</p></div></article>
           </div>
         </div>
+
+        <figure class="portal-figure" aria-label="Diagrama do fluxo de integração e entrega contínua com Git">
+          <svg viewBox="0 0 760 150" role="img" aria-labelledby="git-svg-title">
+            <title id="git-svg-title">Fluxo de entrega técnica: branch de trabalho → commits atômicos → validação local → integração na main → publicação GitHub Pages</title>
+            <defs>
+              <marker id="git-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 0L10 5L0 10z" fill="currentColor"/>
+              </marker>
+            </defs>
+            <path class="portal-edge" d="M125 65L145 65" marker-end="url(#git-arrow)"/>
+            <path class="portal-edge" d="M275 65L295 65" marker-end="url(#git-arrow)"/>
+            <path class="portal-edge" d="M425 65L445 65" marker-end="url(#git-arrow)"/>
+            <path class="portal-edge" d="M575 65L595 65" marker-end="url(#git-arrow)"/>
+            <rect x="15" y="35" width="110" height="60" rx="8"/><text x="70" y="60">1. Branch</text><text x="70" y="78" class="portal-weight">Isolamento local</text>
+            <rect x="160" y="35" width="115" height="60" rx="8"/><text x="217" y="60">2. Commits</text><text x="217" y="78" class="portal-weight">Autor identificado</text>
+            <rect x="310" y="35" width="115" height="60" rx="8"/><text x="367" y="60">3. Validação</text><text x="367" y="78" class="portal-weight">Testes e checks</text>
+            <rect x="460" y="35" width="115" height="60" rx="8"/><text x="517" y="60">4. Main</text><text x="517" y="78" class="portal-weight">Branch padrão</text>
+            <rect x="610" y="35" width="120" height="60" rx="8"/><text x="670" y="60">5. Pages</text><text x="670" y="78" class="portal-weight">Entrega pública</text>
+          </svg>
+          <figcaption>Fluxo de rastreabilidade do projeto: contribuições atômicas e testadas chegam à branch principal, preservando autoria e integridade das entregas.</figcaption>
+        </figure>
       </div>
     </section>
 

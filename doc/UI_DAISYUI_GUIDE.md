@@ -94,4 +94,65 @@ os recortes finais de água a 390px e dos modos materiais/veículos em desktop.
 
 ### Correção visual e versionamento de cache da apresentação
 
-A atualização do deck didático da Etapa 02 para layout em duas colunas e diagramas SVG vetorizados exigiu que `doc/etapa-02-grafos.html` utilize URL versionada ligada ao conteúdo para `css/etapa-02.css`, prevenindo inconsistência visual decorrente de cache HTTP intermediário (`Cache-Control: max-age=600` no GitHub Pages). O parâmetro `?v=` carrega o hash SHA-256 integral do arquivo CSS (`bc7915fcf21f13a1583d6b5b4cb881eb7762083e0ac6c7c34a4761c951f3f482`), garantindo que qualquer cliente receba imediatamente as regras escopadas `.e02-lesson-layout`, `.e02-lesson-figure`, preenchimentos dinâmicos com tokens de tema (`--paper`, `--ink`, `--blue-deep`) e regras responsivas para visualização em desktop e dispositivos móveis.
+A atualização do deck didático da Etapa 02 para layout em duas colunas e diagramas SVG vetorizados exigiu que `doc/etapa-02-grafos.html` utilize URL versionada ligada ao conteúdo para `css/etapa-02.css`, prevenindo inconsistência visual decorrente de cache HTTP intermediário (`Cache-Control: max-age=600` no GitHub Pages). O parâmetro `?v=` carrega o hash SHA-256 integral do arquivo CSS, garantindo que qualquer cliente receba imediatamente as regras escopadas `.e02-lesson-layout`, `.e02-lesson-figure`, preenchimentos dinâmicos com tokens de tema (`--paper`, `--ink`, `--blue-deep`) e regras responsivas para visualização em desktop e dispositivos móveis.
+
+## Harmonização Visual do Portal Editorial e Apresentação em Tela Cheia (Luna 6)
+
+### 1. Escopo da Harmonização e Isolamento do Simulador
+
+A renovação estética harmonizou a identidade visual do portal Aqua Index tomando como referência o acabamento da Etapa 02. As alterações foram centralizadas no arquivo escopado `doc/css/portal.css` sob o seletor `@scope (.portal-ui)`.
+
+- **Hierarquia e Componentes**: Padronização de tipografia técnica, cards de especificações (`.spec-card`), cartões de arquitetura (`.architecture-card`), tabelas de dados com cabeçalhos contrastantes (`.data-table`, `.table-wrap`), quadros de notas e limites (`.callout`, `.callout-warning`) e responsividade em grid/flexbox.
+- **Diagramas Vetoriais SVG Acessíveis**: Inclusão de figuras semânticas com `<figure class="portal-figure"><figcaption>` baseadas estritamente em dados reais do repositório:
+  - `doc/planta-envasadora.html`: Fluxo circular das cinco estações da mesa indexadora e respectivas tags de instrumentação (XV-101 a XV-502).
+  - `doc/diretrizes-github.html`: Fluxo de rastreabilidade e entregas atômicas (branch -> testes locais -> PR -> main).
+  - `doc/etapa-01-logica.html`: Modelo de três camadas conceituais da avaliação integrada da Aula 10 (Telemetria, Discretização e Inferência).
+- **Proteção do Simulador da Etapa 01**: A seção `#simulador` de `doc/etapa-01-logica.html` foi mantida sem a classe `.portal-ui`. Seu DOM, regras de `doc/css/styles.css`, sinótico SCADA, animações e comportamentos foram integralmente preservados sem qualquer interferência de estilos.
+- **Herança em index.html**: O arquivo `index.html` já possui `<body class="portal-ui">` e herdou automaticamente os novos tokens e refinamentos visuais do CSS escopado, sem necessidade de alterações em seu conteúdo editorial além do versionamento da URL de cache.
+
+### 2. Apresentação em Tela Cheia no Deck da Etapa 02
+
+Para o deck didático de 10 slides da Etapa 02 (`doc/etapa-02-grafos.html`), foi adicionado o recurso de exibição em tela cheia exclusivo:
+
+- **Controle Acessível**: Botão dedicado `<button class="btn btn-sm btn-outline e02-fullscreen-btn" type="button" data-e02-fullscreen>` com rótulo ARIA dinâmico, alternando entre "Apresentar em tela cheia" e "Sair da tela cheia (Esc)".
+- **Script Dedicado (`doc/js/etapa-02-deck-fullscreen.js`)**:
+  - Utiliza Fullscreen API nativa (`requestFullscreen` / `exitFullscreen`).
+  - Sincronização automática de estado e classes via eventos `fullscreenchange` e `webkitfullscreenchange`.
+  - Tratamento nativo e por fallback da tecla `Escape`.
+  - Atalhos de teclado `f` / `F` para alternar modo quando o deck está em foco.
+  - Modo de projeção de fallback (classe `.is-fullscreen`) em navegadores sem suporte nativo ou em caso de rejeição de permissão.
+- **Estilos Escopados (`doc/css/etapa-02.css`)**: Regras para `:scope .e02-deck:fullscreen` e `:scope .e02-deck.is-fullscreen` projetadas para cobertura de 100vw e 100vh com fundo temático, centralização dos slides e dimensionamento responsivo de diagramas SVG.
+
+### 3. Versionamento de Cache (SHA-256)
+
+Para prevenir inconsistências decorrentes do cache do GitHub Pages (`Cache-Control: max-age=600`), todas as referências aos arquivos CSS dinâmicos utilizam o hash SHA-256 integral em parâmetros de query string:
+
+- `doc/css/etapa-02.css?v=<sha256>` em `doc/etapa-02-grafos.html`.
+- `doc/css/portal.css?v=<sha256>` em `index.html`, `doc/etapa-01-logica.html`, `doc/etapa-02-grafos.html`, `doc/planta-envasadora.html` e `doc/diretrizes-github.html`.
+
+### 4. Validações e Testes Executados
+
+As seguintes verificações automatizadas foram implementadas e executadas com sucesso:
+
+- `node --check doc/js/etapa-02-deck-fullscreen.js`: Validação de sintaxe ECMAScript.
+- `git diff --check`: Verificação de integridade de diff e ausência de erros de formatação.
+- `tests/portal-harmonization.test.cjs`:
+  - Preservação estrita dos hashes SHA-256 de `doc/css/styles.css` e `doc/js/main.js` contra o baseline.
+  - Comparação com `git show HEAD` isolando a execução do git e expondo falhas de assertiva sem engolir divergências.
+  - Isolamento estrito da seção `#simulador` sem classes `.portal-ui`.
+  - Integridade da navegação entre as cinco páginas.
+  - Presença de diagramas SVG acessíveis com legendas.
+  - Verificação determinística do hash SHA-256 de `doc/css/portal.css` em todas as páginas que o carregam.
+- `tests/etapa-02-fullscreen.test.cjs`:
+  - Validação estrutural de marcação e regras CSS.
+  - Testes funcionais via VM Node.js com mock de DOM: alternância de clique entra/sai, sincronização com eventos nativos `fullscreenchange` e tecla `Escape`, atalhos `f`/`F`, fallback de projeção em caso de erro e operação em navegadores sem Fullscreen API.
+- `tests/etapa-02-simulator.test.cjs` e `tests/etapa-02-visual-versioning.test.cjs`: Preservação dos algoritmos de grafos e versionamento da Etapa 02.
+- `tests/browser-headless-inspection.test.cjs`: Inspeção programática portátil baseada em Chromium/Edge headless com fallback gracioso (skip quando o binário não estiver presente no ambiente):
+  - **Renderização e raster**: Valida que o motor gráfico compila capturas não vazias (>10KB) em desktop (1440x900) e mobile (390x844). *Limite estrito*: o raster binário e o tamanho de arquivo comprovam apenas a ausência de colapso de renderização ou falha de processo; eles **não** comprovam ausência de clipping, corte ou overflow visual de layout, cuja verificação requer auditoria visual humana em navegador real.
+  - **Inspeção estrutural do DOM**: Confirma a presença de `<body>`, componentes `.portal-ui`, cabeçalho, rodapé e marcações específicas da Etapa 01 e Etapa 02 no DOM renderizado.
+  - **Alternância de tema (Light vs Dark)**: Comprovada com carregamento real dos assets via `<base href>` com `--allow-file-access-from-files` e leitura direta dos estilos computados no DOM (`--paper`: `#f4f1e8` claro vs `#101820` escuro; `background-color` do body: `rgb(244, 241, 232)` vs `rgb(16, 24, 32)`), sem assumir aprovação estética de componentes individuais.
+
+### 5. Limites Declarados e Auditoria Visual
+
+- **Não alegação sobre clipping/overflow via captura binária**: A geração de PNGs acima de 10KB comprova unicamente que o motor gráfico executou o pipeline de renderização sem tela em branco ou crash; ela não substitui a auditoria visual em viewport real para verificar ausência de clipping, quebras inadequadas de texto ou overflow de contêineres.
+- **Validação de tema**: A alternância entre temas claro e escuro é atestada estritamente no nível de atributos DOM e variáveis/propriedades CSS computadas (`--paper` e `background-color` do `body`) quando os estilos são carregados. Não se alega harmonia visual integral ou ausência de artefatos estéticos sem inspeção interativa.
