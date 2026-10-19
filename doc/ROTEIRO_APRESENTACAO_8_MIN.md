@@ -114,41 +114,88 @@ Ele estabelece uma **separação funcional estrita entre teoria e simulação**:
 
 ---
 
-### BLOCO 4 — Integrante 4 (`06:00` a `08:00` | 120 segundos)
-**Papel exclusivo**: Operação e demonstração do Simulador na aba **`Simulador 6 vistas`** — Demonstrações práticas reproduzíveis baseadas no guia final ([`doc/EXPLICACAO_SIMULADOR_ETAPA_02.md`](EXPLICACAO_SIMULADOR_ETAPA_02.md)), com cliques rigorosamente sincronizados à fala, cadência constante de ~125 ppm e sem a promessa inviável de demonstrar todos os cenários em dois minutos.
+### BLOCO 4 — Apresentação do Simulador (Versão Simples, Direta e Sem Decorar Números)
+**Papel exclusivo**: Mostrar na prática como funciona o **Simulador Integrado da Etapa 02** (`#painel-simulador`).
+**Dica de ouro para não decorar**: **Use a própria tela como cola!** O nome do algoritmo já está escrito em cada botão do topo (`[data-e02-model-select]`), e o resultado já aparece grande no quadro **`Resultado atual`**. Você só precisa lembrar **1 ideia central por botão** (2 frases curtas por modelo).
 
-- **`06:00 – 06:05` (`5 s`) — `[AÇÃO DE TELA — Entrada no Simulador]`**:
-  - Clicar na aba superior **`Simulador 6 vistas`** (`#tab-simulador`). A bancada abre na primeira vista padrão: **`Água / copos · Dijkstra`**, com rota nominal exibindo **`270 cm`** em verde no diagrama SVG.
-- **`06:05 – 06:29` (`24 s`) · `51 palavras` — Fala de Integrante 4 (Segmento 1 — Bancada Interativa e Execução Local)**:
-  > "Assumo a operação exclusiva do simulador. Esta bancada roda no navegador em JavaScript puro, sem backend e sem comandos ao CLP ou Automation Studio. São seis vistas com isolamento estrito de estado. Temos o diagrama SVG responsivo à esquerda, controles e bloqueios à direita, com Resultado Atual e Diário curto abaixo."
-- **`06:29 – 06:31` (`2 s`) — `[AÇÃO DE TELA — Apontar Rota Nominal]`**:
-  - Apontar com o cursor no diagrama SVG para o trajeto em verde `TK-101_Agua → P-101_BombaA → MAN-200_Agua → DOS-201_Dosador` (`270 cm`).
-- **`06:31 – 06:44` (`13 s`) · `27 palavras` — Fala de Integrante 4 (Segmento 2A — Demo 1: Rota Nominal em Água e Copos)**:
-  > "Na vista Água e copos, o Dijkstra calcula a rota nominal em verde de duzentos e setenta centímetros da fonte até o dosador pela Bomba A principal."
-- **`06:44 – 06:47` (`3 s`) — `[AÇÃO DE TELA — Bloqueio do Trecho a3]`**:
-  - Na coluna lateral **Bloqueios**, marcar a caixa **`a3 · P-101_BombaA → MAN-200_Agua · 80 cm`**. A tela recalcula de imediato para **`275 cm`** destacando o desvio pela Bomba B.
-- **`06:47 – 06:58` (`11 s`) · `23 palavras` — Fala de Integrante 4 (Segmento 2B — Demo 1: Desvio pela Bomba B)**:
-  > "Com o trecho a3 bloqueado, o algoritmo recalcula imediatamente o desvio pela Bomba B reserva, resultando em duzentos e setenta e cinco centímetros."
-- **`06:58 – 07:02` (`4 s`) — `[AÇÃO DE TELA — Bloqueio a4]`**:
-  - Marcar também a caixa **`a4 · P-102_BombaB → MAN-200_Agua · 85 cm`**. Manter **`Sem rota`** na tela até a fala explicar a falha dupla.
-- **`07:02 – 07:15` (`13 s`) · `27 palavras` — Fala de Integrante 4 (Segmento 2C — Demo 1: Falha Dupla e Restauração)**:
-  > "Ao bloquearmos também a4 ou o manifold, que é um vértice de articulação crítico, o sistema acusa sem rota. Restauramos a vista aos duzentos e setenta nominais."
-  - **`[AÇÃO DURANTE A FALA]`**: clicar em **`Restaurar vista`** ao dizer “Restauramos”; mostrar novamente **`270 cm`** até trocar de vista.
-- **`07:15 – 07:19` (`4 s`) — `[AÇÃO DE TELA — Trocar para Inspeção · Euler]`**:
-  - Clicar no botão da terceira vista: **`Inspeção · Euler`** (`#e02-mode-round`). A tela exibe o título **`Circuito · 24.5 min`** com Hierholzer.
-- **`07:19 – 07:32` (`13 s`) · `28 palavras` — Fala de Integrante 4 (Segmento 3A — Demo 2: Circuito Fechado Nominal)**:
-  > "Na vista Inspeção, todos os oito postos têm grau par, permitindo a Hierholzer construir o circuito fechado de vinte e quatro vírgula cinco minutos com os dez trechos."
-- **`07:32 – 07:36` (`4 s`) — `[AÇÃO DE TELA — Bloqueio t9]`**:
-  - Na coluna Bloqueios, marcar a caixa **`t9 · S200 — S400 · 2 min`**. Manter **`Trilha · 22.5 min`** na tela até a fala explicar a trilha aberta.
-- **`07:36 – 07:49` (`13 s`) · `28 palavras` — Fala de Integrante 4 (Segmento 3B — Demo 2: Trilha Aberta por Quebra de Paridade e Restauração)**:
-  > "Com o trecho t9 bloqueado, surgem dois vértices ímpares e obtemos uma trilha aberta de vinte e dois vírgula cinco minutos. Restaurando a vista, o circuito nominal retorna."
-  - **`[AÇÃO DURANTE A FALA]`**: clicar em **`Restaurar vista`** ao dizer “Restaurando”; mostrar **`Circuito · 24.5 min`** antes de abrir Materiais.
-- **`07:49 – 07:51` (`2 s`) — `[AÇÃO DE TELA — Destaque em Materiais]`**:
-  - Clicar na vista **`Materiais · Kahn`** (`#e02-mode-materials`), exibindo **`16 vértices ordenados`** com as arestas da espinha dorsal `E1–E5` destacadas em verde-azulado no SVG.
-- **`07:51 – 07:59` (`8 s`) · `17 palavras` — Fala de Integrante 4 (Segmento 4 — Vistas Complementares e Encerramento)**:
-  > "Em Materiais, Kahn ordena dezesseis nós preservando E1 a E5. Estamos à disposição da banca para perguntas."
-- **`07:59 – 08:00` (`1 s`) — `[FINALIZAÇÃO]`**:
-  - O grupo permanece posicionado com o simulador na tela, pronto para demonstrar qualquer outro cenário ou responder à arguição da banca.
+---
+
+#### Mapa Mental de 1 Linha por Botão (Sua Cola Rápida)
+1. **`Água / copos · Dijkstra`** → *Menor caminho somando os pesos (distância da tubulação).*
+2. **`Busca · BFS · DFS`** → *BFS conta o menor número de saltos; DFS lista todas as rotas possíveis.*
+3. **`Inspeção · Euler`** → *Passar por todos os cabos/tubos (arestas) uma única vez.*
+4. **`AGV · NN · 2-Opt`** → *Visitar todos os postos (nós) uma vez e melhorar a rota do robô.*
+5. **`Materiais · Kahn`** → *Ordem correta de produção sem ciclos (o que precisa vir antes).*
+6. **`Veículos · Dijkstra`** → *Separado de materiais porque os carrinhos vão e voltam (têm ciclos).*
+
+---
+
+#### Roteiro Passo a Passo (O que clicar + O que falar de forma simples)
+
+##### 1. Visão Geral do Simulador Interconectado
+* **`[O QUE FAZER NA TELA]`**:
+  1. Clique na aba **`Simulador`**.
+  2. Passe o mouse pelo diagrama grande mostrando os **6 quadros juntos** e as **linhas tracejadas** que ligam um quadro ao outro.
+  3. Aponte para a barra de botões **`Modelo de análise de grafos`** no topo.
+* **`[SUA FALA]`**:
+  > "Agora vou mostrar o nosso simulador funcionando. Aqui nós juntamos as seis visões da envasadora num único painel, e essas linhas tracejadas mostram onde um mesmo equipamento se conecta de um modelo para o outro. No topo, nós só escolhemos qual método de análise de grafos queremos rodar, e o simulador calcula tudo na hora."
+
+---
+
+##### 2. Botão 1 — `Água / copos · Dijkstra`
+* **`[O QUE FAZER NA TELA]`**:
+  1. Deixe no primeiro botão (**`Água / copos · Dijkstra`**) e aponte a linha verde acesa no primeiro quadro e o valor em **`Resultado atual`** (`270 cm`).
+  2. Em **Bloqueios** (na direita), clique no primeiro trecho da **Bomba A** (`a3`): mostre que a linha muda para a **Bomba B** (`275 cm`).
+  3. Clique no **Manifold** (`MAN-200_Agua`) para mostrar **`Sem rota`**, e depois clique em **`Restaurar vista`**.
+* **`[SUA FALA]`**:
+  > "O primeiro método é o **Dijkstra** na rede de água, que serve para achar o caminho mais curto somando o tamanho real da tubulação até o dosador. Se eu simular uma falha bloqueando a Bomba A aqui do lado, ele recalcula na hora o desvio pela Bomba B reserva; mas se eu bloquear o manifold central, onde as duas linhas se juntam, o sistema avisa que ficou sem rota."
+
+---
+
+##### 3. Botão 2 — `Busca · BFS · DFS`
+* **`[O QUE FAZER NA TELA]`**:
+  1. Clique no segundo botão: **`Busca · BFS · DFS`**.
+  2. Aponte para o quadro do meio no topo e para o **`Resultado atual`** (que mostra as arestas da BFS e os caminhos da DFS).
+  3. Marque o bloqueio da válvula **`V1`** na direita e mostre a linha desviando por baixo (`V2`).
+* **`[SUA FALA]`**:
+  > "No segundo botão temos **BFS e DFS**, que olham apenas para a conectividade da planta, sem somar os pesos. A **BFS** acha o caminho com o menor número de saltos, enquanto a **DFS** lista todos os caminhos possíveis pela válvula 1 ou pela válvula 2 — e se fecharmos a V1, o fluxo desvia na hora pela V2."
+
+---
+
+##### 4. Botão 3 — `Inspeção · Euler`
+* **`[O QUE FAZER NA TELA]`**:
+  1. Clique no terceiro botão: **`Inspeção · Euler`** (quadro superior direito).
+  2. Aponte que o **`Resultado atual`** começa escrito **`Circuito`**.
+  3. Na direita, bloqueie o trecho **`t9`** (`S200 — S400`): aponte que o resultado muda para **`Trilha`**. Se bloquear mais um trecho, mostra **`indisponível`**.
+* **`[SUA FALA]`**:
+  > "O terceiro modelo usa **Euler** para a ronda de manutenção: aqui a regra é passar por todas as conexões de cabos e mangueiras uma única vez, sem repetir. Quando todos os pontos têm número par de ligações, o técnico faz um **Circuito** fechado voltando ao início; se bloqueamos um trecho central, vira uma **Trilha** aberta, e com mais falhas a ronda sem repetição fica impossível."
+
+---
+
+##### 5. Botão 4 — `AGV · NN · 2-Opt`
+* **`[O QUE FAZER NA TELA]`**:
+  1. Clique no quarto botão: **`AGV · NN · 2-Opt`** (quadro inferior direito).
+  2. Aponte para o hexágono verde e leia na tela o **`Resultado atual`**: **`NN 280 s → 2-Opt 260 s`**.
+* **`[SUA FALA]`**:
+  > "Já no quarto modelo, do robô **AGV**, o objetivo muda: em vez de passar por todas as linhas, ele precisa visitar todos os postos uma única vez, como no Caixeiro-Viajante. Primeiro o método do **Vizinho Mais Próximo** monta uma rota rápida pegando sempre o ponto mais perto, e depois o **2-Opt** descruza o trecho mais longo para economizar tempo de viagem."
+
+---
+
+##### 6. Botão 5 — `Materiais · Kahn`
+* **`[O QUE FAZER NA TELA]`**:
+  1. Clique no quinto botão: **`Materiais · Kahn`** (quadro inferior esquerdo).
+  2. Aponte para a linha central (`E1` até `E5`), para as várias **linhas tracejadas verdes** que se acendem ligando aos outros quadros e para a lista numerada de `1` a `16` no **`Resultado atual`**.
+* **`[SUA FALA]`**:
+  > "No quinto modelo usamos o algoritmo de **Kahn** sobre o fluxo de materiais, que é um grafo sem ciclos. Ele não calcula distância, mas sim a **ordem de produção**: organiza as dezesseis etapas em fila garantindo que água, copo e tampa cheguem antes das estações de envase, selagem e expedição."
+
+---
+
+##### 7. Botão 6 — `Veículos · Dijkstra` (Fechamento)
+* **`[O QUE FAZER NA TELA]`**:
+  1. Clique no sexto botão: **`Veículos · Dijkstra`** (quadro inferior central).
+  2. Aponte as setas de ida e volta nos corredores e marque o bloqueio do **`CORREDOR_B`** na direita, mostrando a linha desviando pela **`VIA_EXTERNA`**.
+* **`[SUA FALA]`**:
+  > "Por fim, em **Veículos**, nós separamos o trânsito dos carrinhos do grafo de materiais porque os veículos vão e voltam pelos corredores, formando ciclos que travariam o método anterior. Aqui voltamos a usar **Dijkstra** para achar a rota mais curta até a doca e desviar pela via externa se um corredor estiver interditado. Com isso fechamos a demonstração do grupo, muito obrigado!"
 
 ---
 

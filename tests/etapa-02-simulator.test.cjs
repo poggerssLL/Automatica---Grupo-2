@@ -90,3 +90,44 @@ test("Kahn mantém E1–E5 e detecta ciclo", () => {
   const cycle = { nodes:["a","b"], directed:true, edges:[{id:"x",from:"a",to:"b",weight:0},{id:"y",from:"b",to:"a",weight:0}] };
   assert.equal(sim.kahn(cycle).ok, false);
 });
+
+test("COUPLING_LINKS e ZONES estão congelados, íntegros e cobrem os 14 elos de acoplamento entre as 6 sub-redes", () => {
+  assert.ok(Object.isFrozen(sim.COUPLING_LINKS), "COUPLING_LINKS deve ser congelado com Object.freeze");
+  assert.equal(sim.COUPLING_LINKS.length, 14, "Devem existir exatamente 14 elos de acoplamento");
+  for (const link of sim.COUPLING_LINKS) {
+    assert.ok(Object.isFrozen(link), `Elo ${link.id || link.from} deve ser congelado`);
+    const fromZone = link.fromZone || link.sourceZone;
+    const fromNode = link.fromNode || link.sourceNode;
+    const toZone = link.toZone || link.targetZone;
+    const toNode = link.toNode || link.targetNode;
+    assert.ok(sim.GRAPH[fromZone], `Zona de origem ${fromZone} deve existir`);
+    assert.ok(sim.GRAPH[toZone], `Zona de destino ${toZone} deve existir`);
+    assert.ok(sim.GRAPH[fromZone].nodes.includes(fromNode), `Nó ${fromNode} deve existir em ${fromZone}`);
+    assert.ok(sim.GRAPH[toZone].nodes.includes(toNode), `Nó ${toNode} deve existir em ${toZone}`);
+  }
+
+  assert.ok(Object.isFrozen(sim.ZONES), "ZONES deve ser congelado com Object.freeze");
+  const expectedZones = ["water", "search", "round", "materials", "vehicles", "agv"];
+  for (const id of expectedZones) {
+    const zone = sim.ZONES[id];
+    assert.ok(zone, `Zona ${id} deve existir em ZONES`);
+    assert.ok(Object.isFrozen(zone), `Objeto da zona ${id} deve ser congelado`);
+    assert.equal(zone.id, id);
+    assert.ok(typeof zone.x === "number" && typeof zone.y === "number");
+    assert.ok(zone.width > 0 && zone.height > 0);
+  }
+});
+
+test("Portal etapa-02-grafos.html possui SVG panorâmico unificado 1620x980 e seletor de modelo de análise", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const html = fs.readFileSync(path.resolve(__dirname, "../doc/etapa-02-grafos.html"), "utf8");
+
+  assert.ok(html.includes('viewBox="0 0 1620 980"'), "SVG data-e02-graph deve ter viewBox 0 0 1620 980");
+  assert.ok(html.includes("data-e02-model-select"), "HTML deve conter select data-e02-model-select");
+  assert.ok(html.includes("Modelo de análise de grafos"), "HTML deve conter o label 'Modelo de análise de grafos'");
+  for (const mode of ["water", "search", "round", "agv", "materials", "vehicles"]) {
+    assert.ok(html.includes(`data-e02-mode="${mode}"`), `Botão para modelo ${mode} deve estar presente`);
+    assert.ok(html.includes(`value="${mode}"`), `Option para modelo ${mode} deve estar no seletor`);
+  }
+});

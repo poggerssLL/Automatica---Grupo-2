@@ -74,7 +74,8 @@ Ao carregar [`etapa-02-grafos.html`](etapa-02-grafos.html), a página exibe:
 
 ### 2.3. Aba 3 — `Simulador 6 vistas`
 - O laboratório computacional de grafos, acessível pelo botão de aba `Simulador 6 vistas` ou pelo hash `#simulador`.
-- Contém a **Nota metodológica** alertando sobre a natureza didática dos cálculos e reúne os seis botões de vista:
+- Contém a **Nota metodológica** alertando sobre a natureza didática dos cálculos e apresenta o **diagrama SVG panorâmico unificado e interconectado** (`viewBox="0 0 1620 980"`), no qual todas as 6 sub-redes da planta são renderizadas simultaneamente em 6 zonas bem distribuídas (3 no topo: `water`, `search`, `round`; 3 na base: `materials`, `vehicles`, `agv`), conectadas por 14 elos físicos e lógicos de acoplamento (`COUPLING_LINKS`).
+- A escolha do usuário é exclusivamente **qual Modelo de Análise de Grafos** utilizar sobre a planta, selecionado via menu `<select class="select select-sm" data-e02-model-select>` ou pelos botões correspondentes `[data-e02-mode]`:
   1. **`Água / copos · Dijkstra`** (`data-e02-mode="water"`)
   2. **`Busca · BFS · DFS`** (`data-e02-mode="search"`)
   3. **`Inspeção · Euler`** (`data-e02-mode="round"`)
@@ -86,83 +87,92 @@ Ao carregar [`etapa-02-grafos.html`](etapa-02-grafos.html), a página exibe:
 
 ## 3. Anatomia da Interface do Simulador e Mecânica de Operação
 
-Dentro da bancada (`#e02-sim-workbench`), a tela organiza-se em quatro seções principais:
+Dentro da bancada (`#e02-sim-workbench`), a tela organiza-se de maneira integrada e intuitiva:
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
-│  Cabeçalho da Vista: Código da Aula, Título, Descrição e Selo Unidade │
+│  Barra de Modelo: Seletor <select> + 6 Botões de Modelo de Análise     │
+├────────────────────────────────────────────────────────────────────────┤
+│  Cabeçalho: Código da Aula, Título, Descrição e Selo Unidade           │
 ├───────────────────────────────────────┬────────────────────────────────┤
-│                                       │  Controles de Consulta         │
-│  Diagrama do Grafo em SVG             │  - Seletores Origem / Destino  │
-│  - Nós (retângulos com rótulos)       │  - Bloqueios (Checkboxes)      │
-│  - Arestas com arcos e setas          │  - Ações: Calcular / Restaurar │
+│                                       │  Controles de Consulta Ativa   │
+│  Diagrama Panorâmico SVG (1620×980)   │  - Seletores Origem / Destino  │
+│  - Camada de Zonas (.e02-zone-layer)  │  - Bloqueios (Checkboxes)      │
+│  - Camada de Elos (.e02-coupling-layer│  - Ações: Calcular / Restaurar │
+│  - 6 Sub-redes (Ativa + 5 Contexto)   │                                │
 │  - Legenda e dica responsiva          │                                │
 ├───────────────────────────────────────┴────────────────────────────────┤
 │  Resultado Atual: Título Principal, Frase Explicativa e Lista de Rota  │
 ├────────────────────────────────────────────────────────────────────────┤
-│  Diário Curto: Histórico das últimas 4 ações da vista                  │
+│  Diário Curto: Histórico das últimas 4 ações                           │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.1. Cabeçalho da Vista (`.e02-sim-head`)
-- **Código da aula** (`[data-e02-mode-code]`): Exibe `14 / 15`, `13 / busca`, `16 / inspeção`, `17 / AGV`, `18 / materiais` ou `18 / veículos`.
-- **Título e descrição** (`[data-e02-mode-title]`, `[data-e02-mode-description]`): Enunciam a pergunta que aquele modelo responde.
-- **Selo de unidade e sentido** (`[data-e02-mode-unit]`): Identifica a métrica e a topologia (`cm · dirigido`, `s · dirigido`, `min · não dirigido`, `s · não dirigido` ou `m · dirigido`).
+### 3.1. Barra de Escolha do Modelo e Cabeçalho
+- **Barra de Modelo (`.e02-model-bar`)**:
+  - Seletor acessível `<label class="e02-model-select-label">Modelo de análise de grafos <select data-e02-model-select>` sincronizado bidirecionalmente com a lista de botões `[data-e02-mode]`.
+  - Deixa explícito ao usuário que as 6 visualizações já estão ativas e interconectadas no diagrama panorâmico, cabendo a ele apenas definir qual modelo matemático deseja consultar e destacar.
+- **Cabeçalho da Vista Ativa (`.e02-sim-head`)**:
+  - `[data-e02-mode-code]`: Código da aula (`14 / 15`, `13 / busca`, `16 / inspeção`, `17 / AGV`, `18 / materiais` ou `18 / veículos`).
+  - `[data-e02-mode-title]`, `[data-e02-mode-description]`: Enunciam o objetivo da análise em foco.
+  - `[data-e02-mode-unit]`: Métrica e topologia (`cm · dirigido`, `s · dirigido`, `min · não dirigido`, `s · não dirigido` ou `m · dirigido`).
 
-### 3.2. Diagrama do Grafo em SVG e Layout Responsivo (`.e02-graph-panel`)
-O grafo é gerado via DOM SVG (`viewBox="0 0 1100 580"`):
-- **Comportamento responsivo**:
-  - *Em telas desktop (> 760px)*: O SVG ajusta-se automaticamente à largura da coluna esquerda sem barra de rolagem horizontal (`min-width: 0`, altura limitada a 360px). A dica de rolagem fica oculta.
-  - *Em telas estreitas ou janelas divididas (≤ 760px)*: A grade passa para uma coluna vertical, o SVG ganha largura mínima de 680px e o contêiner `.e02-graph-scroll` ativa a rolagem horizontal (`overflow-x: auto`), exibindo a mensagem: *"Em telas estreitas, arraste ou role horizontalmente para ler o diagrama."*
-- **Representação visual dos Nós (`.e02-node`)**:
-  - Retângulos de $132 \times 40\text{ px}$. Se o identificador tiver mais de 17 caracteres, o texto no retângulo é abreviado para 16 caracteres seguidos de `…` (ex.: `Estacao_Inspecao` tem 16 e cabe inteiro; nomes maiores são truncados apenas visualmente, mantendo o nome íntegro nos seletores e na lista de resultado).
-  - *Normal*: Fundo `--paper` e borda azul (`--blue`).
-  - *Na rota calculada (`.is-route`)*: Fundo verde-azulado suave (`color-mix(in srgb, var(--teal) 17%, var(--paper))`) e borda espessa `--teal`.
-  - *Bloqueado (`.is-blocked`)*: Fundo avermelhado e borda tracejada vermelha (`--red`).
-- **Representação visual das Arestas (`.e02-edge`)**:
-  - Curvas de Bézier quadráticas com rótulos centralizados no formato `<id> · <peso>`.
-  - *Sentido*: Nos grafos dirigidos (`water`, `search`, `materials`, `vehicles`), cada aresta termina em uma seta orientada. Nos grafos não dirigidos (`round`, `agv`), a linha é contínua sem marcador de seta.
-  - *Na rota calculada (`.is-route`)*: Traço alargado (`stroke-width: 5`) em cor `--teal`.
-  - *Bloqueada (`.is-blocked`)*: Traço tracejado vermelho (`stroke-dasharray: 7 6`).
-  - *Marcadores de ponta de seta*: Três definições SVG dedicadas (`#e02-arrow` normal, `#e02-arrow-route` verde-azulado e `#e02-arrow-blocked` vermelho).
+### 3.2. Diagrama Panorâmico Unificado em SVG (`viewBox="0 0 1620 980"`)
+O simulador renderiza integralmente a planta industrial em um único SVG estruturado em camadas ordenadas:
+- **Camada de Zonas (`.e02-zone-layer`)**:
+  - Seis quadros visuais delimitadores (`.e02-zone`, com atributo `data-e02-zone="<id>"` e título `.e02-zone-title`).
+  - Organizados em 3 zonas no topo (`water`, `search`, `round`) e 3 zonas na base (`materials`, `vehicles`, `agv`).
+  - A zona do modelo ativo recebe a classe de destaque `.is-active-zone`, com borda acentuada e fundo sutilmente iluminado.
+- **Camada de Interconexão (`.e02-coupling-layer`)**:
+  - Contém os 14 elos de acoplamento inter-vistas (`.e02-coupling-edge`, com atributo `data-e02-coupling`), traçados como curvas suaves conectando os nós equivalentes:
+    1. `water:TK-101_Agua` $\leftrightarrow$ `materials:TK-101_Agua`
+    2. `water:TK-101_Agua` $\leftrightarrow$ `search:Reservatorio`
+    3. `water:MAG-100_Copos` $\leftrightarrow$ `materials:MAG-100_Copos`
+    4. `water:DOS-201_Dosador` $\leftrightarrow$ `materials:E2_ENVASE`
+    5. `water:MESA-000_Index` $\leftrightarrow$ `round:MESA`
+    6. `water:MESA-000_Index` $\leftrightarrow$ `search:Envasadora`
+    7. `water:EST-500_Saida` $\leftrightarrow$ `materials:EST-500_Saida`
+    8. `search:Empacotadora` $\leftrightarrow$ `materials:EMBALAGEM`
+    9. `search:Estacao_Inspecao` $\leftrightarrow$ `agv:Lab`
+    10. `round:S100` $\leftrightarrow$ `materials:E1_DISPENSA`
+    11. `round:S500` $\leftrightarrow$ `materials:E5_EJECAO`
+    12. `materials:RECEB_COPOS` $\leftrightarrow$ `vehicles:RECEBIMENTO`
+    13. `materials:ESTOQUE_PRODUTO` $\leftrightarrow$ `vehicles:ESTOQUE_FINAL`
+    14. `materials:DOCA_EXPEDICAO` $\leftrightarrow$ `vehicles:DOCA_EXPEDICAO`
+  - Quando um nó participante do elo pertence à rota calculada ativa, o elo ganha `.is-coupled-route` (traço destacado em verde-azulado) e o nó homólogo na outra sub-rede ganha `.is-coupled-node.is-coupled-route`. Caso conectado a um nó bloqueado ativo, recebe `.is-coupled-blocked`.
+- **Camadas de Arestas e Nós (`.e02-edge-layer`, `.e02-node-layer`, `.e02-label-layer`)**:
+  - **Todas as 6 sub-redes permanecem 100% visíveis simultaneamente**.
+  - A sub-rede do modelo ativo destaca a rota principal (`.is-route`, com traço largo verde-azulado e marcadores `#e02-arrow-route`).
+  - As demais 5 sub-redes exibem em segundo plano contextual suas respectivas rotas calculadas (`.is-context-route`, com traço fino e marcadores `#e02-arrow-context-route`).
+  - Elementos bloqueados exibem traço tracejado avermelhado (`.is-blocked`, marcadores `#e02-arrow-blocked`).
+- **Responsividade e Rolagem**:
+  - *Desktop (> 760px)*: Diagrama panorâmico exibe largura total responsiva (`min-width: 0`, altura entre 480px e 620px).
+  - *Telas estreitas e mobile (≤ 760px)*: A grade passa para layout vertical, o SVG adota largura mínima de 960px e o contêiner `.e02-graph-scroll` ativa rolagem horizontal com dica: *"Em telas estreitas, arraste ou role horizontalmente para ler o diagrama."*
 
-### 3.3. Interatividade no SVG e Painel de Controles
-
-A interatividade divide-se com precisão técnica entre os elementos clicáveis no diagrama e os controles laterais:
-
-1. **Arestas clicáveis no SVG**:
-   - Nas 4 vistas que admitem bloqueios (`water`, `search`, `round`, `vehicles`), **todas as arestas do SVG são botões acessíveis** (`e02-svg-edge`, `role="button"`, `tabindex="0"`).
-   - Podem ser ativadas com clique do mouse ou com as teclas **`Enter`** ou **`Espaço`** do teclado.
-   - Alternar uma aresta recalcula a solução instantaneamente.
-2. **Nós clicáveis no SVG**:
-   - No SVG, **somente são clicáveis os nós explicitamente cadastrados na lista de bloqueios daquela vista** (`blockNodes = meta().blocks`):
-     - Em `water`: apenas o nó `MAN-200_Agua`.
-     - Em `search`: apenas os nós `V1` e `V2`.
-     - Em `round`: nenhum nó (todos os bloqueios são nas arestas `t1` a `t10`).
-     - Em `vehicles`: apenas os nós `CORREDOR_B` e `VIA_EXTERNA`.
-     - Em `agv` e `materials`: nenhum nó é bloqueável.
-   - Nós não pertencentes à lista de bloqueios possuem `pointer-events: none` em seus textos e retângulos informativos, sem manipulador de clique.
-3. **Aviso dinâmico de arestas bloqueadas fora da barra lateral (`data-e02-extra-blocks`)**:
-   - Na barra lateral de `water`, aparecem apenas os checkboxes de `a3`, `a4` e `MAN-200_Agua`.
-   - Se o usuário clicar diretamente no diagrama SVG em uma aresta que não possui checkbox na lista lateral (como `a1`, `a2`, `a5`, `a6`, `a7`, `a8` ou `a9`), a função `syncBlocks()` insere dinamicamente um aviso acessível logo abaixo dos bloqueios:
-     `<p data-e02-extra-blocks="" aria-live="polite">Arestas bloqueadas no diagrama: a1.</p>`
-   - Ao desmarcar a aresta no diagrama, esse parágrafo é automaticamente removido do DOM.
-4. **Seletores de Origem, Destino e Partida (`[data-e02-selection]`)**:
-   - Nas vistas `water`, `search` e `vehicles`, exibe dois menus `<select>`: `Origem` e `Destino`.
-   - Na vista `agv`, exibe um menu `<select>`: `Partida (matriz ilustrativa)`.
-   - Nas vistas `round` e `materials`, exibe texto explicativo fixo.
-   - **Disparo de cálculo**: Mudar a opção em qualquer menu `<select>` **recalcula o resultado imediatamente** via evento `change`. O botão `Calcular` continua disponível para forçar reexecução ou registrar uma nova linha no Diário.
-5. **Botões de Ação**:
-   - **`Calcular`** (`[data-e02-run]`): Executa a função `run()` da vista ativa e adiciona uma linha de registro ao Diário curto.
-   - **`Restaurar vista`** (`[data-e02-reset]`): Limpa todos os conjuntos de bloqueios (`blockedEdges` e `blockedNodes`), restabelece os valores nominais padrão de origem/destino e recalcula a solução padrão original.
+### 3.3. Interatividade Panorâmica e Preservação de Estado em Memória
+1. **Preservação de Bloqueios por Modelo**:
+   - Cada modelo de análise mantém seu próprio conjunto de bloqueios em memória (`state.blocksByMode`). Alternar entre modelos não apaga nem reinicializa os bloqueios configurados nas outras sub-redes.
+2. **Cliques Diretos em Qualquer Zona do SVG**:
+   - Clicar em uma aresta ou nó bloqueável de qualquer zona no diagrama SVG ativa automaticamente o modelo daquela zona e alterna o bloqueio instantaneamente, recalculando todas as rotas e elos.
+   - Clicar sobre a área de uma zona (`.e02-zone`) altera o modelo ativo para aquela zona.
+3. **Seletores e Disparo Imediato (`change`)**:
+   - A alteração em qualquer `<select>` de origem, destino ou partida recalcula a rota imediatamente no DOM.
+   - O botão `Restaurar vista` limpa os bloqueios e restaura a origem/destino nominais do modelo ativo.
+4. **Legenda Panorâmica Atualizada (`[data-e02-legend]`)**:
+   - Exibe 5 categorias com amostras de cor:
+     * `aresta` (traço padrão suave)
+     * `rota calculada` (verde-azulado principal)
+     * `rota em outra vista` (verde-azulado contextual)
+     * `elo entre vistas (interconexão)` (traço tracejado de acoplamento)
+     * `bloqueio acionável` (vermelho tracejado)
 
 ### 3.4. Painel de Resultado Atual e Diário Curto
 - **`Resultado atual` (`.e02-result`)**:
-  - `[data-e02-result-title]`: Destaque em fonte grande do custo ou status (`270 cm`, `5 arestas por BFS`, `Circuito · 24.5 min`, `NN 280 s → 2-Opt 260 s`, `16 vértices ordenados`, `40 m` ou `Sem rota`).
-  - `[data-e02-result]`: Frase contextualizada emitida pelo algoritmo, detalhando a rota percorrida ou o motivo formal do insucesso (`sem rota`, `paridade inválida`, `subgrafo desconexo`, `origem ou destino bloqueado`).
-  - `[data-e02-route]`: Lista ordenada contendo os blocos com o nome de cada nó do trajeto ou da ordenação topológica calculada.
+  - `[data-e02-result-title]`: Custo, saltos ou status do modelo ativo (`270 cm`, `5 arestas por BFS`, `Circuito · 24.5 min`, etc.).
+  - `[data-e02-result]`: Explicação detalhada da solução ou do motivo formal da ausência de rota.
+  - `[data-e02-route]`: Lista ordenada dos nós do trajeto ativo.
 - **`Diário curto` (`.e02-log`)**:
-  - Lista `<ol data-e02-log>` que mantém **as últimas 4 ações** da vista em ordem cronológica inversa (a ação mais recente fica sempre na posição `1.`).
+  - Registra as últimas 4 ações da bancada em ordem cronológica inversa.
 
 ---
 
@@ -578,8 +588,10 @@ A interatividade divide-se com precisão técnica entre os elementos clicáveis 
 
 Ao apresentar ou documentar o projeto, mantenha total rigor sobre os seguintes limites técnicos:
 
-1. **Grafos Independentes vs. "Planta Unificada"**:
-   - O simulador não resolve um problema global único; ele reúne seis modelos didáticos criados para responder a perguntas acadêmicas isoladas. Não tente mesclar a água em centímetros com os corredores em metros ou os tempos de inspeção em minutos.
+1. **Grafos Independentes e Visualização Panorâmica Interconectada**:
+   - O simulador unifica visualmente as seis sub-redes em um único diagrama SVG panorâmico com 14 elos de acoplamento (`COUPLING_LINKS`, `.e02-coupling-edge`) entre nós equivalentes da planta (tanque de água, dosador, magazine de copos, postos da mesa, esteira de saída, inspeção, estoque e docas).
+   - Essa visualização panorâmica permite ao engenheiro compreender a envasadora como um sistema integrado, destacando homologias e rotas de contexto nas sub-redes adjacentes.
+   - No entanto, matematicamente cada modelo preserva sua unidade e hipótese pura: água em centímetros (`cm`), buscas e AGV em segundos (`s`), inspeção em minutos (`min`) e materiais/veículos em metros (`m`). Os cálculos não somam grandezas físicas heterogêneas.
 2. **BFS Minimiza Saltos, Não Segundos**:
    - Na Vista 2 (`Busca`), as arestas possuem tempos hipotéticos em segundos, mas o algoritmo de Busca em Largura (BFS) opera exclusivamente em níveis topológicos (fila FIFO). Para encontrar o menor tempo acumulado em segundos, o algoritmo matemático correto é o **Dijkstra**, como implementado nas Vistas 1 e 6.
 3. **Heurística de AGV vs. Ótimo Global**:
@@ -595,15 +607,17 @@ Ao apresentar ou documentar o projeto, mantenha total rigor sobre os seguintes l
 
 ## 7. Correção de Divergências Encontradas em Relação ao Guia Anterior
 
-A revisão comparativa entre o guia textual anterior e a implementação real no código fonte ([`js/etapa-02-simulator.js`](js/etapa-02-simulator.js)), nas folhas de estilo ([`css/etapa-02.css`](css/etapa-02.css)) e nos testes ([`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs)) permitiu identificar e sanar cinco divergências fundamentais:
+A revisão comparativa entre o guia textual anterior e a implementação real no código fonte ([`js/etapa-02-simulator.js`](js/etapa-02-simulator.js)), nas folhas de estilo ([`css/etapa-02.css`](css/etapa-02.css)) e nos testes ([`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs)) permitiu registrar com exatidão a evolução da bancada computacional:
 
 | Tópico | Afirmação no Guia Anterior | Comportamento Real no Código / Testes | Evidência no Código |
 | :--- | :--- | :--- | :--- |
-| **Disparo ao Mudar `<select>`** | Afirmava na Seção 3.3 que alterar menus `<select>` não disparava o cálculo e exigia obrigatoriamente clicar no botão `Calcular`. | O listener de evento `change` está associado aos seletores de origem, destino e partida, executando a função `run()` imediatamente ao selecionar uma opção. | Linha 56 de `js/etapa-02-simulator.js`: `one.addEventListener("change", run); two.addEventListener("change", run);`. |
-| **Destaque de Arestas em `Materiais`** | Afirmava na Seção 3.2 que nenhuma aresta recebia destaque `.is-route` na vista de Materiais por Kahn gerar apenas ordem de vértices. | O simulador passa explicitamente `["m8", "m9", "m10", "m11"]` em `edgeIds`, destacando em verde-azulado a espinha dorsal de estações $E_1$ a $E_5$ no SVG. | Linha 60 de `js/etapa-02-simulator.js`: `result(..., answer.order, answer.ok ? ["m8","m9","m10","m11"] : []);`. |
-| **Largura Responsiva do SVG** | Afirmava na Seção 3.2 que o SVG tinha sempre largura mínima fixa de 900px, exigindo rolagem em telas pequenas. | Em desktop, o SVG ajusta-se sem rolagem (`min-width: 0`, altura 360px). Apenas em telas $\le 760\text{ px}$ ativa-se a rolagem com largura mínima de 680px e dica visível. | Linhas 32-34 e 47-54 de `css/etapa-02.css` e guia [`UI_DAISYUI_GUIDE.md`](UI_DAISYUI_GUIDE.md). |
-| **Feedback de Arestas Bloqueadas no SVG** | Não documentava a mensagem textual gerada quando arestas fora dos checkboxes são bloqueadas no SVG. | A função `syncBlocks()` insere dinamicamente `<p data-e02-extra-blocks>` no DOM informando quais arestas extras estão ativas no bloqueio. | Linha 58 de `js/etapa-02-simulator.js`: `note.textContent = "Arestas bloqueadas no diagrama: " + extras.join(", ") + ".";`. |
-| **Nós Clicáveis no SVG** | Sugeria genericamente que nós podiam ser clicados no diagrama para alternar bloqueios. | Somente os nós explicitamente pertencentes a `meta().blocks` (`MAN-200_Agua`, `V1`, `V2`, `CORREDOR_B`, `VIA_EXTERNA`) possuem `tabindex="0"`, `role="button"` e tratador de clique. Os demais nós são puramente visuais. | Linha 57 de `js/etapa-02-simulator.js`: `blockNodes = new Set((meta().blocks || []).filter(id => g.nodes.includes(id))); clickable = blockNodes.has(node);`. |
+| **Visualização Panorâmica Unificada** | Vistas eram exibidas de forma mutuamente exclusiva (trocar de vista ocultava as outras cinco). | Todas as 6 sub-redes são renderizadas simultaneamente no mesmo SVG (`viewBox="0 0 1620 980"`) distribuídas em 6 zonas com 14 elos de acoplamento (`COUPLING_LINKS`, `.e02-coupling-edge`) e rotas contextuais (`.is-context-route`). | Linhas 26-40 de `js/etapa-02-simulator.js` e `e02-zone-layer` / `e02-coupling-layer`. |
+| **Seleção por Modelo de Análise** | Botões representavam alternância destrutiva de tela que reiniciava bloqueios. | Controles operam via `<select data-e02-model-select>` sincronizado com `[data-e02-mode]`, preservando o estado de bloqueios em memória (`blocksByMode`) e permitindo cliques diretos em qualquer zona. | Linhas 54-62 de `js/etapa-02-simulator.js` e `.e02-model-bar`. |
+| **Disparo ao Mudar `<select>`** | Afirmava na Seção 3.3 que alterar menus `<select>` não disparava o cálculo e exigia obrigatoriamente clicar no botão `Calcular`. | O listener de evento `change` está associado aos seletores de origem, destino e partida, executando a função `run()` imediatamente ao selecionar uma opção. | `one.addEventListener("change", run); two.addEventListener("change", run);` em `js/etapa-02-simulator.js`. |
+| **Destaque de Arestas em `Materiais`** | Afirmava na Seção 3.2 que nenhuma aresta recebia destaque `.is-route` na vista de Materiais por Kahn gerar apenas ordem de vértices. | O simulador passa explicitamente `["m8", "m9", "m10", "m11"]` em `edgeIds`, destacando em verde-azulado a espinha dorsal de estações $E_1$ a $E_5$ no SVG. | Retorno de Kahn em `computeZoneSolution` passa `edgeIds: ["m8","m9","m10","m11"]`. |
+| **Largura Responsiva do SVG** | Afirmava na Seção 3.2 que o SVG tinha sempre largura mínima fixa de 900px, exigindo rolagem em telas pequenas. | Em desktop, o SVG ajusta-se sem rolagem (`min-width: 0`, altura responsiva). Apenas em telas $\le 760\text{ px}$ ativa-se a rolagem com largura mínima de 960px e dica visível. | Regras responsivas de `css/etapa-02.css`. |
+| **Feedback de Arestas Bloqueadas no SVG** | Não documentava a mensagem textual gerada quando arestas fora dos checkboxes são bloqueadas no SVG. | A função `syncBlocks()` insere dinamicamente `<p data-e02-extra-blocks>` no DOM informando quais arestas extras estão ativas no bloqueio. | `note.textContent = "Arestas bloqueadas no diagrama: " + extras.join(", ") + ".";`. |
+| **Nós Clicáveis no SVG** | Sugeria genericamente que todos os nós podiam ser clicados no diagrama para alternar bloqueios. | Somente os nós explicitamente pertencentes a `meta().blocks` (`MAN-200_Agua`, `V1`, `V2`, `CORREDOR_B`, `VIA_EXTERNA`) possuem `tabindex="0"`, `role="button"` e tratador de bloqueio. Os demais nós selecionam o modelo correspondente. | Identificação de `clickable = blockableNodes.has(node)` em `renderGraph()`. |
 
 ---
 
@@ -613,13 +627,16 @@ Para garantir integridade técnica perante qualquer auditoria, declaramos com tr
 
 ### 8.1. Cenários Efetivamente Reproduzidos
 Os seguintes cenários foram **executados e aprovados** via ambiente Node e testes automatizados:
-1. `Dijkstra`: Menor caminho nominal em água ($270\text{ cm}$), desvio por bloqueio em $a_3$ ($275\text{ cm}$), ausência de rota em falha dupla $a_3 + a_4$ e sentido inverso direcionado (validado na suíte [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs) e oráculo de teste);
-2. `Dijkstra Trativas de Borda`: Origem igual ao destino ($0\text{ cm}$), nó de origem ou destino bloqueado, nó desconhecido e pesos zero (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
-3. `BFS e DFS`: Minimização de saltos (5 arestas por BFS), contagem de caminhos simples por DFS (2 nominais, 1 com $V_1$ bloqueada) e interrupção completa com $V_1 + V_2$ bloqueadas (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
-4. `Veículos`: Menor caminho nominal ($40\text{ m}$), desvio pela via externa com `CORREDOR_B` bloqueado ($65\text{ m}$) e sem rota com bloqueio duplo (`CORREDOR_B` e `VIA_EXTERNA`) (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
-5. `Hierholzer (Euler)`: Circuito fechado nominal com 10 IDs e $24,5\text{ min}$, trilha aberta com $t_9$ bloqueado ($22,5\text{ min}$), rejeição de paridade inválida e detecção de subgrafo desconexo (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
-6. `NN e 2-Opt`: Rota construtiva do Vizinho Mais Próximo ($280\text{ s}$), refinamento estrito por 2-Opt ($260\text{ s}$) e teste de invariância sem ciclos abertos (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
-7. `Kahn`: Ordenação topológica dos 16 vértices mantendo $E_1$ a $E_5$ e detecção de ciclos em dígrafos inválidos (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs)).
+1. `COUPLING_LINKS e ZONES`: Imutabilidade via `Object.freeze`, 14 elos de interconexão válidos entre nós existentes e distribuição espacial em 6 zonas no SVG panorâmico 1620x980 (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
+2. `Dijkstra`: Menor caminho nominal em água ($270\text{ cm}$), desvio por bloqueio em $a_3$ ($275\text{ cm}$), ausência de rota em falha dupla $a_3 + a_4$ e sentido inverso direcionado (validado na suíte [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs) e oráculo de teste);
+3. `Dijkstra Trativas de Borda`: Origem igual ao destino ($0\text{ cm}$), nó de origem ou destino bloqueado, nó desconhecido e pesos zero (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
+4. `BFS e DFS`: Minimização de saltos (5 arestas por BFS), contagem de caminhos simples por DFS (2 nominais, 1 com $V_1$ bloqueada) e interrupção completa com $V_1 + V_2$ bloqueadas (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
+5. `Veículos`: Menor caminho nominal ($40\text{ m}$), desvio pela via externa com `CORREDOR_B` bloqueado ($65\text{ m}$) e sem rota com bloqueio duplo (`CORREDOR_B` e `VIA_EXTERNA`) (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
+6. `Hierholzer (Euler)`: Circuito fechado nominal com 10 IDs e $24,5\text{ min}$, trilha aberta com $t_9$ bloqueado ($22,5\text{ min}$), rejeição de paridade inválida e detecção de subgrafo desconexo (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
+7. `NN e 2-Opt`: Rota construtiva do Vizinho Mais Próximo ($280\text{ s}$), refinamento estrito por 2-Opt ($260\text{ s}$) e teste de invariância sem ciclos abertos (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
+8. `Kahn`: Ordenação topológica dos 16 vértices mantendo $E_1$ a $E_5$ e detecção de ciclos em dígrafos inválidos (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs));
+9. `Seletor e Visualização Unificada`: Tag SVG `viewBox="0 0 1620 980"`, seletor `data-e02-model-select` e 6 botões `data-e02-mode` validados no DOM (validado em [`../tests/etapa-02-simulator.test.cjs`](../tests/etapa-02-simulator.test.cjs)).
+
 
 ### 8.2. Cenários Inferidos Diretamente do Código
 Os seguintes comportamentos foram **inspecionados e verificados analiticamente** por confronto estrito com a lógica do código em [`js/etapa-02-simulator.js`](js/etapa-02-simulator.js) e folhas de estilo CSS:

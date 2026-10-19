@@ -22,6 +22,44 @@ const AquaIndexEtapa02 = (() => {
     ["v1","PORTARIA","RECEBIMENTO",20],["v2","RECEBIMENTO","CORREDOR_A",10],["v3","CORREDOR_A","RECEBIMENTO",10],["v4","CORREDOR_A","ABASTECIMENTO",8],["v5","ABASTECIMENTO","CORREDOR_A",8],["v6","CORREDOR_A","CORREDOR_B",12],["v7","CORREDOR_B","CORREDOR_A",12],["v8","CORREDOR_B","ESTOQUE_FINAL",8],["v9","ESTOQUE_FINAL","CORREDOR_B",8],["v10","ESTOQUE_FINAL","DOCA_EXPEDICAO",10],["v11","DOCA_EXPEDICAO","SAIDA",15],["v12","SAIDA","PORTARIA",10],["v13","RECEBIMENTO","VIA_EXTERNA",30],["v14","VIA_EXTERNA","DOCA_EXPEDICAO",35]
   ].map(([id,from,to,weight])=>({id,from,to,weight,label:id})), "A18 — veículos");
   const GRAPH = Object.freeze({ water, search, round, agv, materials, vehicles });
+
+  const rawCouplingLinks = [
+    { id: "c1", from: "water:TK-101_Agua", to: "materials:TK-101_Agua", fromZone: "water", fromNode: "TK-101_Agua", toZone: "materials", toNode: "TK-101_Agua", sourceZone: "water", sourceNode: "TK-101_Agua", targetZone: "materials", targetNode: "TK-101_Agua" },
+    { id: "c2", from: "water:TK-101_Agua", to: "search:Reservatorio", fromZone: "water", fromNode: "TK-101_Agua", toZone: "search", toNode: "Reservatorio", sourceZone: "water", sourceNode: "TK-101_Agua", targetZone: "search", targetNode: "Reservatorio" },
+    { id: "c3", from: "water:MAG-100_Copos", to: "materials:MAG-100_Copos", fromZone: "water", fromNode: "MAG-100_Copos", toZone: "materials", toNode: "MAG-100_Copos", sourceZone: "water", sourceNode: "MAG-100_Copos", targetZone: "materials", targetNode: "MAG-100_Copos" },
+    { id: "c4", from: "water:DOS-201_Dosador", to: "materials:E2_ENVASE", fromZone: "water", fromNode: "DOS-201_Dosador", toZone: "materials", toNode: "E2_ENVASE", sourceZone: "water", sourceNode: "DOS-201_Dosador", targetZone: "materials", targetNode: "E2_ENVASE" },
+    { id: "c5", from: "water:MESA-000_Index", to: "round:MESA", fromZone: "water", fromNode: "MESA-000_Index", toZone: "round", toNode: "MESA", sourceZone: "water", sourceNode: "MESA-000_Index", targetZone: "round", targetNode: "MESA" },
+    { id: "c6", from: "water:MESA-000_Index", to: "search:Envasadora", fromZone: "water", fromNode: "MESA-000_Index", toZone: "search", toNode: "Envasadora", sourceZone: "water", sourceNode: "MESA-000_Index", targetZone: "search", targetNode: "Envasadora" },
+    { id: "c7", from: "water:EST-500_Saida", to: "materials:EST-500_Saida", fromZone: "water", fromNode: "EST-500_Saida", toZone: "materials", toNode: "EST-500_Saida", sourceZone: "water", sourceNode: "EST-500_Saida", targetZone: "materials", targetNode: "EST-500_Saida" },
+    { id: "c8", from: "search:Empacotadora", to: "materials:EMBALAGEM", fromZone: "search", fromNode: "Empacotadora", toZone: "materials", toNode: "EMBALAGEM", sourceZone: "search", sourceNode: "Empacotadora", targetZone: "materials", targetNode: "EMBALAGEM" },
+    { id: "c9", from: "search:Estacao_Inspecao", to: "agv:Lab", fromZone: "search", fromNode: "Estacao_Inspecao", toZone: "agv", toNode: "Lab", sourceZone: "search", sourceNode: "Estacao_Inspecao", targetZone: "agv", targetNode: "Lab" },
+    { id: "c10", from: "round:S100", to: "materials:E1_DISPENSA", fromZone: "round", fromNode: "S100", toZone: "materials", toNode: "E1_DISPENSA", sourceZone: "round", sourceNode: "S100", targetZone: "materials", targetNode: "E1_DISPENSA" },
+    { id: "c11", from: "round:S500", to: "materials:E5_EJECAO", fromZone: "round", fromNode: "S500", toZone: "materials", toNode: "E5_EJECAO", sourceZone: "round", sourceNode: "S500", targetZone: "materials", targetNode: "E5_EJECAO" },
+    { id: "c12", from: "materials:RECEB_COPOS", to: "vehicles:RECEBIMENTO", fromZone: "materials", fromNode: "RECEB_COPOS", toZone: "vehicles", toNode: "RECEBIMENTO", sourceZone: "materials", sourceNode: "RECEB_COPOS", targetZone: "vehicles", targetNode: "RECEBIMENTO" },
+    { id: "c13", from: "materials:ESTOQUE_PRODUTO", to: "vehicles:ESTOQUE_FINAL", fromZone: "materials", fromNode: "ESTOQUE_PRODUTO", toZone: "vehicles", toNode: "ESTOQUE_FINAL", sourceZone: "materials", sourceNode: "ESTOQUE_PRODUTO", targetZone: "vehicles", targetNode: "ESTOQUE_FINAL" },
+    { id: "c14", from: "materials:DOCA_EXPEDICAO", to: "vehicles:DOCA_EXPEDICAO", fromZone: "materials", fromNode: "DOCA_EXPEDICAO", toZone: "vehicles", toNode: "DOCA_EXPEDICAO", sourceZone: "materials", sourceNode: "DOCA_EXPEDICAO", targetZone: "vehicles", targetNode: "DOCA_EXPEDICAO" }
+  ];
+  const COUPLING_LINKS = Object.freeze(rawCouplingLinks.map(link => Object.freeze({ ...link })));
+
+  const zoneWater = Object.freeze({ id: "water", title: "Água / copos · Dijkstra", code: "14 / 15", unit: "cm", directed: true, x: 20, y: 20, width: 510, height: 455 });
+  const zoneSearch = Object.freeze({ id: "search", title: "Busca · BFS · DFS", code: "13 / busca", unit: "s", directed: true, x: 555, y: 20, width: 510, height: 455 });
+  const zoneRound = Object.freeze({ id: "round", title: "Inspeção · Euler", code: "16 / inspeção", unit: "min", directed: false, x: 1090, y: 20, width: 510, height: 455 });
+  const zoneMaterials = Object.freeze({ id: "materials", title: "Materiais · Kahn", code: "18 / materiais", unit: "m", directed: true, x: 20, y: 505, width: 510, height: 455 });
+  const zoneVehicles = Object.freeze({ id: "vehicles", title: "Veículos · Dijkstra", code: "18 / veículos", unit: "m", directed: true, x: 555, y: 505, width: 510, height: 455 });
+  const zoneAgv = Object.freeze({ id: "agv", title: "AGV · NN · 2-Opt", code: "17 / AGV", unit: "s", directed: false, x: 1090, y: 505, width: 510, height: 455 });
+
+  const ZONES = Object.freeze(Object.assign(
+    [zoneWater, zoneSearch, zoneRound, zoneMaterials, zoneVehicles, zoneAgv],
+    {
+      water: zoneWater,
+      search: zoneSearch,
+      round: zoneRound,
+      materials: zoneMaterials,
+      vehicles: zoneVehicles,
+      agv: zoneAgv
+    }
+  ));
+
   const validGraph = graph => graph && Array.isArray(graph.nodes) && Array.isArray(graph.edges) && graph.edges.every(edge => graph.nodes.includes(edge.from) && graph.nodes.includes(edge.to) && Number.isFinite(edge.weight) && edge.weight >= 0);
   const edgeList = (graph, blockedEdges = new Set(), blockedNodes = new Set()) => validGraph(graph) ? graph.edges.filter(edge => !blockedEdges.has(edge.id) && !blockedNodes.has(edge.from) && !blockedNodes.has(edge.to)) : [];
   const neighbors = (graph, node, blockedEdges, blockedNodes) => edgeList(graph, blockedEdges, blockedNodes).flatMap(edge => edge.from === node ? [{node:edge.to,edge}] : (!graph.directed && edge.to === node ? [{node:edge.from,edge}] : []));
@@ -43,7 +81,7 @@ const AquaIndexEtapa02 = (() => {
   const routeEdgeIds=(graph,route)=>route.slice(0,-1).map((node,index)=>graph.edges.filter(edge=>(edge.from===node&&edge.to===route[index+1])||(!graph.directed&&edge.from===route[index+1]&&edge.to===node)).sort((a,b)=>a.weight-b.weight)[0]?.id).filter(Boolean);
   function twoOpt(graph,route){if(!Array.isArray(route)||route.length<5)return {route:[...(route||[])],distance:distanceFor(graph,route||[]),improved:false};let best=[...route],bestDistance=distanceFor(graph,best),improved=true;while(improved){improved=false;for(let i=1;i<best.length-2;i++)for(let j=i+1;j<best.length-1;j++){const candidate=[...best.slice(0,i),...best.slice(i,j+1).reverse(),...best.slice(j+1)],value=distanceFor(graph,candidate);if(value<bestDistance){best=candidate;bestDistance=value;improved=true;break;}}}return {route:best,distance:bestDistance,improved:bestDistance<distanceFor(graph,route)};}
   function kahn(graph, options={}){if(!validGraph(graph))return {ok:false,reason:"grafo inválido",order:[]};const edges=edgeList(graph,options.blockedEdges||new Set(),options.blockedNodes||new Set()), nodes=graph.nodes.filter(node=>!(options.blockedNodes||new Set()).has(node)),incoming=new Map(nodes.map(node=>[node,0]));for(const edge of edges)incoming.set(edge.to,incoming.get(edge.to)+1);const ready=nodes.filter(node=>incoming.get(node)===0).sort(),order=[];while(ready.length){const node=ready.shift();order.push(node);for(const edge of edges.filter(item=>item.from===node)){incoming.set(edge.to,incoming.get(edge.to)-1);if(incoming.get(edge.to)===0){ready.push(edge.to);ready.sort();}}}return {ok:order.length===nodes.length,reason:order.length===nodes.length?"":"ciclo detectado",order};}
-  const api={GRAPH,dijkstra,bfs,dfsPaths,euler,nearestNeighbor,twoOpt,kahn,distanceFor,routeEdgeIds}; if(typeof module!=="undefined"&&module.exports)module.exports=api;
+  const api={GRAPH,dijkstra,bfs,dfsPaths,euler,nearestNeighbor,twoOpt,kahn,distanceFor,routeEdgeIds,COUPLING_LINKS,ZONES}; if(typeof module!=="undefined"&&module.exports)module.exports=api;
   if(typeof document==="undefined")return api;
   const $=(root,selector)=>root.querySelector(selector), $$=(root,selector)=>[...root.querySelectorAll(selector)], svgNS="http://www.w3.org/2000/svg";
   function add(parent,name,attrs={},text="",ns=false){const node=ns?document.createElementNS(svgNS,name):document.createElement(name);for(const [key,value] of Object.entries(attrs))node.setAttribute(key,String(value));if(text)node.textContent=text;parent.append(node);return node;}
@@ -51,14 +89,430 @@ const AquaIndexEtapa02 = (() => {
   const MODE={water:{graph:water,code:"14 / 15",title:"Água e copos: menor caminho",description:"Consulta até o dosador; somente os trechos de água entram no cálculo.",kind:"dijkstra",origin:"TK-101_Agua",destination:"DOS-201_Dosador",blocks:["a3","a4","MAN-200_Agua"]},search:{graph:search,code:"13 / busca",title:"BFS e DFS: saltos e caminhos",description:"BFS minimiza arestas; DFS lista caminhos simples (limite 40). Pesos em segundos não são usados pela BFS.",kind:"search",origin:"Reservatorio",destination:"Empacotadora",blocks:["V1","V2"]},round:{graph:round,code:"16 / inspeção",title:"Ronda: circuito Euleriano",description:"Grafo não dirigido: a rota só aparece quando paridade e conectividade permitem.",kind:"euler",blocks:round.edges.map(edge=>edge.id)},agv:{graph:agv,code:"17 / AGV",title:"Matriz legada: NN e 2-Opt",description:"Rótulos e custos da matriz ilustrativa do notebook; resultado é candidato, não ótimo global.",kind:"agv",origin:"Lab",blocks:[]},materials:{graph:materials,code:"18 / materiais",title:"Precedências: ordenação de Kahn",description:"O DAG mostra ordem estrutural; E1–E5 são obrigatórias, mas convergência não prova disponibilidade conjunta.",kind:"kahn",blocks:[]},vehicles:{graph:vehicles,code:"18 / veículos",title:"Veículos: menor caminho",description:"Dígrafo de circulação em metros, separado do DAG de materiais.",kind:"dijkstra",origin:"RECEBIMENTO",destination:"DOCA_EXPEDICAO",blocks:["CORREDOR_B","VIA_EXTERNA"]}};
   function initDeck(){const deck=$(document,"[data-etapa02-deck]");if(!deck)return;const slides=$$(deck,"[data-e02-slide]"),buttons=$$(deck,"[data-e02-go-slide]"),count=$(deck,"[data-e02-slide-count]"),title=$(deck,"[data-e02-slide-title]"),progress=$(deck,"[data-e02-progress]");let current=0;function show(index){current=(index+slides.length)%slides.length;slides.forEach((slide,i)=>slide.classList.toggle("is-current",i===current));buttons.forEach((button,i)=>{button.setAttribute("aria-current",i===current?"true":"false");button.setAttribute("aria-label",`Slide ${i+1}: ${slides[i].dataset.title}`);});count.textContent=`${String(current+1).padStart(2,"0")} / ${String(slides.length).padStart(2,"0")}`;title.textContent=slides[current].dataset.title;progress.value=current+1;}buttons.forEach((button,index)=>button.addEventListener("click",()=>show(index)));$(deck,"[data-e02-prev]").addEventListener("click",()=>show(current-1));$(deck,"[data-e02-next]").addEventListener("click",()=>show(current+1));deck.addEventListener("keydown",event=>{if(event.key==="ArrowLeft"){event.preventDefault();show(current-1);}if(event.key==="ArrowRight"){event.preventDefault();show(current+1);}});show(0);}
   function initFiles(){const rail=$(document,"[data-e02-file-rail]");if(!rail)return;$$ (rail,'a[href^="https://github.com/"]').forEach(link=>{link.target="_blank";link.rel="noopener";});const buttons=$$(rail,"[data-e02-file]"),cards=$$(document,"[data-e02-file-panel]");rail.setAttribute("role","tablist");rail.setAttribute("aria-label","Arquivos da Etapa 02");buttons.forEach((button,index)=>{const id=button.dataset.e02File,card=cards.find(item=>item.dataset.e02FilePanel===id);button.id=`e02-file-tab-${id}`;button.setAttribute("role","tab");button.setAttribute("aria-controls",`e02-file-panel-${id}`);button.tabIndex=index? -1:0;card.id=`e02-file-panel-${id}`;card.setAttribute("role","tabpanel");card.setAttribute("aria-labelledby",button.id);});function show(id,focus=false){buttons.forEach(button=>{const on=button.dataset.e02File===id;button.classList.toggle("is-active",on);button.setAttribute("aria-selected",String(on));button.tabIndex=on?0:-1;if(on&&focus)button.focus();});cards.forEach(card=>card.classList.toggle("is-active",card.dataset.e02FilePanel===id));}buttons.forEach((button,index)=>{button.addEventListener("click",()=>show(button.dataset.e02File));button.addEventListener("keydown",event=>{if(!["ArrowLeft","ArrowRight","Home","End"].includes(event.key))return;event.preventDefault();const target=event.key==="Home"?0:event.key==="End"?buttons.length-1:(index+(event.key==="ArrowRight"?1:buttons.length-1))%buttons.length;show(buttons[target].dataset.e02File,true);});});show("readme");}
-  function initSimulator(){const root=$(document,"[data-etapa02-simulator]");if(!root)return;const state={mode:"water",blockedEdges:new Set(),blockedNodes:new Set(),route:[],edgeIds:[],logs:[]};const graphSvg=$(root,"[data-e02-graph]"),selection=$(root,"[data-e02-selection]"),blocks=$(root,"[data-e02-blocks]"),routeNode=$(root,"[data-e02-route]"),logNode=$(root,"[data-e02-log]");function meta(){return MODE[state.mode];}function log(message){state.logs.unshift(message);state.logs=state.logs.slice(0,4);logNode.replaceChildren(...state.logs.map(line=>add(document.createDocumentFragment(),"li",{},line)));}
-    function opts(value){const nodes=state.mode==="water"?["TK-101_Agua","P-101_BombaA","P-102_BombaB","MAN-200_Agua","DOS-201_Dosador","BIC-202_Bico"]:meta().graph.nodes;return nodes.map(node=>`<option value="${node}"${node===value?" selected":""}>${node}</option>`).join("");}
-    function controls(){const mode=meta(),g=mode.graph;selection.replaceChildren();if(["dijkstra","search"].includes(mode.kind)){const one=add(add(selection,"label",{},"Origem"),"select",{"data-e02-origin":""});one.innerHTML=opts(mode.origin);const two=add(add(selection,"label",{},"Destino"),"select",{"data-e02-destination":""});two.innerHTML=opts(mode.destination);one.addEventListener("change",run);two.addEventListener("change",run);}else if(mode.kind==="agv"){const one=add(add(selection,"label",{},"Partida (matriz ilustrativa)"),"select",{"data-e02-origin":""});one.innerHTML=opts("Lab");one.addEventListener("change",run);}else add(selection,"p",{},mode.kind==="kahn"?"A ordenação considera o DAG completo.":"Bloqueie trechos para testar paridade e conectividade.");blocks.replaceChildren();const choices=mode.blocks||[];if(!choices.length){blocks.textContent="Esta vista não tem bloqueios interativos.";return;}choices.forEach(id=>{const edge=g.edges.find(item=>item.id===id),isNode=g.nodes.includes(id),label=add(blocks,"label"),input=add(label,"input",{type:"checkbox",value:id,"data-e02-block":""});input.checked=isNode?state.blockedNodes.has(id):state.blockedEdges.has(id);add(label,"span",{},isNode?`Nó · ${id}`:`${edge.id} · ${edge.from} ${g.directed?"→":"—"} ${edge.to} · ${edge.weight} ${g.unit}`);input.addEventListener("change",()=>{(isNode?state.blockedNodes:state.blockedEdges)[input.checked?"add":"delete"](id);run();});});}
-    function renderGraph(){const g=meta().graph,routeEdges=new Set(state.edgeIds),routeNodes=new Set(state.route),interactive=(meta().blocks||[]).length>0,width=1100,height=580,layouts={water:{"TK-101_Agua":{x:100,y:270},"P-101_BombaA":{x:300,y:145},"P-102_BombaB":{x:300,y:395},"MAN-200_Agua":{x:520,y:270},"DOS-201_Dosador":{x:730,y:270},"BIC-202_Bico":{x:930,y:270},"MAG-100_Copos":{x:520,y:470},"MESA-000_Index":{x:760,y:470},"EST-500_Saida":{x:1000,y:470}},search:{Reservatorio:{x:100,y:290},Bomba:{x:290,y:290},V1:{x:480,y:150},V2:{x:480,y:430},Envasadora:{x:670,y:290},Estacao_Inspecao:{x:850,y:290},Empacotadora:{x:1010,y:290}},round:{PAINEL:{x:130,y:270},"FRL-001":{x:290,y:100},S100:{x:550,y:70},S200:{x:830,y:125},S300:{x:980,y:290},S400:{x:830,y:455},S500:{x:550,y:510},MESA:{x:550,y:290}},materials:{RECEB_COPOS:{x:80,y:80},ESTOQUE_COPOS:{x:250,y:80},"MAG-100_Copos":{x:425,y:80},E1_DISPENSA:{x:600,y:80},RECEB_AGUA:{x:90,y:260},"TK-101_Agua":{x:300,y:260},E2_ENVASE:{x:660,y:210},RECEB_TAMPAS:{x:80,y:470},ESTOQUE_TAMPAS:{x:255,y:470},E3_TAMPA:{x:770,y:300},E4_SELAGEM:{x:860,y:390},E5_EJECAO:{x:860,y:500},"EST-500_Saida":{x:1015,y:500},EMBALAGEM:{x:1015,y:390},ESTOQUE_PRODUTO:{x:1015,y:280},DOCA_EXPEDICAO:{x:1015,y:170}},vehicles:{PORTARIA:{x:70,y:290},RECEBIMENTO:{x:220,y:290},CORREDOR_A:{x:410,y:290},CORREDOR_B:{x:610,y:290},ABASTECIMENTO:{x:410,y:100},ESTOQUE_FINAL:{x:790,y:290},DOCA_EXPEDICAO:{x:980,y:290},SAIDA:{x:980,y:100},VIA_EXTERNA:{x:600,y:500}}}[state.mode],positions=new Map(g.nodes.map((node,index)=>{const angle=-Math.PI/2+Math.PI*2*index/g.nodes.length;return [node,layouts?.[node]||{x:width/2+Math.cos(angle)*Math.min(390,190+g.nodes.length*10),y:height/2+Math.sin(angle)*Math.min(210,120+g.nodes.length*7)}];}));graphSvg.setAttribute("viewBox",`0 0 ${width} ${height}`);graphSvg.replaceChildren();const defs=add(graphSvg,"defs",{},"",true),arrow=(id,fill)=>{const marker=add(defs,"marker",{id,viewBox:"0 0 10 10",refX:9.5,refY:5,markerWidth:11,markerHeight:11,markerUnits:"userSpaceOnUse",orient:"auto-start-reverse"},"",true);add(marker,"path",{d:"M 0 0 L 10 5 L 0 10 z",fill},"",true);};arrow("e02-arrow","var(--ink-muted)");arrow("e02-arrow-route","var(--teal)");arrow("e02-arrow-blocked","var(--red)");const edgeLayer=add(graphSvg,"g",{class:"e02-edge-layer"},"",true),nodeLayer=add(graphSvg,"g",{class:"e02-node-layer"},"",true),labelLayer=add(graphSvg,"g",{class:"e02-label-layer"},"",true),blockNodes=new Set((meta().blocks||[]).filter(id=>g.nodes.includes(id)));const labelData=[];g.edges.forEach(edge=>{const a=positions.get(edge.from),b=positions.get(edge.to),dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy)||1,ux=dx/length,uy=dy/length,pad=Math.min(66/(Math.abs(ux)||Number.EPSILON),20/(Math.abs(uy)||Number.EPSILON)),start={x:a.x+ux*pad,y:a.y+uy*pad},end={x:b.x-ux*pad,y:b.y-uy*pad},reverse=g.edges.some(item=>item.from===edge.to&&item.to===edge.from),curve=reverse?32:0,cx=(start.x+end.x)/2-dy/length*curve,cy=(start.y+end.y)/2+dx/length*curve,path=`M ${start.x} ${start.y} Q ${cx} ${cy} ${end.x} ${end.y}`,blocked=state.blockedEdges.has(edge.id)||state.blockedNodes.has(edge.from)||state.blockedNodes.has(edge.to),line=add(edgeLayer,"path",{d:path,"data-e02-edge-id":edge.id,class:`e02-edge ${interactive?"e02-svg-edge":""} ${routeEdges.has(edge.id)?"is-route":""} ${blocked?"is-blocked":""}`},"",true);if(g.directed)line.setAttribute("marker-end",`url(#${blocked?"e02-arrow-blocked":routeEdges.has(edge.id)?"e02-arrow-route":"e02-arrow"})`);line.setAttribute("aria-label",`${edge.id}: ${edge.from} para ${edge.to}, ${edge.weight} ${g.unit}${interactive?". Alternar bloqueio.":"."}`);if(interactive){line.setAttribute("tabindex","0");line.setAttribute("role","button");const toggle=()=>{state.blockedEdges.has(edge.id)?state.blockedEdges.delete(edge.id):state.blockedEdges.add(edge.id);state.focusSelector=`[data-e02-edge-id="${edge.id}"]`;run();};line.addEventListener("click",toggle);line.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();toggle();}});}const mid={x:(start.x+2*cx+end.x)/4,y:(start.y+2*cy+end.y)/4},shift=state.mode==="materials"?({"m9":0,"m10":0}[edge.id]??-38):state.mode==="search"||state.mode==="vehicles"?48:state.mode==="agv"?({"g3":-32,"g8":32,"g12":-20}[edge.id]||12):12;labelData.push({edge,x:mid.x-uy*shift,y:mid.y+ux*shift});});g.nodes.forEach(node=>{const point=positions.get(node),blocked=state.blockedNodes.has(node),clickable=blockNodes.has(node),group=add(nodeLayer,"g",{class:`e02-node ${clickable?"e02-svg-node":""} ${routeNodes.has(node)?"is-route":""} ${blocked?"is-blocked":""}`},"",true);add(group,"rect",{x:point.x-66,y:point.y-20,width:132,height:40,rx:4},"",true);add(group,"text",{x:point.x,y:point.y},node.length>17?`${node.slice(0,16)}…`:node,true);if(clickable){group.setAttribute("tabindex","0");group.setAttribute("role","button");group.setAttribute("aria-label",`${node}. Alternar bloqueio.`);const toggle=()=>{state.blockedNodes.has(node)?state.blockedNodes.delete(node):state.blockedNodes.add(node);state.focusSelector=`.e02-svg-node[aria-label^="${node}."]`;run();};group.addEventListener("click",toggle);group.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();toggle();}});}});labelData.forEach(({edge,x,y})=>add(labelLayer,"text",{x,y,class:"e02-edge-label"},`${edge.id} · ${edge.weight}`,true));$(root,"[data-e02-legend]").replaceChildren(...["aresta","rota calculada",interactive?"bloqueio acionável":"fonte didática"].map((text,index)=>add(document.createDocumentFragment(),"span",{class:index===1?"route":index===2&&interactive?"block":""},text)));if(state.focusSelector){graphSvg.querySelector(state.focusSelector)?.focus();state.focusSelector=null;}}
-    function syncBlocks(){blocks.querySelectorAll("[data-e02-block]").forEach(input=>{input.checked=meta().graph.nodes.includes(input.value)?state.blockedNodes.has(input.value):state.blockedEdges.has(input.value);});graphSvg.querySelectorAll(".e02-svg-edge").forEach(line=>line.setAttribute("aria-pressed",String(state.blockedEdges.has(line.dataset.e02EdgeId))));graphSvg.querySelectorAll(".e02-svg-node").forEach(node=>node.setAttribute("aria-pressed",String(state.blockedNodes.has(node.querySelector("text").textContent))));const extras=[...state.blockedEdges].filter(id=>!(meta().blocks||[]).includes(id));let note=$(blocks,"[data-e02-extra-blocks]");if(extras.length){if(!note)note=add(blocks,"p",{"data-e02-extra-blocks":"","aria-live":"polite"});note.textContent=`Arestas bloqueadas no diagrama: ${extras.join(", ")}.`;}else note?.remove();}
-    function result(title,text,path=[],edgeIds=[]){state.route=path;state.edgeIds=edgeIds;$(root,"[data-e02-result-title]").textContent=title;$(root,"[data-e02-result]").textContent=text;routeNode.replaceChildren(...path.map(node=>add(document.createDocumentFragment(),"li",{},node)));renderGraph();syncBlocks();}
-    function run(){const mode=meta(),g=mode.graph,origin=$(selection,"[data-e02-origin]")?.value||mode.origin,destination=$(selection,"[data-e02-destination]")?.value||mode.destination,options={blockedEdges:state.blockedEdges,blockedNodes:state.blockedNodes};if(mode.kind==="dijkstra"){const answer=dijkstra(g,origin,destination,options);result(answer.ok?`${answer.distance} ${g.unit}`:"Sem rota",answer.ok?`${origin} → ${destination}; Dijkstra respeitou direção, pesos e bloqueios.`:`${answer.reason}. Nenhum caminho é exibido.`,answer.path,answer.edgeIds);log(answer.ok?`Dijkstra: ${answer.distance} ${g.unit}.`:`Dijkstra: ${answer.reason}.`);}else if(mode.kind==="search"){const wide=bfs(g,origin,destination,options),depth=dfsPaths(g,origin,destination,{...options,limit:40}),paths=depth.paths?.map(item=>item.path.join(" → ")).join(" | ");result(wide.ok?`${wide.hops} arestas por BFS`:"Sem rota",wide.ok?`DFS encontrou ${depth.paths.length} caminho(s) simples${depth.limited?" (limite atingido)":""}: ${paths}; BFS ignora os pesos em s.`:`${wide.reason}.`,wide.path,wide.edgeIds);log(wide.ok?`BFS: ${wide.hops} saltos; DFS: ${depth.paths.length} caminho(s).`:`Busca: ${wide.reason}.`);}else if(mode.kind==="euler"){const answer=euler(g,options);result(answer.ok?`${answer.kind[0].toUpperCase()+answer.kind.slice(1)} · ${answer.weight} min`:"Rota Euleriana indisponível",answer.ok?`Hierholzer usou ${answer.edgeIds.length} IDs uma vez cada (${answer.edgeIds.join(" → ")}).`:`${answer.reason}; não há rota exibida.`,answer.path,answer.edgeIds);log(answer.ok?`Euler: ${answer.kind}, ${answer.weight} min.`:`Euler: ${answer.reason}.`);}else if(mode.kind==="agv"){const nn=nearestNeighbor(g,origin),opt=nn.ok?twoOpt(g,nn.route):nn;result(nn.ok?`NN ${nn.distance} s → 2-Opt ${opt.distance} s`:"Ciclo indisponível",nn.ok?`NN inicial (${nn.route.join(" → ")}) refinada por 2-Opt; a melhoria aceita apenas troca estritamente melhor e é candidata, não ótimo global.`:"A matriz não fecha um ciclo.",opt.route,nn.ok?routeEdgeIds(g,opt.route):[]);log(nn.ok?`NN ${nn.distance} s; 2-Opt ${opt.distance} s.`:"AGV: sem ciclo.");}else {const answer=kahn(g,options),chain=["E1_DISPENSA","E2_ENVASE","E3_TAMPA","E4_SELAGEM","E5_EJECAO"];result(answer.ok?`${answer.order.length} vértices ordenados`:"Ciclo detectado",answer.ok?`Kahn ordenou precedências; ${chain.join(" → ")} (E1–E5) permanece no DAG.`:"A ordenação ficou incompleta; não há sequência válida.",answer.order,answer.ok?["m8","m9","m10","m11"]:[]);log(answer.ok?`Kahn: ${answer.order.length} vértices.`:"Kahn: ciclo detectado.");}}
-    function changeMode(id,focus=false){state.mode=id;state.blockedEdges.clear();state.blockedNodes.clear();state.route=[];state.edgeIds=[];const mode=meta();$$(root,"[data-e02-mode]").forEach(button=>{const on=button.dataset.e02Mode===id;button.setAttribute("aria-selected",String(on));button.tabIndex=on?0:-1;if(on&&focus)button.focus();});root.setAttribute("aria-labelledby",`e02-mode-${id}`);$(root,"[data-e02-mode-code]").textContent=mode.code;$(root,"[data-e02-mode-title]").textContent=mode.title;$(root,"[data-e02-mode-description]").textContent=mode.description;$(root,"[data-e02-mode-unit]").textContent=`${mode.graph.unit} · ${mode.graph.directed?"dirigido":"não dirigido"}`;graphSvg.setAttribute("aria-label",`Grafo: ${mode.title}`);state.logs=[`Vista ${mode.title} carregada.`];controls();run();}
-    const modeButtons=$$(root,"[data-e02-mode]");modeButtons.forEach((button,index)=>{button.addEventListener("click",()=>changeMode(button.dataset.e02Mode));button.addEventListener("keydown",event=>{if(!["ArrowLeft","ArrowRight","Home","End"].includes(event.key))return;event.preventDefault();const target=event.key==="Home"?0:event.key==="End"?modeButtons.length-1:(index+(event.key==="ArrowRight"?1:modeButtons.length-1))%modeButtons.length;changeMode(modeButtons[target].dataset.e02Mode,true);});});$(root,"[data-e02-run]").addEventListener("click",run);$(root,"[data-e02-reset]").addEventListener("click",()=>changeMode(state.mode));changeMode("water");}
-  function init(){initTabs();initDeck();initFiles();initSimulator();}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();return api;
+
+  function initSimulator(){
+    const root=$(document,"[data-etapa02-simulator]");if(!root)return;
+    const state={
+      mode:"water",
+      blocksByMode:{
+        water:{blockedEdges:new Set(),blockedNodes:new Set()},
+        search:{blockedEdges:new Set(),blockedNodes:new Set()},
+        round:{blockedEdges:new Set(),blockedNodes:new Set()},
+        agv:{blockedEdges:new Set(),blockedNodes:new Set()},
+        materials:{blockedEdges:new Set(),blockedNodes:new Set()},
+        vehicles:{blockedEdges:new Set(),blockedNodes:new Set()}
+      },
+      origins:{water:"TK-101_Agua",search:"Reservatorio",agv:"Lab",vehicles:"RECEBIMENTO"},
+      destinations:{water:"DOS-201_Dosador",search:"Empacotadora",vehicles:"DOCA_EXPEDICAO"},
+      solutions:{},
+      logs:[]
+    };
+    const graphSvg=$(root,"[data-e02-graph]"),
+          selection=$(root,"[data-e02-selection]"),
+          blocks=$(root,"[data-e02-blocks]"),
+          routeNode=$(root,"[data-e02-route]"),
+          logNode=$(root,"[data-e02-log]"),
+          modelSelect=$(root,"[data-e02-model-select]");
+
+    function meta(){return MODE[state.mode];}
+    function currentBlocks(){return state.blocksByMode[state.mode];}
+
+    function log(message){
+      state.logs.unshift(message);
+      state.logs=state.logs.slice(0,4);
+      logNode.replaceChildren(...state.logs.map(line=>add(document.createDocumentFragment(),"li",{},line)));
+    }
+
+    function opts(zoneId,value){
+      const nodes=zoneId==="water"?["TK-101_Agua","P-101_BombaA","P-102_BombaB","MAN-200_Agua","DOS-201_Dosador","BIC-202_Bico"]:GRAPH[zoneId].nodes;
+      return nodes.map(node=>`<option value="${node}"${node===value?" selected":""}>${node}</option>`).join("");
+    }
+
+    function controls(){
+      const mode=meta(),g=mode.graph,cur=currentBlocks();
+      selection.replaceChildren();
+      if(["dijkstra","search"].includes(mode.kind)){
+        const one=add(add(selection,"label",{},"Origem"),"select",{"data-e02-origin":""});
+        one.innerHTML=opts(state.mode,state.origins[state.mode]||mode.origin);
+        const two=add(add(selection,"label",{},"Destino"),"select",{"data-e02-destination":""});
+        two.innerHTML=opts(state.mode,state.destinations[state.mode]||mode.destination);
+        one.addEventListener("change",()=>{state.origins[state.mode]=one.value;run();});
+        two.addEventListener("change",()=>{state.destinations[state.mode]=two.value;run();});
+      }else if(mode.kind==="agv"){
+        const one=add(add(selection,"label",{},"Partida (matriz ilustrativa)"),"select",{"data-e02-origin":""});
+        one.innerHTML=opts("agv",state.origins.agv||"Lab");
+        one.addEventListener("change",()=>{state.origins.agv=one.value;run();});
+      }else{
+        add(selection,"p",{},mode.kind==="kahn"?"A ordenação topológica considera todo o fluxo de materiais da planta.":"Bloqueie trechos no diagrama para testar paridade e conectividade.");
+      }
+
+      blocks.replaceChildren();
+      const choices=mode.blocks||[];
+      if(!choices.length){
+        blocks.textContent="Este modelo de análise não possui bloqueios interativos cadastrados.";
+        return;
+      }
+      choices.forEach(id=>{
+        const edge=g.edges.find(item=>item.id===id),isNode=g.nodes.includes(id),label=add(blocks,"label"),input=add(label,"input",{type:"checkbox",value:id,"data-e02-block":""});
+        input.checked=isNode?cur.blockedNodes.has(id):cur.blockedEdges.has(id);
+        add(label,"span",{},isNode?`Nó · ${id}`:`${edge.id} · ${edge.from} ${g.directed?"→":"—"} ${edge.to} · ${edge.weight} ${g.unit}`);
+        input.addEventListener("change",()=>{
+          (isNode?cur.blockedNodes:cur.blockedEdges)[input.checked?"add":"delete"](id);
+          run();
+        });
+      });
+    }
+
+    const nodePositions={
+      water:{
+        "TK-101_Agua":{x:95,y:195},"P-101_BombaA":{x:215,y:125},"P-102_BombaB":{x:215,y:265},
+        "MAN-200_Agua":{x:335,y:195},"DOS-201_Dosador":{x:445,y:195},"BIC-202_Bico":{x:445,y:300},
+        "MAG-100_Copos":{x:95,y:405},"MESA-000_Index":{x:270,y:405},"EST-500_Saida":{x:445,y:405}
+      },
+      search:{
+        "Reservatorio":{x:635,y:250},"Bomba":{x:740,y:250},"V1":{x:840,y:145},"V2":{x:840,y:355},
+        "Envasadora":{x:935,y:250},"Estacao_Inspecao":{x:1010,y:155},"Empacotadora":{x:1010,y:345}
+      },
+      round:{
+        "PAINEL":{x:1165,y:250},"FRL-001":{x:1235,y:120},"S100":{x:1345,y:90},"S200":{x:1465,y:125},
+        "S300":{x:1525,y:250},"S400":{x:1465,y:380},"S500":{x:1345,y:415},"MESA":{x:1345,y:250}
+      },
+      materials:{
+        "RECEB_COPOS":{x:70,y:560},"ESTOQUE_COPOS":{x:185,y:560},"MAG-100_Copos":{x:305,y:560},"E1_DISPENSA":{x:445,y:560},
+        "RECEB_AGUA":{x:70,y:625},"TK-101_Agua":{x:235,y:625},"E2_ENVASE":{x:445,y:625},
+        "RECEB_TAMPAS":{x:70,y:690},"ESTOQUE_TAMPAS":{x:235,y:690},"E3_TAMPA":{x:445,y:690},
+        "E4_SELAGEM":{x:445,y:755},"E5_EJECAO":{x:445,y:820},"EST-500_Saida":{x:445,y:900},
+        "EMBALAGEM":{x:320,y:900},"ESTOQUE_PRODUTO":{x:195,y:900},"DOCA_EXPEDICAO":{x:70,y:900}
+      },
+      vehicles:{
+        "PORTARIA":{x:630,y:600},"SAIDA":{x:990,y:600},"ABASTECIMENTO":{x:810,y:600},
+        "RECEBIMENTO":{x:630,y:745},"CORREDOR_A":{x:745,y:745},"CORREDOR_B":{x:875,y:745},
+        "ESTOQUE_FINAL":{x:990,y:745},"VIA_EXTERNA":{x:810,y:895},"DOCA_EXPEDICAO":{x:990,y:895}
+      },
+      agv:{
+        "Lab":{x:1345,y:600},"TK301":{x:1485,y:675},"TK302":{x:1485,y:820},
+        "R101":{x:1345,y:895},"TK303":{x:1205,y:820},"GRAN201":{x:1205,y:675}
+      }
+    };
+
+    function renderGraph(){
+      const width=1620,height=980,activeMode=state.mode;
+      const activeSol=state.solutions[activeMode]||{};
+      const activeRouteNodes=new Set(activeSol.path||activeSol.order||[]);
+      const activeRouteEdges=new Set(activeSol.edgeIds||[]);
+      const activeBlockedNodes=state.blocksByMode[activeMode]?.blockedNodes||new Set();
+      const activeBlockedEdges=state.blocksByMode[activeMode]?.blockedEdges||new Set();
+
+      const coupledRouteNodes=new Set(),coupledBlockedNodes=new Set(),coupledRouteLinks=new Set(),coupledBlockedLinks=new Set();
+      COUPLING_LINKS.forEach(link=>{
+        const srcActive=(link.sourceZone===activeMode),tgtActive=(link.targetZone===activeMode);
+        if(srcActive){
+          if(activeRouteNodes.has(link.sourceNode)){coupledRouteLinks.add(link.id);coupledRouteNodes.add(`${link.targetZone}:${link.targetNode}`);}
+          if(activeBlockedNodes.has(link.sourceNode)){coupledBlockedLinks.add(link.id);coupledBlockedNodes.add(`${link.targetZone}:${link.targetNode}`);}
+        }else if(tgtActive){
+          if(activeRouteNodes.has(link.targetNode)){coupledRouteLinks.add(link.id);coupledRouteNodes.add(`${link.sourceZone}:${link.sourceNode}`);}
+          if(activeBlockedNodes.has(link.targetNode)){coupledBlockedLinks.add(link.id);coupledBlockedNodes.add(`${link.sourceZone}:${link.sourceNode}`);}
+        }
+      });
+
+      graphSvg.setAttribute("viewBox",`0 0 ${width} ${height}`);
+      graphSvg.replaceChildren();
+
+      const defs=add(graphSvg,"defs",{},"",true);
+      const makeArrow=(id,fill)=>{
+        const marker=add(defs,"marker",{id,viewBox:"0 0 10 10",refX:9.5,refY:5,markerWidth:11,markerHeight:11,markerUnits:"userSpaceOnUse",orient:"auto-start-reverse"},"",true);
+        add(marker,"path",{d:"M 0 0 L 10 5 L 0 10 z",fill},"",true);
+      };
+      makeArrow("e02-arrow","var(--ink-muted)");
+      makeArrow("e02-arrow-route","var(--teal)");
+      makeArrow("e02-arrow-context-route","color-mix(in srgb, var(--teal) 65%, var(--ink-muted))");
+      makeArrow("e02-arrow-blocked","var(--red)");
+
+      const zoneLayer=add(graphSvg,"g",{class:"e02-zone-layer"},"",true);
+      const couplingLayer=add(graphSvg,"g",{class:"e02-coupling-layer"},"",true);
+      const edgeLayer=add(graphSvg,"g",{class:"e02-edge-layer"},"",true);
+      const nodeLayer=add(graphSvg,"g",{class:"e02-node-layer"},"",true);
+      const labelLayer=add(graphSvg,"g",{class:"e02-label-layer"},"",true);
+
+      ZONES.forEach(z=>{
+        const isActive=(z.id===activeMode);
+        const zg=add(zoneLayer,"g",{class:`e02-zone ${isActive?"is-active-zone":""}`,"data-e02-zone":z.id,role:"region","aria-label":z.title},"",true);
+        add(zg,"rect",{class:"e02-zone-box",x:z.x,y:z.y,width:z.width,height:z.height,rx:10},"",true);
+        add(zg,"text",{class:"e02-zone-title",x:z.x+16,y:z.y+26},z.title,true);
+        zg.addEventListener("click",()=>{if(state.mode!==z.id)changeMode(z.id,true);});
+      });
+
+      COUPLING_LINKS.forEach(link=>{
+        const a=nodePositions[link.sourceZone]?.[link.sourceNode];
+        const b=nodePositions[link.targetZone]?.[link.targetNode];
+        if(!a||!b)return;
+        const dx=b.x-a.x,dy=b.y-a.y;
+        const cx1=a.x+dx*0.25,cy1=a.y+dy*0.5,cx2=a.x+dx*0.75,cy2=a.y+dy*0.5;
+        const d=`M ${a.x} ${a.y} C ${cx1} ${cy1} ${cx2} ${cy2} ${b.x} ${b.y}`;
+        const isRoute=coupledRouteLinks.has(link.id),isBlocked=coupledBlockedLinks.has(link.id);
+        add(couplingLayer,"path",{
+          d,
+          class:`e02-coupling-edge ${isRoute?"is-coupled-route":""} ${isBlocked?"is-coupled-blocked":""}`,
+          "data-e02-coupling":link.id,
+          "data-coupling-from":link.from,
+          "data-coupling-to":link.to,
+          "aria-label":`Elo de interconexão entre ${link.from} e ${link.to}`
+        },"",true);
+      });
+
+      ZONES.forEach(z=>{
+        const g=GRAPH[z.id],isCurrentZone=(z.id===activeMode);
+        const sol=state.solutions[z.id]||{};
+        const routeEdges=new Set(sol.edgeIds||[]);
+        const bEdges=state.blocksByMode[z.id]?.blockedEdges||new Set();
+        const bNodes=state.blocksByMode[z.id]?.blockedNodes||new Set();
+        const interactive=(MODE[z.id].blocks||[]).length>0;
+
+        g.edges.forEach(edge=>{
+          const a=nodePositions[z.id][edge.from],b=nodePositions[z.id][edge.to];
+          if(!a||!b)return;
+          const dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy)||1,ux=dx/length,uy=dy/length;
+          const pad=Math.min(48/(Math.abs(ux)||Number.EPSILON),14/(Math.abs(uy)||Number.EPSILON));
+          const start={x:a.x+ux*pad,y:a.y+uy*pad},end={x:b.x-ux*pad,y:b.y-uy*pad};
+          const reverse=g.edges.some(item=>item.from===edge.to&&item.to===edge.from);
+          const curve=reverse?18:0,cx=(start.x+end.x)/2-dy/length*curve,cy=(start.y+end.y)/2+dx/length*curve;
+          const path=`M ${start.x} ${start.y} Q ${cx} ${cy} ${end.x} ${end.y}`;
+
+          const isBlocked=bEdges.has(edge.id)||bNodes.has(edge.from)||bNodes.has(edge.to);
+          const isRoute=isCurrentZone&&routeEdges.has(edge.id);
+          const isContextRoute=!isCurrentZone&&routeEdges.has(edge.id);
+
+          const line=add(edgeLayer,"path",{
+            d:path,
+            "data-e02-edge-id":edge.id,
+            "data-e02-zone":z.id,
+            class:`e02-edge ${interactive?"e02-svg-edge":""} ${isRoute?"is-route":""} ${isContextRoute?"is-context-route":""} ${isBlocked?"is-blocked":""}`
+          },"",true);
+
+          if(g.directed){
+            const markerId=isBlocked?"e02-arrow-blocked":isRoute?"e02-arrow-route":isContextRoute?"e02-arrow-context-route":"e02-arrow";
+            line.setAttribute("marker-end",`url(#${markerId})`);
+          }
+          line.setAttribute("aria-label",`${edge.id}: ${edge.from} para ${edge.to}, ${edge.weight} ${g.unit}${interactive?". Alternar bloqueio.":"."}`);
+
+          if(interactive){
+            line.setAttribute("tabindex","0");
+            line.setAttribute("role","button");
+            const toggle=()=>{
+              if(state.mode!==z.id)changeMode(z.id);
+              bEdges.has(edge.id)?bEdges.delete(edge.id):bEdges.add(edge.id);
+              state.focusSelector=`[data-e02-edge-id="${edge.id}"][data-e02-zone="${z.id}"]`;
+              run();
+            };
+            line.addEventListener("click",toggle);
+            line.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();toggle();}});
+          }
+
+          const mid={x:(start.x+2*cx+end.x)/4,y:(start.y+2*cy+end.y)/4};
+          const shift=z.id==="materials"?({"m9":0,"m10":0}[edge.id]??-22):z.id==="search"||z.id==="vehicles"?26:z.id==="agv"?({"g3":-22,"g8":22,"g12":-16}[edge.id]||10):10;
+          add(labelLayer,"text",{x:mid.x-uy*shift,y:mid.y+ux*shift,class:"e02-edge-label"},`${edge.id} · ${edge.weight}`,true);
+        });
+
+        const blockableNodes=new Set((MODE[z.id].blocks||[]).filter(id=>g.nodes.includes(id)));
+        g.nodes.forEach(node=>{
+          const point=nodePositions[z.id][node];
+          if(!point)return;
+          const isBlocked=bNodes.has(node);
+          const isRoute=isCurrentZone&&activeRouteNodes.has(node);
+          const isContextRoute=!isCurrentZone&&(new Set(sol.path||sol.order||[])).has(node);
+          const isCoupledRoute=coupledRouteNodes.has(`${z.id}:${node}`);
+          const isCoupledBlocked=coupledBlockedNodes.has(`${z.id}:${node}`);
+          const isCoupledNode=isCoupledRoute||isCoupledBlocked;
+          const clickable=blockableNodes.has(node);
+
+          const group=add(nodeLayer,"g",{
+            class:`e02-node ${clickable?"e02-svg-node":""} ${isRoute?"is-route":""} ${isContextRoute?"is-context-route":""} ${isBlocked?"is-blocked":""} ${isCoupledNode?"is-coupled-node":""} ${isCoupledRoute?"is-coupled-route":""} ${isCoupledBlocked?"is-coupled-blocked":""}`,
+            "data-e02-node-id":node,
+            "data-e02-zone":z.id
+          },"",true);
+
+          add(group,"rect",{x:point.x-48,y:point.y-14,width:96,height:28,rx:4},"",true);
+          add(group,"text",{x:point.x,y:point.y+1},node.length>14?`${node.slice(0,13)}…`:node,true);
+
+          if(clickable){
+            group.setAttribute("tabindex","0");
+            group.setAttribute("role","button");
+            group.setAttribute("aria-label",`${node}. Alternar bloqueio.`);
+            const toggle=()=>{
+              if(state.mode!==z.id)changeMode(z.id);
+              bNodes.has(node)?bNodes.delete(node):bNodes.add(node);
+              state.focusSelector=`.e02-svg-node[data-e02-node-id="${node}"][data-e02-zone="${z.id}"]`;
+              run();
+            };
+            group.addEventListener("click",toggle);
+            group.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();toggle();}});
+          }else{
+            group.addEventListener("click",()=>{if(state.mode!==z.id)changeMode(z.id);});
+          }
+        });
+      });
+
+      const interactive=(MODE[activeMode].blocks||[]).length>0;
+      const legendItems=[
+        {text:"aresta",class:""},
+        {text:"rota calculada",class:"route"},
+        {text:"rota em outra vista",class:"context-route"},
+        {text:"elo entre vistas (interconexão)",class:"coupling"},
+        {text:interactive?"bloqueio acionável":"bloqueio",class:"block"}
+      ];
+      $(root,"[data-e02-legend]").replaceChildren(
+        ...legendItems.map(item=>add(document.createDocumentFragment(),"span",{class:item.class},item.text))
+      );
+
+      if(state.focusSelector){
+        graphSvg.querySelector(state.focusSelector)?.focus();
+        state.focusSelector=null;
+      }
+    }
+
+    function syncBlocks(){
+      const active=MODE[state.mode],cur=currentBlocks();
+      blocks.querySelectorAll("[data-e02-block]").forEach(input=>{
+        input.checked=active.graph.nodes.includes(input.value)?cur.blockedNodes.has(input.value):cur.blockedEdges.has(input.value);
+      });
+      graphSvg.querySelectorAll(".e02-svg-edge").forEach(line=>{
+        const zId=line.dataset.e02Zone,eId=line.dataset.e02EdgeId;
+        line.setAttribute("aria-pressed",String(state.blocksByMode[zId]?.blockedEdges.has(eId)));
+      });
+      graphSvg.querySelectorAll(".e02-svg-node").forEach(node=>{
+        const zId=node.dataset.e02Zone,nId=node.dataset.e02NodeId;
+        node.setAttribute("aria-pressed",String(state.blocksByMode[zId]?.blockedNodes.has(nId)));
+      });
+      const extras=[...cur.blockedEdges].filter(id=>!(active.blocks||[]).includes(id));
+      let note=$(blocks,"[data-e02-extra-blocks]");
+      if(extras.length){
+        if(!note)note=add(blocks,"p",{"data-e02-extra-blocks":"","aria-live":"polite"});
+        note.textContent=`Arestas bloqueadas no diagrama: ${extras.join(", ")}.`;
+      }else note?.remove();
+    }
+
+    function computeZoneSolution(modeKey){
+      const mode=MODE[modeKey],g=mode.graph,b=state.blocksByMode[modeKey];
+      const origin=state.origins[modeKey]||mode.origin;
+      const destination=state.destinations[modeKey]||mode.destination;
+      const options={blockedEdges:b.blockedEdges,blockedNodes:b.blockedNodes};
+
+      if(mode.kind==="dijkstra") return dijkstra(g,origin,destination,options);
+      if(mode.kind==="search"){
+        const wide=bfs(g,origin,destination,options);
+        const depth=dfsPaths(g,origin,destination,{...options,limit:40});
+        return {...wide,paths:depth.paths||[],limited:depth.limited};
+      }
+      if(mode.kind==="euler") return euler(g,options);
+      if(mode.kind==="agv"){
+        const nn=nearestNeighbor(g,origin||"Lab");
+        const opt=nn.ok?twoOpt(g,nn.route):nn;
+        return {ok:nn.ok,nn,opt,path:opt.route||[],edgeIds:nn.ok?routeEdgeIds(g,opt.route):[]};
+      }
+      if(mode.kind==="kahn"){
+        const ans=kahn(g,options);
+        return {ok:ans.ok,order:ans.order,path:ans.order,edgeIds:ans.ok?["m8","m9","m10","m11"]:[],reason:ans.reason};
+      }
+      return {ok:false,path:[],edgeIds:[]};
+    }
+
+    function run(){
+      Object.keys(MODE).forEach(key=>{
+        state.solutions[key]=computeZoneSolution(key);
+      });
+
+      const mode=meta(),sol=state.solutions[state.mode],g=mode.graph;
+      const origin=state.origins[state.mode]||mode.origin;
+      const destination=state.destinations[state.mode]||mode.destination;
+
+      let title="",desc="",path=[],edgeIds=[];
+      if(mode.kind==="dijkstra"){
+        title=sol.ok?`${sol.distance} ${g.unit}`:"Sem rota";
+        desc=sol.ok?`${origin} → ${destination}; Dijkstra respeitou direção, pesos e bloqueios.`:`${sol.reason}. Nenhum caminho é exibido.`;
+        path=sol.path||[];edgeIds=sol.edgeIds||[];
+        log(sol.ok?`Dijkstra: ${sol.distance} ${g.unit}.`:`Dijkstra: ${sol.reason}.`);
+      }else if(mode.kind==="search"){
+        const paths=sol.paths?.map(item=>item.path.join(" → ")).join(" | ");
+        title=sol.ok?`${sol.hops} arestas por BFS`:"Sem rota";
+        desc=sol.ok?`DFS encontrou ${sol.paths.length} caminho(s) simples${sol.limited?" (limite atingido)":""}: ${paths}; BFS ignora os pesos em s.`:`${sol.reason}.`;
+        path=sol.path||[];edgeIds=sol.edgeIds||[];
+        log(sol.ok?`BFS: ${sol.hops} saltos; DFS: ${sol.paths.length} caminho(s).`:`Busca: ${sol.reason}.`);
+      }else if(mode.kind==="euler"){
+        title=sol.ok?`${sol.kind[0].toUpperCase()+sol.kind.slice(1)} · ${sol.weight} min`:"Rota Euleriana indisponível";
+        desc=sol.ok?`Hierholzer usou ${sol.edgeIds.length} IDs uma vez cada (${sol.edgeIds.join(" → ")}).`:`${sol.reason}; não há rota exibida.`;
+        path=sol.path||[];edgeIds=sol.edgeIds||[];
+        log(sol.ok?`Euler: ${sol.kind}, ${sol.weight} min.`:`Euler: ${sol.reason}.`);
+      }else if(mode.kind==="agv"){
+        const nn=sol.nn||{},opt=sol.opt||{};
+        title=sol.ok?`NN ${nn.distance} s → 2-Opt ${opt.distance} s`:"Ciclo indisponível";
+        desc=sol.ok?`NN inicial (${nn.route.join(" → ")}) refinada por 2-Opt; a melhoria aceita apenas troca estritamente melhor e é candidata, não ótimo global.`:"A matriz não fecha um ciclo.";
+        path=opt.route||[];edgeIds=sol.edgeIds||[];
+        log(sol.ok?`NN ${nn.distance} s; 2-Opt ${opt.distance} s.`:"AGV: sem ciclo.");
+      }else{
+        const chain=["E1_DISPENSA","E2_ENVASE","E3_TAMPA","E4_SELAGEM","E5_EJECAO"];
+        title=sol.ok?`${sol.order.length} vértices ordenados`:"Ciclo detectado";
+        desc=sol.ok?`Kahn ordenou precedências; ${chain.join(" → ")} (E1–E5) permanece no DAG.`:"A ordenação ficou incompleta; não há sequência válida.";
+        path=sol.order||[];edgeIds=sol.edgeIds||[];
+        log(sol.ok?`Kahn: ${sol.order.length} vértices.`:"Kahn: ciclo detectado.");
+      }
+
+      $(root,"[data-e02-result-title]").textContent=title;
+      $(root,"[data-e02-result]").textContent=desc;
+      routeNode.replaceChildren(...path.map(node=>add(document.createDocumentFragment(),"li",{},node)));
+      renderGraph();
+      syncBlocks();
+    }
+
+    function changeMode(id,focus=false){
+      state.mode=id;
+      const mode=meta();
+      $$(root,"[data-e02-mode]").forEach(button=>{
+        const on=button.dataset.e02Mode===id;
+        button.setAttribute("aria-selected",String(on));
+        button.tabIndex=on?0:-1;
+        if(on&&focus)button.focus();
+      });
+      if(modelSelect&&modelSelect.value!==id)modelSelect.value=id;
+      root.setAttribute("aria-labelledby",`e02-mode-${id}`);
+      $(root,"[data-e02-mode-code]").textContent=mode.code;
+      $(root,"[data-e02-mode-title]").textContent=mode.title;
+      $(root,"[data-e02-mode-description]").textContent=mode.description;
+      $(root,"[data-e02-mode-unit]").textContent=`${mode.graph.unit} · ${mode.graph.directed?"dirigido":"não dirigido"}`;
+      graphSvg.setAttribute("aria-label",`Diagrama unificado — modelo ativo: ${mode.title}`);
+      state.logs=[`Modelo ${mode.title} selecionado.`];
+      controls();
+      run();
+    }
+
+    const modeButtons=$$(root,"[data-e02-mode]");
+    modeButtons.forEach((button,index)=>{
+      button.addEventListener("click",()=>changeMode(button.dataset.e02Mode));
+      button.addEventListener("keydown",event=>{
+        if(!["ArrowLeft","ArrowRight","Home","End"].includes(event.key))return;
+        event.preventDefault();
+        const target=event.key==="Home"?0:event.key==="End"?modeButtons.length-1:(index+(event.key==="ArrowRight"?1:modeButtons.length-1))%modeButtons.length;
+        changeMode(modeButtons[target].dataset.e02Mode,true);
+      });
+    });
+
+    if(modelSelect){
+      modelSelect.addEventListener("change",()=>changeMode(modelSelect.value));
+    }
+
+    $(root,"[data-e02-run]").addEventListener("click",run);
+    $(root,"[data-e02-reset]").addEventListener("click",()=>{
+      state.blocksByMode[state.mode].blockedEdges.clear();
+      state.blocksByMode[state.mode].blockedNodes.clear();
+      state.origins[state.mode]=meta().origin;
+      state.destinations[state.mode]=meta().destination;
+      controls();
+      run();
+    });
+
+    changeMode("water");
+  }
+
+  function init(){initTabs();initDeck();initFiles();initSimulator();}
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
+  return api;
 })();
