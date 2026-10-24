@@ -114,3 +114,16 @@ test("Todas as páginas que carregam doc/css/portal.css possuem URL versionada l
     assert.equal(match[1], expectedHash, `Hash em ${page.file} deve bater exatamente com SHA-256 de doc/css/portal.css`);
   }
 });
+
+test("Etapas 01 e 02 carregam o redesign por último com hash do CSS", () => {
+  const css = fs.readFileSync(path.join(root, "doc/css/revamp.css"), "utf8").replace(/\r\n/g, "\n");
+  const hash = crypto.createHash("sha256").update(css).digest("hex");
+  for (const file of ["doc/etapa-01-logica.html", "doc/etapa-02-grafos.html"]) {
+    const html = fs.readFileSync(path.join(root, file), "utf8");
+    const match = html.match(/href="css\/revamp\.css\?v=([a-f0-9]+)"/);
+    assert.ok(match, `${file} deve carregar revamp.css`);
+    assert.equal(match[1], hash, `${file} deve usar SHA-256 atualizado`);
+    assert.ok(html.indexOf("css/revamp.css") > html.indexOf("css/portal.css"), "Redesign deve carregar após o portal");
+    if (file.includes("etapa-02")) assert.ok(html.indexOf("css/revamp.css") > html.indexOf("css/etapa-02.css"), "Redesign deve carregar após os estilos do grafo");
+  }
+});

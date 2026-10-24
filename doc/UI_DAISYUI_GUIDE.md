@@ -1,10 +1,16 @@
 # Guia de UI local — Aqua Index
 
+## Identidade visual atual da GitHub Pages
+
+A página inicial apresenta Lógica, Grafos, Árvores e Relações como quatro etapas acadêmicas de um projeto que permanecerá conceitual. As etapas 01 e 02 oferecem páginas e simuladores; 03 e 04 são planejadas. As cinco estações da envasadora formam o caso de estudo e aparecem em uma seção separada, sem sugerir equipamento físico construído. O sistema visual foi registrado em DESIGN.md na raiz do repositório.
+
+O visual usa linhas editoriais, tipografia ampla e diagramas SVG abstratos, sem imagens de máquina ou textura de desenho técnico envelhecido. A casca das páginas é modificada em css/portal.css, com estilos escopados por portal-ui; após editar esse CSS, execute python tools/version-portal-css.py na raiz para atualizar o SHA-256 normalizado com LF nos cinco HTML. Os estilos dos slides e simuladores das Etapas 01 e 02 recebem overrides de apresentação em css/revamp.css; os módulos JavaScript e os seletores funcionais continuam em js/main.js e js/etapa-02-simulator.js.
+
 ## Escopo e princípios
 
-Esta camada renova somente as páginas marcadas com `portal-ui`. O simulador da Etapa 01 continua usando exclusivamente `css/styles.css` e `js/main.js`; ele não importa o bundle nem `portal.css`, e nenhuma classe, controle, cor, forma, animação ou layout do simulador foi alterado.
+Esta camada aplica a identidade do portal nas páginas `portal-ui`; em adição, `css/revamp.css` estiliza os slides e simuladores das Etapas 01 e 02. O simulador da Etapa 01 continua funcional em `css/styles.css` e `js/main.js`; seu DOM, seletores e cálculos não foram alterados. Os overrides apresentam a mesma estrutura como um laboratório conceitual, com paleta, tipografia, controles e sinótico redesenhados.
 
-O portal permanece HTML/CSS/JS estático, sem framework, pacote, build ou runtime CDN. A Etapa 02 usa o módulo local e específico `js/etapa-02-simulator.js`, protegido para inicialização no DOM e exportação CommonJS apenas nos testes; ele calcula seis grafos didáticos independentes e não cria backend, requisição externa, telemetria ou comando. Seus estilos vivem em `css/etapa-02.css`, isolados em `@scope (.etapa02-page)`; o tema claro/escuro continua a usar os tokens existentes (`--paper`, `--ink`, `--blue`, `--teal`) sem alterar `portal.css`, `styles.css` ou `main.js`.
+O portal permanece HTML/CSS/JS estático, sem framework, pacote, build ou runtime CDN. A Etapa 02 usa o módulo local e específico `js/etapa-02-simulator.js`, protegido para inicialização no DOM e exportação CommonJS apenas nos testes; ele calcula seis grafos didáticos independentes e não cria backend, requisição externa, telemetria ou comando. As regras base permanecem em `css/etapa-02.css`, isoladas em `@scope (.etapa02-page)`; `css/revamp.css` define a nova apresentação dos slides, do grafo e dos controles. As superfícies do deck e dos simuladores usam a paleta editorial definida nesse arquivo, enquanto o tema do restante da página mantém os tokens existentes.
 
 ## daisyUI local e proveniência
 
@@ -29,7 +35,7 @@ SHA-256 do bundle transformado: `49b8961018facf7358a34aad9cf45c99095c58b8157d80f
 
 `etapa-02-grafos.html` preserva o shell do portal e organiza três abas acessíveis: apresentação com 10 slides, inventário de README e 16 materiais, e simulador. As abas principais usam `role="tablist"`, `role="tab"`, `role="tabpanel"`, `aria-selected`, `aria-controls`, roving `tabindex`, setas e Home/End; sem JavaScript, os 10 slides e os 17 painéis continuam em leitura linear. O deck local só responde às setas quando recebe foco e inclui microdiagramas/indicadores locais por aula, sem imagem, fonte ou dependência adicional.
 
-O simulador contém seis fontes independentes: água/copos (A11/A14/A15, Dijkstra), busca (A13, BFS/DFS), ronda não dirigida (A16, Hierholzer), matriz AGV ilustrativa (A17, NN/2-Opt), materiais (A18, Kahn) e veículos (A18, Dijkstra). Água/busca usam bifurcações, materiais é organizado em camadas e veículos separa corredores da via externa; ronda e AGV usam anel, com viewport horizontal rolável e rótulos ampliados em telas estreitas. No DAG, os identificadores de fonte são `E1_DISPENSA` a `E5_EJECAO` (referidos como E1–E5 somente na leitura curta). O módulo exporta somente para `node:test` as funções puras `dijkstra`, `bfs`, `dfsPaths`, `euler`, `nearestNeighbor`, `twoOpt` e `kahn`; os dados imutáveis carregam fontes e unidades próprias. Os limites permanecem: nenhum resultado é telemetria, hidráulica física, comando, rota de AGV implantada, otimização global, disponibilidade conjunta de insumos, aprovação docente ou validação de segurança.
+O simulador contém seis fontes independentes: água/copos (A11/A14/A15, Dijkstra), busca (A13, BFS/DFS), ronda não dirigida (A16, Hierholzer), matriz AGV ilustrativa (A17, NN/2-Opt), materiais (A18, Kahn) e veículos (A18, Dijkstra). Água/busca usam bifurcações, materiais é organizado em camadas e veículos separa corredores da via externa; ronda e AGV usam anel, com viewport horizontal rolável e rótulos ampliados em telas estreitas. No DAG, os identificadores de fonte são `E1_DISPENSA` a `E5_EJECAO` (referidos como E1–E5 somente na leitura curta). O módulo exporta somente para `node:test` as funções puras `dijkstra`, `bfs`, `dfsPaths`, `euler`, `nearestNeighbor`, `twoOpt` e `kahn`; os dados imutáveis carregam fontes e unidades próprias. Os limites permanecem: nenhum resultado é telemetria, hidráulica física, comando, rota de AGV implantada, otimização global, disponibilidade conjunta de insumos, aprovação docente ou validação de segurança. Os overrides visuais dos controles e do grafo ficam em `css/revamp.css`; o cálculo e os atributos `data-*` permanecem no módulo do simulador.
 
 ## Busca existente
 
@@ -107,7 +113,7 @@ A renovação estética harmonizou a identidade visual do portal Aqua Index toma
   - `doc/planta-envasadora.html`: Fluxo circular das cinco estações da mesa indexadora e respectivas tags de instrumentação (XV-101 a XV-502).
   - `doc/diretrizes-github.html`: Fluxo de rastreabilidade e entregas atômicas (branch -> testes locais -> PR -> main).
   - `doc/etapa-01-logica.html`: Modelo de três camadas conceituais da avaliação integrada da Aula 10 (Telemetria, Discretização e Inferência).
-- **Proteção do Simulador da Etapa 01**: A seção `#simulador` de `doc/etapa-01-logica.html` foi mantida sem a classe `.portal-ui`. Seu DOM, regras de `doc/css/styles.css`, sinótico SCADA, animações e comportamentos foram integralmente preservados sem qualquer interferência de estilos.
+- **Preservação funcional da Etapa 01**: A seção `#simulador` de `doc/etapa-01-logica.html` permanece sem a classe `.portal-ui`, e seus controles, atributos funcionais e comportamentos continuam em `doc/js/main.js`. `doc/css/revamp.css` aplica o novo visual sobre a seção e o sinótico, sem alterar os cálculos.
 - **Herança em index.html**: O arquivo `index.html` já possui `<body class="portal-ui">` e herdou automaticamente os novos tokens e refinamentos visuais do CSS escopado, sem necessidade de alterações em seu conteúdo editorial além do versionamento da URL de cache.
 
 ### 2. Apresentação em Tela Cheia no Deck da Etapa 02
@@ -129,6 +135,7 @@ Para prevenir inconsistências decorrentes do cache do GitHub Pages (`Cache-Cont
 
 - `doc/css/etapa-02.css?v=<sha256>` em `doc/etapa-02-grafos.html`.
 - `doc/css/portal.css?v=<sha256>` em `index.html`, `doc/etapa-01-logica.html`, `doc/etapa-02-grafos.html`, `doc/planta-envasadora.html` e `doc/diretrizes-github.html`.
+- `doc/css/revamp.css?v=<sha256>` em `doc/etapa-01-logica.html` e `doc/etapa-02-grafos.html`, após os estilos existentes. Ele redefine apenas a apresentação visual dos slides e simuladores; os atributos usados por JavaScript e os cálculos permanecem nos módulos originais.
 
 ### 4. Validações e Testes Executados
 

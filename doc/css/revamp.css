@@ -1,0 +1,288 @@
+/* Etapas 01 e 02: folhas de estudo e laboratorios de modelos. */
+@scope (#apresentacao) {
+  :scope .slide-deck {
+    border: 1px solid #bac5c9; border-radius: 2px; box-shadow: none;
+    background: #f8f9f7; color: #142534;
+  }
+  :scope .deck-topbar {
+    min-height: 60px; padding: 18px clamp(20px, 3vw, 42px);
+    background: #142534; color: #f8f9f7;
+    font: 700 11px/1.3 "Segoe UI", sans-serif; letter-spacing: .07em;
+  }
+  :scope .deck-signal { width: 7px; height: 7px; border-radius: 0; background: #ff7666; box-shadow: none; }
+  :scope .deck-slide,
+  :scope .deck-slide:nth-child(3n+1),
+  :scope .deck-slide:nth-child(3n+2),
+  :scope .deck-slide:nth-child(3n) {
+    padding: clamp(28px, 5vw, 72px); background: #f8f9f7; color: #142534;
+  }
+  :scope .deck-slide::before {
+    content: ""; display: block; position: absolute; top: 0; right: 0;
+    width: min(32%, 320px); height: 1px; background: #c62f24;
+  }
+  :scope .slide-meta {
+    margin-bottom: clamp(38px, 6vw, 78px); padding-bottom: 14px;
+    border-bottom: 1px solid #bac5c9; color: #c62f24;
+    font: 750 11px/1.3 "Segoe UI", sans-serif; letter-spacing: .08em;
+  }
+  :scope .slide-layout { grid-template-columns: minmax(0, 1.3fr) minmax(260px, .7fr); gap: clamp(24px, 5vw, 80px); }
+  :scope .slide-kicker { color: #526270; font: 700 12px/1.3 "Segoe UI", sans-serif; letter-spacing: .04em; }
+  :scope .deck-slide h3 {
+    max-width: 17ch; font: 700 clamp(36px, 4.5vw, 64px)/1.04 Georgia, serif;
+    letter-spacing: -.035em; text-wrap: balance;
+  }
+  :scope .deck-slide h3 + p { max-width: 60ch; margin-top: 24px; color: #526270; font-size: clamp(15px, 1.3vw, 18px); line-height: 1.55; }
+  :scope .slide-big-number, :scope .test-score, :scope .slide-formula {
+    width: 100%; min-height: 270px; aspect-ratio: auto; border: 1px solid #bac5c9;
+    border-radius: 2px; background: #fff; color: #c62f24; box-shadow: none;
+    font-family: Georgia, serif;
+  }
+  :scope .slide-big-number, :scope .test-score { font-size: clamp(90px, 11vw, 150px); }
+  :scope .slide-big-number small, :scope .test-score span, :scope .test-score small,
+  :scope .slide-formula small { color: #526270; font: 700 11px/1.4 "Segoe UI", sans-serif; letter-spacing: .04em; }
+  :scope .slide-flow { justify-content: flex-start; padding: 20px; border-radius: 2px; border-color: #bac5c9; background: #fff; }
+  :scope .slide-flow span, :scope .slide-code code, :scope .proof-mini > *,
+  :scope .rule-stack span, :scope .status-stack span {
+    border: 1px solid #bac5c9; border-radius: 2px; background: #fff; color: #142534;
+    font: 700 clamp(11px, 1vw, 14px)/1.45 "Segoe UI", sans-serif;
+  }
+  :scope .slide-flow b { color: #c62f24; }
+  :scope .slide-compare div, :scope .expert-triplet span {
+    border: 1px solid #bac5c9; border-radius: 2px; background: #fff; color: #142534;
+  }
+  :scope .slide-compare div:last-child { border-color: #c62f24; background: #fff; color: #c62f24; }
+  :scope .deck-controls { min-height: 72px; padding: 16px clamp(20px, 3vw, 42px); border-top-color: #bac5c9; background: #fff; }
+  :scope .deck-controls button { border: 1px solid #bac5c9; border-radius: 2px; background: #fff; color: #142534; font: 700 12px/1 "Segoe UI", sans-serif; }
+  :scope .deck-controls button:hover:not(:disabled) { border-color: #c62f24; color: #c62f24; }
+  :scope .slide-dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 0; background: #bac5c9; }
+  :scope .slide-dots button.active { width: 24px; background: #c62f24; }
+  @media (max-width: 760px) {
+    :scope .slide-layout { grid-template-columns: 1fr; }
+    :scope .slides-viewport { min-height: 0; }
+    :scope .slide-big-number, :scope .test-score, :scope .slide-formula { width: 100%; max-width: none; min-height: 160px; }
+  }
+}
+
+@scope (.simulator-section) {
+  :scope { --lab-bg: #101a21; --lab-panel: #1b2932; --lab-line: #485963; --lab-ink: #f1f4f2; --lab-muted: #c1cbd0; --lab-hot: #ff7666; }
+  :scope .section-heading .eyebrow { color: #ff7666; }
+  :scope .section-heading h2 { font-family: Georgia, serif; font-size: clamp(42px, 5vw, 70px); line-height: 1.05; letter-spacing: -.035em; }
+  :scope .section-heading > p { max-width: 55ch; color: #c1cbd0; font-size: 16px; line-height: 1.55; }
+  :scope .sim-shell {
+    border: 1px solid var(--lab-line); border-radius: 2px; box-shadow: none;
+    background: var(--lab-bg); color: var(--lab-ink);
+    font-family: "Segoe UI", sans-serif;
+  }
+  :scope .sim-header {
+    min-height: 82px; padding: 20px clamp(20px, 3vw, 38px);
+    border-bottom-color: var(--lab-line); background: var(--lab-bg);
+  }
+  :scope .sim-brand-dot { width: 18px; height: 18px; border-radius: 1px; background: var(--lab-hot); box-shadow: none; }
+  :scope .sim-header strong { font: 750 15px/1.2 "Segoe UI", sans-serif; letter-spacing: .01em; }
+  :scope .sim-header small { color: var(--lab-muted); font-size: 12px; }
+  :scope .sim-status { border-radius: 2px; border-color: var(--lab-line); color: var(--lab-ink); }
+  :scope .sim-status > span { width: 7px; height: 7px; border-radius: 0; background: currentColor; box-shadow: none; }
+  :scope .sim-status.warning, :scope .sim-status.trip { border-color: var(--lab-hot); color: var(--lab-hot); }
+  :scope .scenario-bar { gap: 0; padding: 0 clamp(20px, 3vw, 38px); border-bottom-color: var(--lab-line); background: var(--lab-panel); }
+  :scope .scenario-bar button {
+    min-height: 54px; padding: 12px 16px; border: 0; border-bottom: 2px solid transparent;
+    border-radius: 0; background: transparent; color: var(--lab-muted);
+    font: 700 11px/1.3 "Segoe UI", sans-serif;
+  }
+  :scope .scenario-bar button:hover, :scope .scenario-bar button.active {
+    border-color: var(--lab-hot); background: transparent; color: var(--lab-ink);
+  }
+  :scope .sim-grid { grid-template-columns: minmax(0, 1.45fr) minmax(320px, .55fr); }
+  :scope .sim-grid > section { padding: clamp(18px, 2.5vw, 34px); border-color: var(--lab-line); }
+  :scope .sim-process-panel { background: var(--lab-bg); border-bottom-color: var(--lab-line); }
+  :scope .panel-title { gap: 12px; margin-bottom: 20px; }
+  :scope .panel-title > span { width: 30px; height: 30px; border-radius: 1px; border-color: var(--lab-line); color: var(--lab-hot); }
+  :scope .panel-title strong { font: 700 15px/1.2 "Segoe UI", sans-serif; letter-spacing: 0; }
+  :scope .panel-title small { color: var(--lab-muted); font: 12px/1.4 "Segoe UI", sans-serif; }
+  :scope .sim-machine { padding: 18px; border-color: var(--lab-line); border-radius: 2px; background: var(--lab-panel); background-image: none; }
+  :scope .machine-overview { color: var(--lab-muted); font: 700 11px/1.3 "Segoe UI", sans-serif; }
+  :scope .visual-process { gap: 0; border-top: 1px solid var(--lab-line); border-bottom: 1px solid var(--lab-line); }
+  :scope .visual-station { border: 0; border-right: 1px solid var(--lab-line); border-radius: 0; background: var(--lab-panel); }
+  :scope .visual-station:last-child { border-right: 0; }
+  :scope .visual-station.running { box-shadow: inset 0 2px var(--lab-hot); }
+  :scope .visual-station.fault { background: #392926; transform: none; }
+  :scope .visual-station > header { min-height: 57px; border-bottom-color: var(--lab-line); }
+  :scope .visual-station > header > span { border-radius: 1px; border-color: var(--lab-line); color: var(--lab-hot); }
+  :scope .visual-station > header strong { font: 700 11px/1.2 "Segoe UI", sans-serif; }
+  :scope .visual-station > header small { color: var(--lab-muted); font: 10px/1.2 "Segoe UI", sans-serif; }
+  :scope .visual-station:not(:last-child)::after { display: none; }
+  :scope .machine-scene { background: #22323a; }
+  :scope .machine-scene::after { background: #8b9ba2; box-shadow: none; }
+  :scope .io-panel { gap: 3px; padding: 10px 0; }
+  :scope .io-node { border-color: var(--lab-line); border-radius: 1px; background: var(--lab-bg); }
+  :scope .io-node b { color: var(--lab-ink); }
+  :scope .io-node small, :scope .synoptic-note { color: var(--lab-muted); }
+  :scope .machine-transfer { border-color: var(--lab-line); border-radius: 1px; background: var(--lab-bg); }
+  :scope .sim-table { border-left-width: 1px; border-left-color: var(--lab-hot); }
+  :scope .sim-table strong { color: var(--lab-ink); }
+  :scope .sim-table span, :scope .sim-table small { color: var(--lab-muted); }
+  :scope .scada-viewport { border: 1px solid var(--lab-line); border-radius: 1px; background: var(--lab-bg); }
+  :scope .classic-scada { background: #f8f9f7; color: #142534; font-family: "Segoe UI", sans-serif; }
+  :scope .scada-titlebar { border: 1px solid #bac5c9; background: #fff; color: #142534; box-shadow: none; }
+  :scope .scada-titlebar strong { font: 750 11px/1.2 "Segoe UI", sans-serif; }
+  :scope .scada-titlebar span { color: #526270; font-size: 9px; }
+  :scope .utility-label { border: 1px solid #bac5c9; background: #fff; color: #142534; box-shadow: none; font: 700 9px/1 "Segoe UI", sans-serif; }
+  :scope .scada-pipe { border: 0; border-radius: 0; background: #7b8e98; box-shadow: none; }
+  :scope .scada-pipe.water { border: 0; background: #3e7990; box-shadow: none; }
+  :scope .scada-unit > header { border: 1px solid #bac5c9; background: #fff; color: #142534; box-shadow: none; }
+  :scope .scada-unit > header b { font: 750 9px/1.15 "Segoe UI", sans-serif; }
+  :scope .scada-unit > header small { background: #f8f9f7; color: #526270; }
+  :scope .scada-unit.fault > header { border-color: #c62f24; background: #fce8e4; }
+  :scope .scada-unit.blocked > header { border-color: #9a6a18; background: #fff5de; }
+  :scope .scada-unit.stopped > header { border-color: #526270; background: #e5e9e9; }
+  :scope .scada-unit.fault, :scope .scada-unit.blocked, :scope .scada-unit.stopped { outline-width: 1px; background: transparent; }
+  :scope .pid-block { border: 1px solid #526270; outline: 0; background: #fff; color: #142534; }
+  :scope .pid-block b { font: 750 9px/1.2 "Segoe UI", sans-serif; }
+  :scope .pid-block span { color: #c62f24; font: 700 8px/1.1 "Segoe UI", sans-serif; }
+  :scope .pid-block small { color: #526270; font: 650 7px/1.1 "Segoe UI", sans-serif; }
+  :scope .pid-heater { border-bottom: 2px solid #c62f24; }
+  :scope .pid-connection { background: #7b8e98; box-shadow: none; }
+  :scope .scada-tag { border: 1px solid #bac5c9; background: #fff; color: #142534; box-shadow: none; }
+  :scope .scada-tag.actuator { border-bottom: 2px solid #c62f24; }
+  :scope .scada-tag.sensor { border-bottom: 2px solid #3e7990; }
+  :scope .scada-tag > b { color: #142534; font: 750 8px/1 "Segoe UI", sans-serif; }
+  :scope .scada-tag > small { color: #526270; font: 700 7px/1 "Segoe UI", sans-serif; }
+  :scope .scada-tag > i { border: 0; border-radius: 0; background: #bac5c9; box-shadow: none; }
+  :scope .scada-tag.active > i { background: #287058; box-shadow: none; }
+  :scope .scada-tag.active > small { color: #287058; }
+  :scope .scada-tag.fault { border-color: #c62f24; background: #fce8e4; }
+  :scope .scada-tag.fault > i { background: #c62f24; box-shadow: none; }
+  :scope .scada-tag.blocked { border-color: #9a6a18; background: #fff5de; }
+  :scope .scada-tag.blocked > i { background: #9a6a18; }
+  :scope .classic-scada .sim-table { border: 1px solid #bac5c9; background: #fff; box-shadow: none; }
+  :scope .classic-scada .sim-table.warning { border-color: #c62f24; background: #fce8e4; }
+  :scope .index-track { border: 1px solid #bac5c9; background: #e5e9e9; }
+  :scope .index-track i { border: 1px solid #526270; border-radius: 1px; background: #fff; color: #142534; }
+  :scope .classic-scada .sim-table span, :scope .classic-scada .sim-table small { color: #526270; }
+  :scope .classic-scada .sim-table strong { color: #142534; }
+  :scope .classic-scada .sim-table.warning strong { color: #c62f24; }
+  :scope .scada-flow { color: #142534; }
+  :scope .scada-flow i { border-color: #bac5c9; background: #fff; color: #142534; }
+  :scope .control-groups fieldset, :scope .auto-controller, :scope .permissive-monitor {
+    border-color: var(--lab-line); border-radius: 1px; background: var(--lab-panel);
+  }
+  :scope .control-groups legend, :scope .auto-controller header span,
+  :scope .auto-step span, :scope .rack-title { color: var(--lab-muted); font: 700 11px/1.3 "Segoe UI", sans-serif; }
+  :scope .switch-row { min-height: 49px; border-bottom-color: var(--lab-line); }
+  :scope .switch-row > span, :scope .range-row > span { font-size: 12px; }
+  :scope .switch-row small, :scope .range-row small { color: var(--lab-muted); font-size: 10px; }
+  :scope .switch-row i { border-radius: 2px; }
+  :scope .switch-row i::after { border-radius: 1px; }
+  :scope .switch-row input:checked + i { background: var(--lab-hot); }
+  :scope .switch-row input:focus-visible + i { outline-color: var(--lab-hot); }
+  :scope .range-row input { accent-color: var(--lab-hot); }
+  :scope .auto-controller header strong, :scope .auto-step strong { color: var(--lab-ink); font: 700 12px/1.3 "Segoe UI", sans-serif; }
+  :scope .auto-controller p { color: var(--lab-muted); font-size: 11px; }
+  :scope .auto-step { border-color: var(--lab-line); background: var(--lab-bg); }
+  :scope .auto-actions button { border-color: var(--lab-line); background: var(--lab-bg); color: var(--lab-ink); font: 700 11px/1.2 "Segoe UI", sans-serif; }
+  :scope .auto-actions button:hover:not(:disabled) { border-color: var(--lab-hot); background: var(--lab-panel); }
+  :scope .fact-chips span, :scope .logic-health > * { border-color: var(--lab-line); border-radius: 1px; color: var(--lab-muted); background: var(--lab-bg); }
+  :scope .inference-summary, :scope .fired-rule { border-color: var(--lab-line); border-radius: 1px; background: var(--lab-panel); }
+  :scope .fired-rule { border-left-width: 1px; }
+  :scope .fired-rule p, :scope .inference-summary p { color: var(--lab-muted); }
+  :scope .proof-box select, :scope .proof-result { border-radius: 1px; border-color: var(--lab-line); background: var(--lab-bg); color: var(--lab-ink); }
+  :scope .sim-console { border-top-color: var(--lab-line); background: var(--lab-bg); }
+  :scope .console-title { color: var(--lab-ink); border-bottom-color: var(--lab-line); font-size: 11px; }
+  :scope .console-title button { color: var(--lab-muted); }
+  :scope .console-lines { color: var(--lab-muted); font-size: 10px; }
+  :scope .sim-note { color: var(--lab-muted); border-top-color: var(--lab-line); font-size: 10px; }
+  :scope button:focus-visible, :scope select:focus-visible { outline: 2px solid var(--lab-hot); outline-offset: 2px; }
+  @media (max-width: 1100px) { :scope .sim-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) { :scope .sim-grid { grid-template-columns: 1fr; } :scope .visual-process { grid-template-columns: 1fr; } :scope .visual-station { border-right: 0; border-bottom: 1px solid var(--lab-line); } }
+}
+
+@scope (.etapa02-page) {
+  :scope { --e02-paper: #f8f9f7; --e02-ink: #142534; --e02-muted: #526270; --e02-line: #bac5c9; --e02-red: #c62f24; }
+  :scope.etapa02-page .e02-deck,
+  :scope.etapa02-page .e02-deck:fullscreen,
+  :scope.etapa02-page .e02-deck.is-fullscreen { background: #f8f9f7; color: #142534; border-color: #bac5c9; }
+  :scope.etapa02-page .e02-slide h3 { color: #142534; }
+  :scope.etapa02-page .e02-slide p,
+  :scope.etapa02-page .e02-lesson-copy ul { color: #526270; }
+  :scope.etapa02-page .e02-slide .lesson-code { color: #c62f24; }
+  :scope.etapa02-page .e02-lesson-copy strong,
+  :scope.etapa02-page .e02-slide .e02-lesson-takeaway strong { color: #142534; }
+  :scope.etapa02-page .e02-lesson-figure text { fill: #142534; }
+  :scope.etapa02-page .e02-lesson-figure .e02-lesson-weight { stroke: #fff; }
+  :scope.etapa02-page .e02-deck-actions .btn:not(.btn-outline) { border-color: #bac5c9; background: #fff; color: #142534; }
+  :scope.etapa02-page .e02-deck-actions .btn:hover { border-color: #c62f24; background: #c62f24; color: #fff; }
+  :scope .e02-tablist { border-bottom-color: var(--e02-line); }
+  :scope .e02-tab { padding: 18px 24px; border-bottom-width: 2px; color: var(--e02-muted); font: 700 13px/1 "Segoe UI", sans-serif; letter-spacing: 0; text-transform: none; }
+  :scope .e02-tab[aria-selected="true"] { border-bottom-color: var(--e02-red); color: var(--e02-ink); }
+  :scope .e02-section-head { grid-template-columns: minmax(0, .22fr) minmax(0, 1fr); border-top: 1px solid var(--e02-line); padding-top: 20px; }
+  :scope .e02-section-head h2 { font: 700 clamp(34px, 4vw, 56px)/1.08 Georgia, serif; letter-spacing: -.035em; }
+  :scope .e02-section-head p:last-child { color: var(--e02-muted); font: 16px/1.55 "Segoe UI", sans-serif; }
+  :scope .e02-deck { border-color: var(--e02-line); border-radius: 2px; box-shadow: none; background: var(--e02-paper); color: var(--e02-ink); padding: clamp(26px, 4vw, 56px); }
+  :scope .e02-deck::before, :scope .e02-deck:fullscreen::before, :scope .e02-deck.is-fullscreen::before { display: none; }
+  :scope .e02-deck-meta { padding-bottom: 14px; border-bottom: 1px solid var(--e02-line); color: var(--e02-muted); font: 700 11px/1.3 "Segoe UI", sans-serif; }
+  :scope .e02-slide-index { gap: 0; margin: 26px 0 36px; border-left: 1px solid var(--e02-line); }
+  :scope .e02-slide-index button { min-width: 42px; min-height: 40px; border: 1px solid var(--e02-line); border-left: 0; background: #fff; color: var(--e02-muted); font: 700 12px "Segoe UI", sans-serif; }
+  :scope .e02-slide-index button[aria-current="true"] { border-color: var(--e02-red); background: var(--e02-red); color: #fff; }
+  :scope .e02-slide h3 { max-width: 22ch; color: var(--e02-ink); font: 700 clamp(36px, 4.5vw, 64px)/1.04 Georgia, serif; letter-spacing: -.035em; }
+  :scope .e02-slide .e02-slide-lead { color: var(--e02-muted); }
+  :scope .e02-lesson-copy ul { color: var(--e02-muted); }
+  :scope .e02-lesson-figure { border-color: var(--e02-line); border-radius: 2px; background: #fff; }
+  :scope .e02-lesson-figure svg { color: var(--e02-ink); }
+  :scope .e02-lesson-figure rect { fill: #fff; stroke: var(--e02-ink); }
+  :scope .e02-lesson-figure .e02-lesson-edge { stroke: var(--e02-red); }
+  :scope .e02-lesson-figure figcaption { border-top-color: var(--e02-line); color: var(--e02-muted); }
+  :scope .e02-slide .e02-lesson-takeaway { border: 1px solid var(--e02-line); background: #fff; color: var(--e02-muted); }
+  :scope .e02-deck-actions { border-top: 1px solid var(--e02-line); padding-top: 22px; }
+  :scope .e02-deck progress { accent-color: var(--e02-red); }
+  :scope .e02-deck-actions .btn, :scope .e02-fullscreen-btn { border-radius: 2px; border-color: var(--e02-line); background: #fff; color: var(--e02-ink); box-shadow: none; font: 700 12px/1 "Segoe UI", sans-serif; text-transform: none; }
+  :scope .e02-deck-actions .btn:hover, :scope .e02-fullscreen-btn:hover { border-color: var(--e02-red); background: var(--e02-red); color: #fff; }
+  :scope .e02-method-note { border: 1px solid var(--e02-line); background: #fff; color: var(--e02-muted); }
+  :scope .e02-simulator { border-color: var(--e02-line); background: #fff; color: var(--e02-ink); }
+  :scope .e02-model-bar { display: block; padding: 0; border-bottom-color: var(--e02-line); background: #fff; }
+  :scope .e02-model-select-label { display: none; }
+  :scope .e02-mode-list { width: 100%; border-bottom: 0; }
+  :scope .e02-mode-list button { padding: 18px 16px; border-color: var(--e02-line); color: var(--e02-muted); background: #fff; font: 700 12px/1.2 "Segoe UI", sans-serif; text-transform: none; }
+  :scope .e02-mode-list button:first-child { border-left: 0; }
+  :scope .e02-mode-list button[aria-selected="true"] { color: #fff; background: var(--e02-ink); box-shadow: inset 0 -3px var(--e02-red); }
+  :scope .e02-sim-head { padding: clamp(22px, 3vw, 40px); border-bottom-color: var(--e02-line); }
+  :scope .e02-sim-head h3 { font: 700 clamp(30px, 3vw, 44px)/1.08 Georgia, serif; letter-spacing: -.025em; }
+  :scope .e02-sim-head p:last-child { color: var(--e02-muted); }
+  :scope .e02-sim-grid { grid-template-columns: minmax(0, 1.4fr) minmax(300px, .6fr); }
+  :scope .e02-graph-panel { padding: clamp(15px, 2vw, 28px); background: var(--e02-paper); }
+  :scope .e02-graph-scroll { border-bottom-color: var(--e02-line); }
+  :scope .e02-zone-box { fill: #fff; stroke: var(--e02-line); }
+  :scope .e02-zone.is-active-zone .e02-zone-box { fill: #fff; stroke: var(--e02-red); }
+  :scope .e02-zone-title, :scope .e02-zone.is-active-zone .e02-zone-title { fill: var(--e02-ink); font-family: "Segoe UI", sans-serif; }
+  :scope .e02-edge { stroke: var(--e02-muted); }
+  :scope .e02-edge.is-route, :scope .e02-edge.is-context-route { stroke: var(--e02-red); }
+  :scope .e02-node rect { fill: #fff; stroke: var(--e02-ink); }
+  :scope .e02-node.is-route rect { fill: #fce8e4; stroke: var(--e02-red); }
+  :scope .e02-node text { fill: var(--e02-ink); font-family: "Segoe UI", sans-serif; }
+  :scope .e02-edge-label { fill: var(--e02-ink); stroke: var(--e02-paper); }
+  :scope .e02-controls { padding: clamp(18px, 2vw, 30px); border-left-color: var(--e02-line); background: #fff; }
+  :scope .e02-controls label { color: var(--e02-muted); font-size: 13px; }
+  :scope .e02-controls select { min-height: 45px; border-color: var(--e02-line); background: #fff; color: var(--e02-ink); font-size: 13px; }
+  :scope .e02-controls fieldset { border-top-color: var(--e02-line); }
+  :scope .e02-block-list input { accent-color: var(--e02-red); }
+  :scope .e02-control-actions .btn:not(.btn-outline) { border-color: var(--e02-red); background: var(--e02-red); color: #fff; }
+  :scope .e02-control-actions .btn { min-height: 43px; border-radius: 2px; box-shadow: none; font: 700 12px "Segoe UI", sans-serif; }
+  :scope .e02-result { padding: 26px clamp(22px, 3vw, 40px); border-top-color: var(--e02-line); background: var(--e02-ink); color: #f8f9f7; }
+  :scope .e02-result .lesson-code { color: #ff9d8f; }
+  :scope .e02-result h4 { color: #f8f9f7; font: 700 clamp(25px, 3vw, 40px)/1.1 Georgia, serif; }
+  :scope .e02-result p { color: #c1cbd0; }
+  :scope .e02-route li { border-color: #485963; background: #1b2932; color: #f8f9f7; }
+  :scope .e02-log { border-top-color: var(--e02-line); background: #fff; }
+  :scope .e02-log h4 { color: var(--e02-ink); font: 700 14px "Segoe UI", sans-serif; text-transform: none; letter-spacing: 0; }
+  :scope .e02-log ol { color: var(--e02-muted); font: 12px/1.5 "Segoe UI", sans-serif; }
+  :scope button:focus-visible, :scope select:focus-visible { outline: 2px solid var(--e02-red); outline-offset: 2px; }
+  @media (max-width: 900px) {
+    :scope .e02-sim-grid { grid-template-columns: 1fr; }
+    :scope .e02-controls { border-left: 0; border-top: 1px solid var(--e02-line); }
+  }
+  @media (max-width: 760px) {
+    :scope .e02-section-head, :scope .e02-sim-grid { grid-template-columns: 1fr; }
+    :scope .e02-controls { border-left: 0; border-top: 1px solid var(--e02-line); }
+    :scope .e02-mode-list { overflow-x: auto; }
+    :scope .e02-model-select-label { display: flex; padding: 16px; border-bottom: 1px solid var(--e02-line); }
+  }
+}

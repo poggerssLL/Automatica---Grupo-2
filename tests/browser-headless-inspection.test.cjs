@@ -39,6 +39,21 @@ const pages = [
   { file: "doc/etapa-02-grafos.html", name: "Etapa 02 Grafos" }
 ];
 
+test("Link direto #simulador abre a aba funcional da Etapa 02", (t) => {
+  const browserPath = findBrowserPath();
+  if (!browserPath) {
+    t.skip("Navegador Chromium/Edge não disponível no ambiente de execução.");
+    return;
+  }
+  const pagePath = path.join(root, "doc/etapa-02-grafos.html");
+  const pageUrl = "file:///" + pagePath.replace(/\\/g, "/") + "#simulador";
+  const dom = execFileSync(browserPath, [
+    "--headless=new", "--allow-file-access-from-files", "--dump-dom", pageUrl
+  ], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+  assert.match(dom, /id="tab-simulador"[^>]*aria-selected="true"/);
+  assert.match(dom, /id="painel-simulador"[^>]*data-e02-panel="simulador"/);
+});
+
 test("Inspeção em navegador programático Edge/Chromium (Desktop 1440x900 e Mobile 390x844)", (t) => {
   const browserPath = findBrowserPath();
   if (!browserPath) {
@@ -170,8 +185,8 @@ test("Inspeção em navegador programático Edge/Chromium (Desktop 1440x900 e Mo
     assert.equal(darkPaper, "#101820", "Variável --paper no tema dark deve ser #101820");
     assert.notEqual(lightPaper, darkPaper, "Variáveis --paper devem alternar entre light (#f4f1e8) e dark (#101820)");
 
-    assert.equal(lightBg, "rgb(244, 241, 232)", "Cor de fundo computada do body no light deve ser rgb(244, 241, 232)");
-    assert.equal(darkBg, "rgb(16, 24, 32)", "Cor de fundo computada do body no dark deve ser rgb(16, 24, 32)");
+    assert.equal(lightBg, "rgb(248, 249, 247)", "Cor de fundo computada do body no light deve seguir o novo atlas");
+    assert.equal(darkBg, "rgb(16, 26, 33)", "Cor de fundo computada do body no dark deve seguir o novo atlas");
     assert.notEqual(lightBg, darkBg, "Cor de fundo do body deve divergir entre tema claro e escuro");
 
     assert.ok(darkDomOut.includes('data-theme="dark"'), "DOM deve respeitar atributo data-theme='dark'");

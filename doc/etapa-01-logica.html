@@ -4,17 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Etapa 01 do projeto Aqua Index: lógica formal, apresentação, simulador da envasadora e memorial das Aulas 01–10.">
-  <meta name="theme-color" content="#f4f1e8">
+  <meta name="theme-color" content="#f8f9f7">
   <title>Etapa 01 — Lógica Formal | Aqua Index</title>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/vendor/daisyui-5.7.50-portal.css">
-  <link rel="stylesheet" href="css/portal.css?v=31b42385dc6ad532689d4398884cbff9bb67171713d782ce8c535a9982f3a1bd">
+  <link rel="stylesheet" href="css/portal.css?v=49db3d4f9485707413419b6142cb432ef0dd6c380dc90c9af98e1f5ff90bd0a4">
+  <link rel="stylesheet" href="css/revamp.css?v=114e8f117a2ba01a5cf49c91367a67915ef1c448a8a3c241b421ddaa3dd5ff07">
   <script defer src="js/main.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
   <header class="site-header portal-ui" data-header>
-    <a class="brand" href="../index.html" aria-label="Aqua Index — página inicial"><span class="brand-mark">A2</span><span class="brand-copy"><strong>AQUA INDEX</strong><small>SCADA · GRUPO 2</small></span></a>
+    <a class="brand" href="../index.html" aria-label="Aqua Index — página inicial"><span class="brand-mark">A<span class="brand-mark-dot">.</span></span><span class="brand-copy"><strong>AQUA INDEX</strong><small>GRUPO 2 · ECAA08</small></span></a>
     <nav class="main-nav" id="main-nav" aria-label="Navegação principal"><a href="../index.html">Visão geral</a><a class="active" href="etapa-01-logica.html">Etapa 01</a><a href="etapa-02-grafos.html">Etapa 02</a><a href="planta-envasadora.html">A envasadora</a><a href="diretrizes-github.html">GitHub & Entregas</a></nav>
     <div class="header-actions"><button class="icon-button" type="button" data-theme-toggle aria-label="Alternar tema"><span data-theme-icon>◐</span></button><button class="menu-button" type="button" data-menu-toggle aria-controls="main-nav" aria-expanded="false"><span></span><span></span><span></span><span class="sr-only">Abrir menu</span></button></div>
   </header>
@@ -151,7 +152,7 @@
       <div class="section-heading simulator-heading reveal"><div><p class="eyebrow">LABORATÓRIO DIDÁTICO</p><h2>Simulador lógico<br>da envasadora.</h2></div><p>Escolha um cenário ou altere os sinais manualmente. O motor avalia as sete regras da Aula 08 e apresenta a trilha de inferência da Aula 09.</p></div>
 
       <div class="sim-shell reveal" data-simulator>
-        <header class="sim-header"><div><span class="sim-brand-dot"></span><div><strong>AQUA INDEX / DIGITAL BENCH</strong><small>Simulação local no navegador · sem conexão com CLP</small></div></div><div class="sim-status nominal" data-sim-status><span></span><strong>OPERAÇÃO NOMINAL</strong></div></header>
+        <header class="sim-header"><div><span class="sim-brand-dot"></span><div><strong>AQUA INDEX / LABORATÓRIO LÓGICO</strong><small>Simulação local no navegador · sem conexão com CLP</small></div></div><div class="sim-status nominal" data-sim-status><span></span><strong>OPERAÇÃO NOMINAL</strong></div></header>
 
         <div class="scenario-bar" aria-label="Cenários de falha">
           <button class="active" type="button" data-scenario="nominal">Nominal</button><button type="button" data-scenario="collision">Colisão</button><button type="button" data-scenario="cold">Selagem fria</button><button type="button" data-scenario="vacuum">Falha de vácuo</button><button type="button" data-scenario="empty">Sem copos</button><button type="button" data-scenario="nozzle">Bico fechado*</button><button type="button" data-scenario="sensors">Sensores incoerentes</button><button type="button" data-scenario="emergency">Emergência</button>
@@ -159,7 +160,7 @@
 
         <div class="sim-grid">
           <section class="sim-process-panel">
-            <div class="panel-title"><span>01</span><div><strong>PROCESSO SINÓTICO ILUSTRADO</strong><small>máquina, sensores e atuadores em tempo real</small></div></div>
+            <div class="panel-title"><span>01</span><div><strong>MAPA CONCEITUAL DO PROCESSO</strong><small>estados simulados de sensores e atuadores</small></div></div>
             <div class="sim-machine" aria-label="Sinótico SCADA clássico das cinco estações da envasadora">
               <div class="machine-overview">
                 <span><i class="legend-dot actuator-dot"></i> Atuador</span>
@@ -169,7 +170,7 @@
               </div>
               <div class="scada-viewport">
                 <div class="classic-scada">
-                  <div class="scada-titlebar"><strong>SINÓTICO GERAL · ENVASADORA AUTOMÁTICA</strong><span>GRUPO 2 · SETORES 100–500</span></div>
+                  <div class="scada-titlebar"><strong>MODELO CONCEITUAL · ENVASADORA</strong><span>GRUPO 2 · SETORES 100–500</span></div>
                   <div class="utility-label utility-air">AR COMPRIMIDO · REDE PNEUMÁTICA</div>
                   <div class="utility-label utility-water">ÁGUA DE PROCESSO</div>
                   <div class="scada-pipe pipe-air-main"></div><div class="scada-pipe pipe-air-e1"></div><div class="scada-pipe pipe-air-e3"></div><div class="scada-pipe pipe-air-e4"></div><div class="scada-pipe pipe-air-e5"></div>
@@ -309,6 +310,6 @@
     </section>
   </main>
 
-  <footer class="site-footer portal-ui"><div class="footer-brand"><span class="brand-mark">A2</span><div><strong>Aqua Index</strong><small>Grupo 2 · ECAA08 · UNIFEI</small></div></div><p>Etapa 01 · Lógica formal e sistemas especialistas.</p><a href="../index.html">Voltar ao portal ↑</a></footer>
+  <footer class="site-footer portal-ui"><div class="footer-brand"><span class="brand-mark">A<span class="brand-mark-dot">.</span></span><div><strong>Aqua Index</strong><small>Grupo 2 · ECAA08 · UNIFEI</small></div></div><p>Etapa 01 · Lógica formal e sistemas especialistas.</p><a href="../index.html">Voltar ao portal ↑</a></footer>
 </body>
 </html>
