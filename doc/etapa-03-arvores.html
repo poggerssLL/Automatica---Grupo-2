@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Etapa 03 do Aqua Index: apresentação editorial, inventário de arquivos e laboratório interativo de árvores (MST, Huffman, BDT/AVL e RRT logístico).">
+  <meta name="theme-color" content="#f8f9f7">
+  <title>Etapa 03 — Árvores | Aqua Index</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/vendor/daisyui-5.7.50-portal.css">
+  <link rel="stylesheet" href="css/portal.css?v=49db3d4f9485707413419b6142cb432ef0dd6c380dc90c9af98e1f5ff90bd0a4">
+  <link rel="stylesheet" href="css/etapa-03.css?v=b680dfc2001372435252d45b42b07f3eb2eb0bde3e514d14fd5a9b4331f995de">
+  <script defer src="js/main.js"></script>
+  <script defer src="js/etapa-03-simulator.js"></script>
+</head>
+<body class="portal-ui etapa03-page">
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+  <header class="site-header" data-header>
+    <a class="brand" href="../index.html" aria-label="Aqua Index — página inicial">
+      <span class="brand-mark" aria-hidden="true">A<span class="brand-mark-dot">.</span></span>
+      <span class="brand-copy"><strong>AQUA INDEX</strong><small>GRUPO 2 · ECAA08</small></span>
+    </a>
+
+    <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
+      <a href="../index.html">Visão geral</a>
+      <a href="etapa-01-logica.html">Etapa 01</a>
+      <a href="etapa-02-grafos.html">Etapa 02</a>
+      <a aria-current="page" class="active" href="etapa-03-arvores.html">Etapa 03</a>
+      <a href="planta-envasadora.html">A envasadora</a>
+      <a href="diretrizes-github.html">GitHub &amp; Entregas</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="icon-button" type="button" data-theme-toggle aria-label="Alternar tema" title="Alternar tema">
+        <span data-theme-icon aria-hidden="true">◐</span>
+      </button>
+      <button class="menu-button" type="button" data-menu-toggle aria-controls="main-nav" aria-expanded="false">
+        <span></span><span></span><span></span><span class="sr-only">Abrir menu</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="portal-main etapa03-main" id="conteudo">
+    <nav class="breadcrumbs" aria-label="Caminho de navegação">
+      <ul>
+        <li><a href="../index.html">Início</a></li>
+        <li aria-hidden="true">/</li>
+        <li>Etapa 03</li>
+      </ul>
+    </nav>
+
+    <header class="e03-hero">
+      <div>
+        <p class="e03-kicker">ECAA08 · aulas 19–22 · árvores e decisões</p>
+        <h1>Árvores da envasadora.</h1>
+        <p class="e03-hero-lead">Infraestrutura mínima, compressão de telemetria, árvores binárias de decisão e historiador balanceado — com fronteira explícita sobre onde RRT não se aplica à máquina pneumática.</p>
+        <p class="e03-hero-truth">Projeto conceitual e simulado — os resultados ilustram estruturas de dados e algoritmos sem planta física construída ou certificação SIL.</p>
+      </div>
+      <aside class="e03-hero-index" aria-label="Resumo da Etapa 03">
+        <strong>03</strong><span>abas</span>
+        <strong>09</strong><span>materiais</span>
+        <strong>04</strong><span>simuladores</span>
+      </aside>
+    </header>
+
+    <div class="e03-tabs" data-etapa03-tabs>
+      <div class="e03-tablist" role="tablist" aria-label="Conteúdo da Etapa 03">
+        <button class="e03-tab" id="tab-apresentacao" type="button" role="tab" aria-selected="true" aria-controls="painel-apresentacao" tabindex="0" data-e03-tab="apresentacao">
+          Apresentação <span class="e03-tab-count">06</span>
+        </button>
+        <button class="e03-tab" id="tab-arquivos" type="button" role="tab" aria-selected="false" aria-controls="painel-arquivos" tabindex="-1" data-e03-tab="arquivos">
+          Arquivos <span class="e03-tab-count">09</span>
+        </button>
+        <button class="e03-tab" id="tab-simulador" type="button" role="tab" aria-selected="false" aria-controls="simulador" tabindex="-1" data-e03-tab="simulador">
+          Simulador <span class="e03-tab-count">04</span>
+        </button>
+      </div>
+
+      <!-- ABA 1: APRESENTAÇÃO (6 SLIDES) -->
+      <section class="e03-panel" id="painel-apresentacao" role="tabpanel" aria-labelledby="tab-apresentacao" data-e03-panel="apresentacao">
+        <div class="e03-section-head">
+          <p class="e03-code">leitura guiada</p>
+          <div>
+            <h2>Seis lâminas: da topologia mínima ao limite físico.</h2>
+            <p>Cada aula testa se a estrutura de árvore adere ao comportamento discreto da envasadora pneumática, declarando ganhos quantificados e fronteiras de aplicabilidade.</p>
+          </div>
+        </div>
+
+        <div class="e03-deck" data-etapa03-deck tabindex="0" aria-label="Apresentação da Etapa 03 em seis slides. Use as setas quando o deck estiver focado.">
+          <div class="e03-deck-meta">
+            <span data-e03-slide-count>01 / 06</span>
+            <span data-e03-slide-title>Mapa da Etapa 03</span>
+          </div>
+
+          <ol class="e03-slide-index" aria-label="Índice dos slides">
+            <li><button type="button" data-e03-go-slide="0" aria-current="true">01</button></li>
+            <li><button type="button" data-e03-go-slide="1" aria-current="false">02</button></li>
+            <li><button type="button" data-e03-go-slide="2" aria-current="false">03</button></li>
+            <li><button type="button" data-e03-go-slide="3" aria-current="false">04</button></li>
+            <li><button type="button" data-e03-go-slide="4" aria-current="false">05</button></li>
+            <li><button type="button" data-e03-go-slide="5" aria-current="false">06</button></li>
+          </ol>
+
+          <!-- Slide 1 -->
+          <article class="e03-slide is-current" data-e03-slide data-title="Mapa da Etapa 03">
+            <p class="e03-code">01 / abertura · aulas 19–22</p>
+            <h3>Critério de aderência física ao processo discreto.</h3>
+            <p class="e03-slide-lead">A Etapa 03 avalia quatro famílias de árvores sobre o mesmo caso de estudo conceitual (Setores 000 a 500), separando ganhos reais de extrapolações indevidas.</p>
+            <div class="e03-lesson-layout">
+              <div class="e03-lesson-copy">
+                <ul>
+                  <li><strong>Aula 19 · MST (Kruskal e Prim):</strong> minimiza eletrocalhas e chicotes SCADA entre 8 módulos da envasadora (25,8 m → 9,9 m).</li>
+                  <li><strong>Aula 20 · Huffman:</strong> comprime o vetor de 5 sinais críticos SCADA sem perdas, reduzindo 75,30% da carga média.</li>
+                  <li><strong>Aula 21 · BDT e AVL:</strong> arbitra intertravamentos sensíveis à FSM em <code>O(1)</code> e indexa eventos assíncronos em <code>O(log n)</code>.</li>
+                  <li><strong>Aula 22 · RRT:</strong> parecer técnico de não aplicabilidade na máquina pneumática + PoC cinemática <code>SE(2)</code> no reabastecimento externo de <code>MAG-100</code>.</li>
+                </ul>
+                <p class="e03-lesson-takeaway"><strong>Princípio metodológico:</strong> nem todo algoritmo estudado em sala cabe no núcleo eletropneumático; justificar a fronteira física faz parte da engenharia.</p>
+              </div>
+              <figure class="e03-lesson-figure">
+                <svg viewBox="0 0 560 300" role="img" aria-labelledby="e03-svg-1">
+                  <title id="e03-svg-1">Árvore conceitual da Etapa 03 ligando o núcleo Aqua Index às Aulas 19, 20, 21 e à fronteira externa da Aula 22.</title>
+                  <path class="fig-edge" d="M280 62 V98 M95 98 H465 M95 98 V136 M218 98 V136 M342 98 V136"/>
+                  <path class="fig-edge-dashed" d="M465 98 V136"/>
+                  <path class="fig-edge-accent" d="M95 194 V232 M218 194 V232 M342 194 V232"/>
+                  <path class="fig-edge-dashed" d="M465 194 V232"/>
+                  <rect class="fig-node-accent" x="180" y="22" width="200" height="40" rx="2"/>
+                  <text class="fig-label" x="280" y="42">ETAPA 03 · ÁRVORES</text>
+                  <rect class="fig-node" x="40" y="136" width="110" height="58" rx="2"/>
+                  <text class="fig-label" x="95" y="158">AULA 19</text>
+                  <text class="fig-sublabel" x="95" y="177">MST · Cabos</text>
+                  <rect class="fig-node" x="163" y="136" width="110" height="58" rx="2"/>
+                  <text class="fig-label" x="218" y="158">AULA 20</text>
+                  <text class="fig-sublabel" x="218" y="177">Huffman · SCADA</text>
+                  <rect class="fig-node" x="287" y="136" width="110" height="58" rx="2"/>
+                  <text class="fig-label" x="342" y="158">AULA 21</text>
+                  <text class="fig-sublabel" x="342" y="177">BDT + AVL</text>
+                  <rect class="fig-node-accent" x="410" y="136" width="110" height="58" rx="2" stroke-dasharray="4 3"/>
+                  <text class="fig-label" x="465" y="158">AULA 22</text>
+                  <text class="fig-sublabel" x="465" y="177">RRT · Fronteira</text>
+                  <text class="fig-weight" x="95" y="254">Aderente (9,9 m)</text>
+                  <text class="fig-weight" x="218" y="254">Aderente (-75,3%)</text>
+                  <text class="fig-weight" x="342" y="254">Aderente (O(1)/log n)</text>
+                  <text class="fig-sublabel" x="465" y="254">Externo (MAG-100)</text>
+                </svg>
+                <figcaption>Três módulos aderem diretamente à máquina discreta (A19–A21); a Aula 22 traça o corte entre máquina fixa e logística móvel.</figcaption>
+              </figure>
+            </div>
+          </article>
+
+          <!-- Slide 2 -->
+          <article class="e03-slide" data-e03-slide data-title="Aula 19 · MST (Kruskal e Prim)">
+            <p class="e03-code">02 / aula 19 · árvore geradora mínima</p>
+            <h3>Oito módulos, sete trechos: 25,8 m caem para 9,9 m.</h3>
+            <p class="e03-slide-lead">A malha completa de eletrocalhas entre <code>PLC-001</code>, <code>MESA-001</code>, <code>E1–E5</code> e <code>EST-501</code> reúne 14 rotas candidatas (25,8 m). Kruskal e Prim convergem para a mesma MST.</p>
+            <div class="e03-lesson-layout">
+              <div class="e03-lesson-copy">
+                <ul>
+                  <li><strong>Kruskal — <code>O(|E| log |E|)</code>:</strong> ordena as 14 arestas por comprimento e usa <em>Union-Find</em> para descartar ciclos; encerra na 7ª aresta incluída.</li>
+                  <li><strong>Prim — <code>O(|E| log |V|)</code>:</strong> expande o barramento continuamente a partir da raiz <code>PLC-001</code>, ideal para comissionar estação por estação.</li>
+                  <li><strong>Ganho estrutural:</strong> redução de <strong>61,6%</strong> no comprimento linear total (<code>1,8 + 1,6 + 1,2 + 1,3 + 1,4 + 1,5 + 1,1 = 9,9 m</code>).</li>
+                </ul>
+                <p class="e03-lesson-takeaway"><strong>Limite de projeto:</strong> uma MST não tem redundância de anel; uma ruptura em trecho intermediário isola os módulos a jusante.</p>
+              </div>
+              <figure class="e03-lesson-figure">
+                <svg viewBox="0 0 560 300" role="img" aria-labelledby="e03-svg-2">
+                  <title id="e03-svg-2">Topologia MST da Aula 19 conectando PLC-001, MESA-001, E1 a E5 e EST-501 com total de 9,9 metros.</title>
+                  <path class="fig-edge-dashed" d="M68 150 L235 162 M235 162 L235 66 M235 162 L335 66 M235 162 L412 126 M235 162 L390 226 M148 92 L390 226 M68 150 L492 226"/>
+                  <path class="fig-edge-accent" d="M68 150 L148 92 L235 66 L335 66 L412 126 L390 226 L492 226 M148 92 L235 162"/>
+                  <text class="fig-weight" x="98" y="111">1,8 m</text>
+                  <text class="fig-weight" x="190" y="69">1,2 m</text>
+                  <text class="fig-weight" x="285" y="54">1,3 m</text>
+                  <text class="fig-weight" x="385" y="88">1,4 m</text>
+                  <text class="fig-weight" x="415" y="178">1,5 m</text>
+                  <text class="fig-weight" x="441" y="246">1,1 m</text>
+                  <text class="fig-weight" x="180" y="138">1,6 m</text>
+                  <rect class="fig-node-accent" x="24" y="133" width="88" height="34" rx="2"/><text class="fig-label" x="68" y="150">PLC-001</text>
+                  <rect class="fig-node" x="108" y="75" width="80" height="34" rx="2"/><text class="fig-label" x="148" y="92">E1-DISP</text>
+                  <rect class="fig-node" x="195" y="49" width="80" height="34" rx="2"/><text class="fig-label" x="235" y="66">E2-ENV</text>
+                  <rect class="fig-node" x="295" y="49" width="82" height="34" rx="2"/><text class="fig-label" x="336" y="66">E3-TAMP</text>
+                  <rect class="fig-node" x="372" y="109" width="80" height="34" rx="2"/><text class="fig-label" x="412" y="126">E4-SEL</text>
+                  <rect class="fig-node" x="348" y="209" width="84" height="34" rx="2"/><text class="fig-label" x="390" y="226">E5-EJEC</text>
+                  <rect class="fig-node" x="452" y="209" width="82" height="34" rx="2"/><text class="fig-label" x="493" y="226">EST-501</text>
+                  <rect class="fig-node" x="190" y="145" width="90" height="34" rx="2"/><text class="fig-label" x="235" y="162">MESA-001</text>
+                </svg>
+                <figcaption>Linhas vermelhas: 7 trechos da MST (9,9 m). Linhas tracejadas: 7 rotas redundantes rejeitadas para evitar ciclos.</figcaption>
+              </figure>
+            </div>
+          </article>
+
+          <!-- Slide 3 -->
+          <article class="e03-slide" data-e03-slide data-title="Aula 20 · Codificação de Huffman">
+            <p class="e03-code">03 / aula 20 · compressão sem perdas</p>
+            <h3>Cinco sinais críticos SCADA, 75,30% menos bits.</h3>
+            <p class="e03-slide-lead">Como a envasadora passa 88,0% do tempo em estado nominal (<code>00000</code>), palavras fixas de 5 bits desperdiçam largura de banda em varreduras contínuas.</p>
+            <div class="e03-lesson-layout">
+              <div class="e03-lesson-copy">
+                <ul>
+                  <li><strong>Vetor monitorado:</strong> <code>[ZS-102, ZSC-203, PIT-301, TIT-401, ESD-001]</code>, formando 6 estados operacionais com entropia de Shannon <code>H(S) ≈ 0,7588 bits/símbolo</code>.</li>
+                  <li><strong>Códigos livres de prefixo:</strong> nominal <code>00000 → 1</code> (1 bit); <code>ZS-102 → 00</code> (2 bits); <code>PIT-301 → 010</code> (3 bits); <code>TIT-401 → 0111</code> (4 bits); <code>ZSC-203 → 01101</code> e <code>ESD-001 → 01100</code> (5 bits).</li>
+                  <li><strong>Desempenho:</strong> comprimento médio <code>L = 1,2350 bits/símbolo</code> ante 5 bits fixos, totalizando <strong>75,30% de economia</strong> (Kraft = 1).</li>
+                </ul>
+                <p class="e03-lesson-takeaway"><strong>Protocolo em campo:</strong> o payload variável trafega em quadro delimitado (Header <code>0xA5</code> + Length + Huffman + CRC-16) para manter sincronismo de bit.</p>
+              </div>
+              <figure class="e03-lesson-figure">
+                <svg viewBox="0 0 560 300" role="img" aria-labelledby="e03-svg-3">
+                  <title id="e03-svg-3">Árvore binária de Huffman gerando código 1 para operação nominal (88%) e ramos 0 para os cinco alarmes críticos.</title>
+                  <path class="fig-edge" d="M320 34 L195 82 M195 82 L115 132 M195 82 L270 132 M270 132 L195 184 M270 132 L345 184 M345 184 L285 242 M345 184 L415 242"/>
+                  <path class="fig-edge-accent" d="M320 34 L455 82"/>
+                  <text class="fig-weight" x="245" y="54">0</text>
+                  <text class="fig-weight" x="405" y="54">1</text>
+                  <text class="fig-weight" x="145" y="102">0</text>
+                  <text class="fig-weight" x="244" y="102">1</text>
+                  <text class="fig-weight" x="220" y="154">0</text>
+                  <text class="fig-weight" x="320" y="154">1</text>
+                  <text class="fig-weight" x="302" y="212">0</text>
+                  <text class="fig-weight" x="392" y="212">1</text>
+                  <circle class="fig-node" cx="320" cy="34" r="18"/><text class="fig-label" x="320" y="34">1.00</text>
+                  <circle class="fig-node" cx="195" cy="82" r="16"/><text class="fig-label" x="195" y="82">.120</text>
+                  <circle class="fig-node" cx="270" cy="132" r="16"/><text class="fig-label" x="270" y="132">.065</text>
+                  <circle class="fig-node" cx="345" cy="184" r="16"/><text class="fig-label" x="345" y="184">.035</text>
+                  <rect class="fig-node-accent" x="400" y="64" width="132" height="36" rx="2"/><text class="fig-label" x="466" y="78">00000 → 1</text><text class="fig-sublabel" x="466" y="92">88,0% · Nominal</text>
+                  <rect class="fig-node" x="46" y="114" width="118" height="36" rx="2"/><text class="fig-label" x="105" y="128">ZS-102 → 00</text><text class="fig-sublabel" x="105" y="142">5,5% · Copo</text>
+                  <rect class="fig-node" x="116" y="166" width="132" height="36" rx="2"/><text class="fig-label" x="182" y="180">PIT-301 → 010</text><text class="fig-sublabel" x="182" y="194">3,0% · Vácuo</text>
+                  <rect class="fig-node" x="210" y="236" width="144" height="36" rx="2"/><text class="fig-label" x="282" y="250">N1 → 0110{0,1}</text><text class="fig-sublabel" x="282" y="264">ESD-001 · ZSC-203</text>
+                  <rect class="fig-node" x="366" y="236" width="150" height="36" rx="2"/><text class="fig-label" x="441" y="250">TIT-401 → 0111</text><text class="fig-sublabel" x="441" y="264">2,0% · Selagem</text>
+                </svg>
+                <figcaption>Árvore construída por min-heap: estado nominal ocupa 1 bit na raiz, enquanto alarmes raros descem até 5 bits.</figcaption>
+              </figure>
+            </div>
+          </article>
+
+          <!-- Slide 4 -->
+          <article class="e03-slide" data-e03-slide data-title="Aula 21 · BDT e AVL">
+            <p class="e03-code">04 / aula 21 · árvores binárias</p>
+            <h3>BDT sensível à FSM e AVL no Historiador assíncrono.</h3>
+            <p class="e03-slide-lead">Duas estruturas binárias com papéis distintos: arbitragem determinística de intertravamentos em <code>O(1)</code> e indexação auto-balanceada de eventos fora de ordem em <code>O(log n)</code>.</p>
+            <div class="e03-lesson-layout">
+              <div class="e03-lesson-copy">
+                <ul>
+                  <li><strong>BDT Contextual (7 níveis):</strong> separa invariantes globais (<code>HS-004</code> e contradição de fim de curso <code>R-06</code>) de permissivos habilitados pela FSM (<code>R-01</code>, <code>R-05</code>, <code>R-02</code>, <code>R-03</code>, <code>R-04</code>).</li>
+                  <li><strong>Sem mascaramento de alarmes:</strong> a BDT define uma única ação segura determinística (<code>TRIP</code>, <code>BLOQUEIO</code> ou <code>HOLD</code>), enquanto o barramento paralelo <code>A(t)</code> registra todas as violações simultâneas.</li>
+                  <li><strong>Historiador AVL (CoS / assíncrono):</strong> eventos <em>Change-of-State</em> e rajadas fora de ordem mantêm fator de balanceamento <code>|FB| ≤ 1</code> via rotações LL, RR, LR e RL.</li>
+                </ul>
+                <p class="e03-lesson-takeaway"><strong>Por que não só um vetor?</strong> Em chegadas assíncronas por estação ou consultas por chave de severidade/timestamp, a AVL evita degradação <code>O(n)</code> de uma BST comum.</p>
+              </div>
+              <figure class="e03-lesson-figure">
+                <svg viewBox="0 0 560 300" role="img" aria-labelledby="e03-svg-4">
+                  <title id="e03-svg-4">Esquema lado a lado da BDT contextual por níveis de severidade e da árvore AVL auto-balanceada do Historiador.</title>
+                  <line class="fig-edge-dashed" x1="292" y1="18" x2="292" y2="282"/>
+                  <text class="fig-sublabel" x="144" y="26">BDT CONTEXTUAL · O(h)=O(1)</text>
+                  <path class="fig-edge" d="M90 66 V246"/>
+                  <path class="fig-edge-accent" d="M90 66 H196 M90 126 H196 M90 186 H196"/>
+                  <rect class="fig-node-accent" x="24" y="48" width="122" height="34" rx="2"/><text class="fig-label" x="85" y="65">N0 · HS-004?</text>
+                  <rect class="fig-node" x="176" y="48" width="96" height="34" rx="2"/><text class="fig-label" x="224" y="65">TRIP</text>
+                  <rect class="fig-node" x="24" y="108" width="122" height="34" rx="2"/><text class="fig-label" x="85" y="125">N1 · R-06?</text>
+                  <rect class="fig-node" x="176" y="108" width="96" height="34" rx="2"/><text class="fig-label" x="224" y="125">TRAVA</text>
+                  <rect class="fig-node" x="24" y="168" width="122" height="34" rx="2"/><text class="fig-label" x="85" y="185">N2..N6 · FSM</text>
+                  <rect class="fig-node" x="176" y="168" width="96" height="34" rx="2"/><text class="fig-label" x="224" y="185">HOLD / R-04</text>
+                  <rect class="fig-node" x="24" y="232" width="122" height="32" rx="2"/><text class="fig-label" x="85" y="248">NORMAL</text>
+                  <text class="fig-sublabel" x="426" y="26">HISTORIADOR AVL · |FB| ≤ 1</text>
+                  <path class="fig-edge" d="M426 78 L366 142 M426 78 L486 142 M366 142 L334 214 M366 142 L398 214 M486 142 L456 214 M486 142 L518 214"/>
+                  <circle class="fig-node-accent" cx="426" cy="78" r="21"/><text class="fig-label" x="426" y="75">t=40</text><text class="fig-sublabel" x="426" y="88">FB 0</text>
+                  <circle class="fig-node" cx="366" cy="142" r="19"/><text class="fig-label" x="366" y="142">t=20</text>
+                  <circle class="fig-node" cx="486" cy="142" r="19"/><text class="fig-label" x="486" y="142">t=65</text>
+                  <circle class="fig-node" cx="334" cy="214" r="16"/><text class="fig-label" x="334" y="214">12</text>
+                  <circle class="fig-node" cx="398" cy="214" r="16"/><text class="fig-label" x="398" y="214">31</text>
+                  <circle class="fig-node" cx="456" cy="214" r="16"/><text class="fig-label" x="456" y="214">54</text>
+                  <circle class="fig-node" cx="518" cy="214" r="16"/><text class="fig-label" x="518" y="214">88</text>
+                  <text class="fig-weight" x="426" y="262">Busca &amp; Faixa em O(log n)</text>
+                </svg>
+                <figcaption>Esquerda: cascata determinística da BDT (h = 7). Direita: balanceamento AVL preservando altura logarítmica no Historiador.</figcaption>
+              </figure>
+            </div>
+          </article>
+
+          <!-- Slide 5 -->
+          <article class="e03-slide" data-e03-slide data-title="Aula 22 · RRT e Limite Físico">
+            <p class="e03-code">05 / aula 22 · fronteira de aplicabilidade</p>
+            <h3>Parecer negativo na máquina; PoC SE(2) no reabastecimento.</h3>
+            <p class="e03-slide-lead"><em>Rapidly-exploring Random Trees</em> (RRT) exploram espaços contínuos de configuração com obstáculos livres — o oposto da cinemática rígida da envasadora.</p>
+            <div class="e03-lesson-layout">
+              <div class="e03-lesson-copy">
+                <ul>
+                  <li><strong>Por que NÃO se aplica à máquina:</strong> a mesa indexadora (<code>M-001</code>) gira em incrementos discretos de 72° e os cilindros pneumáticos (<code>XV-101</code> a <code>XV-502</code>) operam em 2 estados finais (avançado/recuado), sem espaço contínuo livre a amostrar.</li>
+                  <li><strong>Risco de forçar o método:</strong> introduzir amostragem estocástica em intertravamentos determinísticos viola repetibilidade e obscurece o controle sequencial.</li>
+                  <li><strong>PoC legítima fora da máquina:</strong> quando <code>R-04</code> dispara <code>ALARME_REABASTECIMENTO</code> em <code>E1</code>, um robô/AGV móvel em <code>SE(2)</code> planeja rota livre de obstáculos do estoque até <code>MAG-100</code>.</li>
+                </ul>
+                <p class="e03-lesson-takeaway"><strong>Declaração de escopo:</strong> a PoC <code>SE(2)</code> é uma extensão logística didática externa à máquina; não existe AGV físico acoplado ao projeto.</p>
+              </div>
+              <figure class="e03-lesson-figure">
+                <svg viewBox="0 0 560 300" role="img" aria-labelledby="e03-svg-5">
+                  <title id="e03-svg-5">Mapa 2D SE(2) ilustrando a árvore RRT contornando obstáculos do chão de fábrica do Estoque até o magazine MAG-100.</title>
+                  <rect class="fig-obstacle" x="155" y="42" width="102" height="96" rx="2"/>
+                  <text class="fig-sublabel" x="206" y="90">ILHA ENVASE</text>
+                  <rect class="fig-obstacle" x="290" y="156" width="116" height="94" rx="2"/>
+                  <text class="fig-sublabel" x="348" y="204">PALETE / OBST.</text>
+                  <path class="fig-edge-dashed" d="M64 236 L118 190 L132 128 M118 190 L192 224 L244 252 M192 224 L246 176 L278 118 L340 82 M278 118 L314 54 M340 82 L416 64 L444 114"/>
+                  <path class="fig-edge-accent" d="M64 236 L118 190 L192 224 L246 176 L278 118 L340 82 L428 106 L486 78"/>
+                  <circle class="fig-node" cx="64" cy="236" r="14"/><text class="fig-label" x="64" y="236">EST</text>
+                  <circle class="fig-node-accent" cx="486" cy="78" r="16"/><text class="fig-label" x="486" y="78">MAG</text>
+                  <text class="fig-sublabel" x="64" y="264">Estoque Copos</text>
+                  <text class="fig-weight" x="486" y="108">MAG-100 (E1)</text>
+                  <text class="fig-sublabel" x="140" y="26">Espaço contínuo SE(2) — Logística Externa</text>
+                </svg>
+                <figcaption>Ramos tracejados: exploração aleatória RRT. Traço vermelho: trajetória válida desviando de obstáculos até MAG-100.</figcaption>
+              </figure>
+            </div>
+          </article>
+
+          <!-- Slide 6 -->
+          <article class="e03-slide" data-e03-slide data-title="Síntese e Próximas Aulas">
+            <p class="e03-code">06 / síntese · limites e horizonte</p>
+            <h3>Cada árvore responde uma pergunta; concorrência fica para Petri.</h3>
+            <p class="e03-slide-lead">A Etapa 03 consolida quatro modelos independentes e deixa claro o que árvores não capturam: sincronismo concorrente de recursos compartilhados.</p>
+            <div class="e03-lesson-layout">
+              <div class="e03-lesson-copy">
+                <ul>
+                  <li><strong>Resumo verificado:</strong> MST (<code>9,9 m</code>, -61,6%); Huffman (<code>1,2350 bits</code>, -75,30%); BDT/AVL (<code>O(1)</code> + <code>O(log n)</code> sem mascaramento); RRT (parecer negativo na máquina + PoC externa <code>MAG-100</code>).</li>
+                  <li><strong>Como usar o laboratório:</strong> abra a aba <strong>Simulador</strong>, alterne os 4 modos, manipule arestas, frequências, sensores/chaves ou obstáculos e leia métricas + diário.</li>
+                  <li><strong>Ponte para a Aula 24 (Redes de Petri):</strong> paralelismo simultâneo nas 5 estações (<code>E1–E5</code>), travamento mútuo (<em>deadlock</em>) e marcação de recursos exigem Redes de Petri na próxima frente.</li>
+                </ul>
+                <p class="e03-lesson-takeaway"><strong>Escopo acadêmico final:</strong> todas as simulações rodam localmente no navegador para inspeção didática, sem conexão a CLP ou garantia industrial.</p>
+              </div>
+              <figure class="e03-lesson-figure">
+                <svg viewBox="0 0 560 300" role="img" aria-labelledby="e03-svg-6">
+                  <title id="e03-svg-6">Progressão metodológica da Etapa 01 (Lógica), Etapa 02 (Grafos), Etapa 03 (Árvores) até a Aula 24 (Redes de Petri).</title>
+                  <path class="fig-edge" d="M126 146 H162 M268 146 H304"/>
+                  <path class="fig-edge-accent" d="M412 146 H444"/>
+                  <rect class="fig-node" x="22" y="114" width="104" height="64" rx="2"/>
+                  <text class="fig-label" x="74" y="138">ETAPA 01</text>
+                  <text class="fig-sublabel" x="74" y="158">Lógica · Regras</text>
+                  <rect class="fig-node" x="162" y="114" width="106" height="64" rx="2"/>
+                  <text class="fig-label" x="215" y="138">ETAPA 02</text>
+                  <text class="fig-sublabel" x="215" y="158">Grafos · Rotas</text>
+                  <rect class="fig-node-accent" x="304" y="114" width="108" height="64" rx="2"/>
+                  <text class="fig-label" x="358" y="138">ETAPA 03</text>
+                  <text class="fig-sublabel" x="358" y="158">Árvores · A19–22</text>
+                  <rect class="fig-node" x="444" y="114" width="100" height="64" rx="2" stroke-dasharray="4 3"/>
+                  <text class="fig-label" x="494" y="138">AULA 24</text>
+                  <text class="fig-sublabel" x="494" y="158">Redes de Petri</text>
+                  <text class="fig-weight" x="494" y="206">Concorrência E1–E5</text>
+                </svg>
+                <figcaption>Árvores resolvem hierarquia, custo e decisão; concorrência e sincronismo de estações avançam para Redes de Petri (Aula 24).</figcaption>
+              </figure>
+            </div>
+          </article>
+
+          <div class="e03-deck-actions">
+            <button class="btn btn-sm btn-outline" type="button" data-e03-prev>Anterior</button>
+            <progress value="1" max="6" data-e03-progress aria-label="Progresso da apresentação"></progress>
+            <button class="btn btn-sm" type="button" data-e03-next>Próximo</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 2: INVENTÁRIO DE 9 ARQUIVOS -->
+      <section class="e03-panel" id="painel-arquivos" role="tabpanel" aria-labelledby="tab-arquivos" data-e03-panel="arquivos" hidden>
+        <div class="e03-section-head">
+          <p class="e03-code">inventário vivo</p>
+          <div>
+            <h2>Nove materiais, cada qual com pergunta, achado e limite.</h2>
+            <p>Navegue pelo índice e pelos pares roteiro + notebook das Aulas 19 a 22 diretamente no repositório oficial do Grupo 2.</p>
+          </div>
+        </div>
+
+        <div class="e03-file-rail" role="tablist" aria-label="Seletores dos arquivos da Etapa 03" data-e03-file-rail>
+          <button type="button" class="is-active" role="tab" aria-selected="true" data-e03-file="readme">README</button>
+          <button type="button" role="tab" aria-selected="false" data-e03-file="19-md">19 · Roteiro</button>
+          <button type="button" role="tab" aria-selected="false" data-e03-file="19-ipynb">19 · Notebook</button>
+          <button type="button" role="tab" aria-selected="false" data-e03-file="20-md">20 · Roteiro</button>
+          <button type="button" role="tab" aria-selected="false" data-e03-file="20-ipynb">20 · Notebook</button>
+          <button type="button" role="tab" aria-selected="false" data-e03-file="21-md">21 · Roteiro</button>
+          <button type="button" role="tab" aria-selected="false" data-e03-file="21-ipynb">21 · Notebook</button>
+          <button type="button" role="tab" aria-selected="false" data-e03-file="22-md">22 · Roteiro</button>
+          <button type="button" role="tab" aria-selected="false" data-e03-file="22-ipynb">22 · Notebook</button>
+        </div>
+
+        <div class="e03-file-panels" data-e03-file-panels>
+          <article class="e03-file-card is-active" data-e03-file-panel="readme">
+            <p class="e03-code">índice da etapa 03</p>
+            <h3>README.md</h3>
+            <dl class="e03-file-meta">
+              <div><dt>Pergunta</dt><dd>Como se organizam os entregáveis de árvores, compressão, decisão e fronteira cinemática na Etapa 03?</dd></div>
+              <div><dt>Achado</dt><dd>Consolida escopo, critérios de aderência física e o mapa de leitura das Aulas 19 a 22.</dd></div>
+              <div><dt>Limite</dt><dd>Inventário acadêmico de projeto conceitual; não constitui especificação de compra ou certificação de campo.</dd></div>
+            </dl>
+            <div class="e03-file-actions">
+              <a class="btn btn-sm btn-primary" href="../etapa-03-arvores/README.md">Abrir README local</a>
+              <a class="btn btn-sm btn-outline" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-03-arvores/README.md" target="_blank" rel="noopener">Ver no GitHub ↗</a>
+            </div>
+          </article>
+
+          <article class="e03-file-card" data-e03-file-panel="19-md">
+            <p class="e03-code">aula 19 · roteiro</p>
+            <h3>Aula 19 - Algoritmo de Kruskal e Prim.md</h3>
+            <dl class="e03-file-meta">
+              <div><dt>Pergunta</dt><dd>Qual topologia de eletrocalhas e chicotes conecta os 8 módulos da envasadora com menor extensão linear?</dd></div>
+              <div><dt>Achado</dt><dd>Kruskal e Prim convergem para a mesma MST de 9,9 m sobre 25,8 m de rotas candidatas (redução de 61,6%).</dd></div>
+              <div><dt>Limite</dt><dd>Árvore sem redundância física; comprimentos são parâmetros didáticos de bancada/projeto básico.</dd></div>
+            </dl>
+            <div class="e03-file-actions">
+              <a class="btn btn-sm btn-primary" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-03-arvores/Aula%2019%20-%20Algoritmo%20de%20Kruskal%20e%20Prim.md" target="_blank" rel="noopener">Abrir roteiro no GitHub ↗</a>
+            </div>
+          </article>
+
+          <article class="e03-file-card" data-e03-file-panel="19-ipynb">
+            <p class="e03-code">aula 19 · notebook</p>
+            <h3>Aula 19 - Algoritmo de Kruskal e Prim - code.ipynb</h3>
+            <dl class="e03-file-meta">
+              <div><dt>Pergunta</dt><dd>Como verificar passo a passo a seleção gulosa por arestas (Union-Find) e por vértices (Min-Heap)?</dd></div>
+              <div><dt>Achado</dt><dd>Reproduz as 7 arestas da MST, valida parada antecipada no passo 8 e plota o barramento perimetral.</dd></div>
+              <div><dt>Limite</dt><dd>Não modela queda de tensão, ruído EMI nem roteamento físico de curvas em CAD 3D.</dd></div>
+            </dl>
+            <div class="e03-file-actions">
+              <a class="btn btn-sm btn-outline" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-03-arvores/Aula%2019%20-%20Algoritmo%20de%20Kruskal%20e%20Prim%20-%20code.ipynb" target="_blank" rel="noopener">Abrir notebook no GitHub ↗</a>
+            </div>
+          </article>
+
+          <article class="e03-file-card" data-e03-file-panel="20-md">
+            <p class="e03-code">aula 20 · roteiro</p>
+            <h3>Aula 20 - Algortimo de Huffman.md</h3>
+            <dl class="e03-file-meta">
+              <div><dt>Pergunta</dt><dd>Quanto de banda pode ser economizado ao comprimir sem perdas os 5 sinais críticos ISA-5.1 do SCADA?</dd></div>
+              <div><dt>Achado</dt><dd>Com 88,0% de regime nominal, o código prefixado atinge L = 1,2350 bits/símbolo e 75,30% de redução sobre 5 bits fixos.</dd></div>
+              <div><dt>Limite</dt><dd>Economia depende da distribuição de probabilidades assumida e requer enquadramento com CRC-16 em campo.</dd></div>
+            </dl>
+            <div class="e03-file-actions">
+              <a class="btn btn-sm btn-primary" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-03-arvores/Aula%2020%20-%20Algortimo%20de%20Huffman.md" target="_blank" rel="noopener">Abrir roteiro no GitHub ↗</a>
+            </div>
+          </article>
+
+          <article class="e03-file-card" data-e03-file-panel="20-ipynb">
+            <p class="e03-code">aula 20 · notebook</p>
+            <h3>Aula 20 - Algortimo de Huffman - code.ipynb</h3>
+            <dl class="e03-file-meta">
+              <div><dt>Pergunta</dt><dd>Como construir a árvore por min-heap, validar Kraft e testar codificação/decodificação de sequências?</dd></div>
+              <div><dt>Achado</dt><dd>Confirma entropia H(S) ≈ 0,7588 bits, soma de Kraft = 1 e integridade lossless de quadros de telemetria.</dd></div>
+              <div><dt>Limite</dt><dd>Tráfego simulado localmente em Python; sem medição em barramento Modbus-RTU ou OPC-UA físico.</dd></div>
+            </dl>
+            <div class="e03-file-actions">
+              <a class="btn btn-sm btn-outline" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-03-arvores/Aula%2020%20-%20Algortimo%20de%20Huffman%20-%20code.ipynb" target="_blank" rel="noopener">Abrir notebook no GitHub ↗</a>
+            </div>
+          </article>
+
+          <article class="e03-file-card" data-e03-file-panel="21-md">
+            <p class="e03-code">aula 21 · roteiro</p>
+            <h3>Aula 21 - Árvores Binárias.md</h3>
+            <dl class="e03-file-meta">
+              <div><dt>Pergunta</dt><dd>Como arbitrar intertravamentos condicionados à FSM sem mascarar alarmes e indexar eventos assíncronos no Historiador?</dd></div>
+              <div><dt>Achado</dt><dd>BDT contextual de 7 níveis decide em O(1) com barramento paralelo A(t); árvore AVL mantém consultas CoS em O(log n).</dd></div>
+              <div><dt>Limite</dt><dd>Modelo lógico simulado para ECAA08; não substitui CLP de segurança nem atesta conformidade IEC 61511/SIL.</dd></div>
+            </dl>
+            <div class="e03-file-actions">
+              <a class="btn btn-sm btn-primary" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-03-arvores/Aula%2021%20-%20%C3%81rvores%20Bin%C3%A1rias.md" target="_blank" rel="noopener">Abrir roteiro no GitHub ↗</a>
+            </div>
+          </article>
+
+          <article class="e03-file-card" data-e03-file-panel="21-ipynb">
+            <p class="e03-code">aula 21 · notebook</p>
+            <h3>Aula 21 - Árvores Binárias - code.ipynb</h3>
+            <dl class="e03-file-meta">
+              <div><dt>Pergunta</dt><dd>Como testar falhas simultâneas na BDT e provar o balanceamento da AVL frente a inserções fora de ordem?</dd></div>
+              <div><dt>Achado</dt><dd>Valida as 8 folhas de atuação, o registro completo em A(t) e compara altura AVL vs. BST degenerada sob carga CoS.</dd></div>
+              <div><dt>Limite</dt><dd>Benchmarks executados em memória local; sem persistência em banco temporal industrial.</dd></div>
+            </dl>
+            <div class="e03-file-actions">
+              <a class="btn btn-sm btn-outline" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-03-arvores/Aula%2021%20-%20%C3%81rvores%20Bin%C3%A1rias%20-%20code.ipynb" target="_blank" rel="noopener">Abrir notebook no GitHub ↗</a>
+            </div>
+          </article>
+
+          <article class="e03-file-card" data-e03-file-panel="22-md">
+            <p class="e03-code">aula 22 · roteiro</p>
+            <h3>Aula 22 - Rapidly-exploring Random Trees.md</h3>
+            <dl class="e03-file-meta">
+              <div><dt>Pergunta</dt><dd>O algoritmo RRT tem aplicabilidade física na máquina envasadora pneumática ou apenas no entorno logístico?</dd></div>
+              <div><dt>Achado</dt><dd>Emite parecer negativo para a mesa indexadora/cilindros discretos e define PoC cinemática SE(2) no reabastecimento de MAG-100.</dd></div>
+              <div><dt>Limite</dt><dd>Cenário logístico externo puramente didático; não representa AGV implantado nem planta física mapeada.</dd></div>
+            </dl>
+            <div class="e03-file-actions">
+              <a class="btn btn-sm btn-primary" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-03-arvores/Aula%2022%20-%20Rapidly-exploring%20Random%20Trees.md" target="_blank" rel="noopener">Abrir roteiro no GitHub ↗</a>
+            </div>
+          </article>
+
+          <article class="e03-file-card" data-e03-file-panel="22-ipynb">
+            <p class="e03-code">aula 22 · notebook</p>
+            <h3>Aula 22 - Rapidly-exploring Random Trees - code.ipynb</h3>
+            <dl class="e03-file-meta">
+              <div><dt>Pergunta</dt><dd>Como a árvore aleatória cresce em SE(2), desvia de obstáculos e encontra rota até MAG-100 após o alarme R-04?</dd></div>
+              <div><dt>Achado</dt><dd>Demonstra expansão incremental, verificação de colisão, reconstrução do caminho e sensibilidade a passo/semente.</dd></div>
+              <div><dt>Limite</dt><dd>Cinemática simplificada em mapa 2D ilustrativo, sem dinâmica de pneus, sensores LiDAR ou controle real.</dd></div>
+            </dl>
+            <div class="e03-file-actions">
+              <a class="btn btn-sm btn-outline" href="https://github.com/poggerssLL/Automatica---Grupo-2/blob/main/etapa-03-arvores/Aula%2022%20-%20Rapidly-exploring%20Random%20Trees%20-%20code.ipynb" target="_blank" rel="noopener">Abrir notebook no GitHub ↗</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ABA 3: SIMULADOR INTERATIVO (4 MODOS) -->
+      <section class="e03-panel" id="simulador" role="tabpanel" aria-labelledby="tab-simulador" data-e03-panel="simulador" hidden>
+        <div class="e03-section-head">
+          <p class="e03-code">laboratório de árvores</p>
+          <div>
+            <h2>Quatro simuladores independentes da Etapa 03.</h2>
+            <p>Alterne entre MST, Huffman, BDT/AVL e a PoC logística RRT para inspecionar métricas, árvores geradas e limites metodológicos diretamente no navegador.</p>
+          </div>
+        </div>
+
+        <div class="e03-method-note">
+          <strong>Nota metodológica.</strong> Os cálculos abaixo executam algoritmos didáticos localmente no navegador; não enviam comandos a CLP, não constituem telemetria real nem validam segurança funcional.
+        </div>
+
+        <noscript>
+          <p class="e03-noscript">Ative JavaScript para operar os quatro simuladores interativos da Etapa 03. A apresentação editorial e os links de arquivos permanecem acessíveis.</p>
+        </noscript>
+
+        <div class="e03-simulator" data-etapa03-simulator>
+          <div class="e03-mode-bar" role="tablist" aria-label="Modos do simulador de árvores" data-e03-mode-bar>
+            <button type="button" role="tab" aria-selected="true" class="is-active" data-e03-mode="mst">
+              MST · Cabeamento <small>A19 · Kruskal / Prim</small>
+            </button>
+            <button type="button" role="tab" aria-selected="false" data-e03-mode="huffman">
+              Huffman · Telemetria <small>A20 · 5 sinais SCADA</small>
+            </button>
+            <button type="button" role="tab" aria-selected="false" data-e03-mode="binary">
+              BDT &amp; AVL · Decisão <small>A21 · FSM / Historiador</small>
+            </button>
+            <button type="button" role="tab" aria-selected="false" data-e03-mode="rrt">
+              RRT · Logística SE(2) <small>A22 · PoC MAG-100</small>
+            </button>
+          </div>
+
+          <header class="e03-sim-head">
+            <div>
+              <p class="e03-code" data-e03-mode-code>AULA 19 · MST</p>
+              <h3 data-e03-mode-title>Árvore Geradora Mínima: Kruskal e Prim</h3>
+              <p data-e03-mode-desc>Dimensionamento mínimo da malha de eletrocalhas entre os 8 módulos da envasadora (25,8 m → 9,9 m).</p>
+            </div>
+            <p class="e03-mode-limit" data-e03-mode-limit><strong>Limite:</strong> uma MST otimiza comprimento linear, sem redundância em anel contra ruptura de trecho.</p>
+          </header>
+
+          <div class="e03-sim-grid">
+            <div class="e03-stage-col">
+              <div class="e03-stage-wrap">
+                <svg class="e03-svg" data-e03-svg viewBox="0 0 960 540" role="img" aria-label="Visualização interativa da Etapa 03"></svg>
+              </div>
+              <p class="e03-stage-hint">Interaja com os controles à direita ou execute o algoritmo para atualizar a visualização vetorial.</p>
+            </div>
+
+            <aside class="e03-control-col" aria-label="Controles e leitura do simulador">
+              <div class="e03-controls" data-e03-controls></div>
+
+              <div class="e03-sim-actions">
+                <button class="btn btn-sm btn-primary" type="button" data-e03-run>Executar</button>
+                <button class="btn btn-sm btn-outline" type="button" data-e03-reset>Restaurar padrão</button>
+              </div>
+
+              <div class="e03-metrics" data-e03-metrics aria-live="polite"></div>
+
+              <div class="e03-output" data-e03-output aria-live="polite"></div>
+
+              <div class="e03-log-section">
+                <p class="e03-log-title">Diário curto</p>
+                <ul class="e03-log" data-e03-log>
+                  <li>Laboratório da Etapa 03 pronto para simulação local.</li>
+                </ul>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand">
+      <span class="brand-mark">A<span class="brand-mark-dot">.</span></span>
+      <div><strong>Aqua Index</strong><small>Grupo 2 · ECAA08 · UNIFEI</small></div>
+    </div>
+    <p>Estudo conceitual de envasamento de água em copos.</p>
+    <a href="https://github.com/poggerssLL/Automatica---Grupo-2" target="_blank" rel="noopener">Repositório no GitHub ↗</a>
+  </footer>
+</body>
+</html>
