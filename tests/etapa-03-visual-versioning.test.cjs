@@ -40,21 +40,30 @@ test("doc/etapa-03-arvores.html versiona css/etapa-03.css e css/portal.css com S
   assert.ok(html.indexOf("css/portal.css") < html.indexOf("css/etapa-03.css"), "portal.css deve carregar antes de etapa-03.css");
 });
 
-test("doc/css/etapa-03.css é 100% escopado em @scope (.etapa03-page) com suporte claro/escuro e redução de movimento", () => {
+test("doc/css/etapa-03.css é 100% escopado em @scope (.etapa03-page) com tema claro/escuro, fullscreen e redução de movimento", () => {
   const css = fs.readFileSync(etapa03CssPath, "utf8");
   assert.ok(css.includes("@scope (.etapa03-page)"), "CSS deve declarar @scope (.etapa03-page)");
   assert.ok(css.includes('[data-theme="dark"] :scope'), "CSS deve suportar tema escuro");
   assert.ok(css.includes("prefers-reduced-motion"), "CSS deve respeitar prefers-reduced-motion");
   assert.ok(css.includes("#f8f9f7") && css.includes("#142534") && css.includes("#c62f24"), "CSS deve preservar paleta clara do DESIGN.md");
   assert.ok(css.includes("#101a21") && css.includes("#f1f4f2") && css.includes("#ff7666"), "CSS deve preservar paleta escura do DESIGN.md");
+  assert.ok(css.includes(".e03-fullscreen-btn"), "CSS deve estilizar .e03-fullscreen-btn");
+  assert.ok(css.includes(".e03-deck:fullscreen"), "CSS deve conter regra :fullscreen");
+  assert.ok(css.includes(".e03-deck.is-fullscreen"), "CSS deve conter regra .is-fullscreen");
+  assert.ok(css.includes("100vw") && css.includes("100vh"), "CSS de tela cheia deve cobrir 100vw e 100vh");
 });
 
-test("doc/etapa-03-arvores.html cumpre integralmente o contrato DOM (6 slides, 9 arquivos, 4 modos e palco SVG)", () => {
+test("doc/etapa-03-arvores.html cumpre integralmente o contrato DOM (11 slides, 20 arquivos, 10 modos, fullscreen e palco SVG)", () => {
   const html = fs.readFileSync(etapa03HtmlPath, "utf8");
 
   assert.ok(html.includes('<body class="portal-ui etapa03-page">'), "Body deve conter portal-ui e etapa03-page");
   assert.ok(html.includes('src="js/main.js"'), "Deve carregar js/main.js");
   assert.ok(html.includes('src="js/etapa-03-simulator.js"'), "Deve carregar js/etapa-03-simulator.js");
+  assert.ok(html.includes('src="js/etapa-03-deck-fullscreen.js"'), "Deve carregar js/etapa-03-deck-fullscreen.js");
+
+  // Ordem de carregamento dos scripts
+  assert.ok(html.indexOf('src="js/main.js"') < html.indexOf('src="js/etapa-03-simulator.js"'), "main.js deve carregar antes de etapa-03-simulator.js");
+  assert.ok(html.indexOf('src="js/etapa-03-simulator.js"') < html.indexOf('src="js/etapa-03-deck-fullscreen.js"'), "etapa-03-simulator.js deve carregar antes de etapa-03-deck-fullscreen.js");
 
   // 3 abas
   for (const tab of ["apresentacao", "arquivos", "simulador"]) {
@@ -63,30 +72,55 @@ test("doc/etapa-03-arvores.html cumpre integralmente o contrato DOM (6 slides, 9
   }
   assert.ok(html.includes('id="simulador"'), "Painel do simulador deve possuir id=\"simulador\"");
 
-  // 6 slides + figuras SVG + controles do deck
+  // 11 slides + figuras SVG + controles do deck + tela cheia
   const slides = html.match(/<article\b[^>]*\bdata-e03-slide(?=\s|>)/g) || [];
-  assert.equal(slides.length, 6, "Apresentação deve conter exatamente 6 slides");
+  assert.equal(slides.length, 11, "Apresentação deve conter exatamente 11 slides");
   const figures = html.match(/class="e03-lesson-figure"/g) || [];
-  assert.equal(figures.length, 6, "Cada um dos 6 slides deve conter um diagrama e03-lesson-figure");
-  for (let i = 0; i < 6; i++) {
+  assert.equal(figures.length, 11, "Cada um dos 11 slides deve conter um diagrama e03-lesson-figure");
+  for (let i = 0; i < 11; i++) {
     assert.ok(html.includes(`data-e03-go-slide="${i}"`), `Botão de índice do slide ${i} deve existir`);
   }
-  for (const attr of ["data-etapa03-deck", "data-e03-slide-count", "data-e03-slide-title", "data-e03-prev", "data-e03-next", "data-e03-progress"]) {
+  for (const attr of [
+    "data-etapa03-deck",
+    "data-e03-slide-count",
+    "data-e03-slide-title",
+    "data-e03-fullscreen",
+    "data-e03-prev",
+    "data-e03-next",
+    "data-e03-progress"
+  ]) {
     assert.ok(html.includes(attr), `Controle do deck ${attr} deve existir`);
   }
 
-  // 9 arquivos no trilho e nos painéis
-  const fileIds = ["readme", "19-md", "19-ipynb", "20-md", "20-ipynb", "21-md", "21-ipynb", "22-md", "22-ipynb"];
+  // 20 arquivos no trilho e nos painéis (incluindo reserva da Aula 24)
+  const fileIds = [
+    "readme",
+    "19-md", "19-ipynb",
+    "20-md", "20-ipynb",
+    "21-md", "21-ipynb",
+    "22-md", "22-ipynb",
+    "23-md", "23-ipynb",
+    "24-colega",
+    "25-md", "25-ipynb",
+    "26-md", "26-ipynb",
+    "27-md", "27-ipynb",
+    "28-md", "28-ipynb"
+  ];
   assert.ok(html.includes("data-e03-file-rail"), "Trilho data-e03-file-rail deve existir");
   for (const id of fileIds) {
     assert.ok(html.includes(`data-e03-file="${id}"`), `Botão de arquivo ${id} deve existir`);
     assert.ok(html.includes(`data-e03-file-panel="${id}"`), `Painel de arquivo ${id} deve existir`);
   }
+  assert.ok(html.includes("Reservada a integrante do grupo"), "Aula 24 deve indicar explicitamente reserva a integrante do grupo");
 
-  // 4 modos do simulador e ganchos de contrato
-  for (const mode of ["mst", "huffman", "binary", "rrt"]) {
+  // 10 modos do simulador e ganchos de contrato
+  const modes = ["integrated", "mst", "huffman", "binary", "rrt", "rstp", "petri", "bt", "kdtree", "dtree"];
+  for (const mode of modes) {
     assert.ok(html.includes(`data-e03-mode="${mode}"`), `Botão de modo ${mode} deve existir`);
   }
+  const modeButtons = html.match(/data-e03-mode="[^"]+"/g) || [];
+  assert.equal(modeButtons.length, 10, "Barra de modos deve conter exatamente 10 botões");
+
   for (const hook of [
     "data-etapa03-simulator",
     "data-e03-mode-bar",
@@ -107,7 +141,7 @@ test("doc/etapa-03-arvores.html cumpre integralmente o contrato DOM (6 slides, 9
   assert.ok(html.includes('viewBox="0 0 960 540"'), "Palco SVG deve declarar viewBox=\"0 0 960 540\"");
 });
 
-test("index.html ativa Etapa 03 preservando portal.css e links existentes", () => {
+test("index.html ativa Etapa 03 com Aulas 19–28 preservando portal.css e links existentes", () => {
   const indexHtml = fs.readFileSync(indexHtmlPath, "utf8");
   const expectedPortalHash = sha256LF(portalCssPath);
 
@@ -115,5 +149,5 @@ test("index.html ativa Etapa 03 preservando portal.css e links existentes", () =
   assert.ok(indexHtml.includes('<a href="doc/etapa-03-arvores.html">Etapa 03</a>'), "Navegação principal deve incluir Etapa 03");
   assert.ok(indexHtml.includes('<a class="atlas-stage atlas-stage-live" href="doc/etapa-03-arvores.html">'), "Card da Etapa 03 deve estar ativo como link");
   assert.ok(indexHtml.includes('href="doc/etapa-03-arvores.html#simulador"'), "Lista de links deve incluir acesso ao simulador da Etapa 03");
-  assert.ok(indexHtml.includes("Aulas 19–22"), "Card da Etapa 03 deve indicar Aulas 19–22");
+  assert.ok(indexHtml.includes("Aulas 19–28"), "Card da Etapa 03 deve indicar Aulas 19–28");
 });

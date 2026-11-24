@@ -1338,6 +1338,658 @@ const AquaIndexEtapa03 = (() => {
   }
 
   /* ============================================================================
+   * MODO 5 — AULA 23: PROTOCOLO RSTP (IEEE 802.1w) NA REDE SCADA
+   * ============================================================================ */
+
+  const RSTP_SWITCHES = deepFreeze([
+    { id: "SW-SCADA", priority: 4096, mac: "00:1A:2B:02:00:01", role: "Root Primário", x: 185, y: 125 },
+    { id: "SW-PLC", priority: 8192, mac: "00:1A:2B:02:00:02", role: "Root Secundário", x: 185, y: 405 },
+    { id: "SW-IO-OUT", priority: 32768, mac: "00:1A:2B:02:00:05", role: "E5 + EST-500", x: 525, y: 125 },
+    { id: "SW-IO-IN", priority: 32768, mac: "00:1A:2B:02:00:03", role: "E1 + E2", x: 525, y: 405 },
+    { id: "SW-IO-PROC", priority: 32768, mac: "00:1A:2B:02:00:04", role: "E3 + E4", x: 785, y: 265 }
+  ]);
+
+  const RSTP_LINKS = deepFreeze([
+    { id: "L1", from: "SW-SCADA", to: "SW-PLC", speed: "10 Gbps", cost: 2000 },
+    { id: "L2", from: "SW-SCADA", to: "SW-IO-OUT", speed: "1 Gbps", cost: 20000 },
+    { id: "L3", from: "SW-PLC", to: "SW-IO-IN", speed: "1 Gbps", cost: 20000 },
+    { id: "L4", from: "SW-IO-OUT", to: "SW-IO-PROC", speed: "1 Gbps", cost: 20000 },
+    { id: "L5", from: "SW-IO-IN", to: "SW-IO-PROC", speed: "1 Gbps", cost: 20000 },
+    { id: "L6", from: "SW-PLC", to: "SW-IO-PROC", speed: "100 Mbps", cost: 200000 }
+  ]);
+
+  function runRSTP(options = {}) {
+    const scenario = options.scenario || "nominal";
+    const taktSec = Number.isFinite(Number(options.taktSec)) && Number(options.taktSec) > 0 ? Number(options.taktSec) : 3.6;
+    const scadaDown = scenario === "scada_down";
+    const backboneDown = scenario === "backbone_fail";
+
+    const activeSwitches = RSTP_SWITCHES.filter((sw) => !(scadaDown && sw.id === "SW-SCADA"));
+    const activeIds = new Set(activeSwitches.map((sw) => sw.id));
+
+    const sortedByBid = [...activeSwitches].sort(
+      (a, b) => a.priority - b.priority || a.mac.localeCompare(b.mac)
+    );
+    const rootBridge = sortedByBid[0].id;
+
+    const downLinks = [];
+    const usableLinks = [];
+    for (const link of RSTP_LINKS) {
+      if (!activeIds.has(link.from) || !activeIds.has(link.to) || (backboneDown && link.id === "L1")) {
+        downLinks.push(link.id);
+      } else {
+        usableLinks.push(link);
+      }
+    }
+
+    const dist = new Map([[rootBridge, 0]]);
+    const parentLink = new Map();
+    const visited = new Set();
+
+    while (visited.size < activeSwitches.length) {
+      let bestNode = null;
+      let bestDist = Infinity;
+      for (const sw of activeSwitches) {
+        if (!visited.has(sw.id) && (dist.get(sw.id) ?? Infinity) < bestDist) {
+          bestDist = dist.get(sw.id);
+          bestNode = sw.id;
+        }
+      }
+      if (!bestNode) break;
+      visited.add(bestNode);
+
+      for (const link of usableLinks) {
+        if (link.from !== bestNode && link.to !== bestNode) continue;
+        const neighbor = link.from === bestNode ? link.to : link.from;
+        const nextDist = bestDist + link.cost;
+        if (nextDist < (dist.get(neighbor) ?? Infinity)) {
+          dist.set(neighbor, nextDist);
+          parentLink.set(neighbor, link.id);
+        }
+      }
+    }
+
+    const forwardingLinks = [...parentLink.values()].sort();
+    const forwardingSet = new Set(forwardingLinks);
+    const discardingLinks = usableLinks.filter((l) => !forwardingSet.has(l.id)).map((l) => l.id).sort();
+
+    const hasFault = backboneDown || scadaDown;
+    const rstpConvergenceSec = hasFault ? 0.15 : 0;
+    const stpConvergenceSec = hasFault ? 36 : 0;
+
+    return {
+      ok: visited.size === activeSwitches.length,
+      scenario,
+      rootBridge,
+      activeSwitches: activeSwitches.map((s) => s.id),
+      forwardingLinks,
+      discardingLinks,
+      downLinks,
+      pathCosts: Object.fromEntries(dist),
+      rstpConvergenceSec,
+      stpConvergenceSec,
+      lostCyclesRSTP: Math.floor(rstpConvergenceSec / taktSec),
+      lostCyclesSTP: Math.floor(stpConvergenceSec / taktSec),
+      taktSec
+    };
+  }
+
+  /* ============================================================================
+   * MODO 6 — AULA 24 (PRÉVIA SINCRONIZÁVEL): REDES DE PETRI
+   * ============================================================================ */
+
+  function buildPetriCoverability(mode = "bounded") {
+    const isUnbounded = mode === "unbounded";
+    if (isUnbounded) {
+      return {
+        ok: true,
+        preview: true,
+        mode: "unbounded",
+        hasOmega: true,
+        isBounded: false,
+        kMax: null,
+        deadlocks: 0,
+        mutualExclusionOk: true,
+        maxTokensEST500: "ω",
+        states: [
+          { id: "M0", label: "(Mesa=1, Prensa=0, EST-500=0)", hasOmega: false },
+          { id: "M1", label: "(Mesa=0, Prensa=1, EST-500=0)", hasOmega: false },
+          { id: "M2", label: "(Mesa=1, Prensa=0, EST-500=1)", hasOmega: false },
+          { id: "M3", label: "(Mesa=1, Prensa=0, EST-500=ω)", hasOmega: true }
+        ],
+        edges: [
+          { from: "M0", to: "M1", label: "t1: Iniciar_Selagem" },
+          { from: "M1", to: "M2", label: "t2: Ejetar_EST500" },
+          { from: "M2", to: "M3", label: "t1+t2: Acúmulo ilimitado (ω)" },
+          { from: "M3", to: "M3", label: "t3: Saída EST-500" }
+        ]
+      };
+    }
+
+    const kMax = 3;
+    const queue = [{ mesa: 1, prensa: 0, est: 0, comp: kMax }];
+    const keyOf = (s) => `${s.mesa},${s.prensa},${s.est},${s.comp}`;
+    const seen = new Map();
+    const edges = [];
+
+    while (queue.length) {
+      const cur = queue.shift();
+      const k = keyOf(cur);
+      if (seen.has(k)) continue;
+      const id = `M${seen.size}`;
+      seen.set(k, {
+        id,
+        ...cur,
+        label: `(Mesa=${cur.mesa}, Prensa=${cur.prensa}, EST=${cur.est}, Comp=${cur.comp})`,
+        hasOmega: false
+      });
+
+      const nexts = [];
+      if (cur.mesa === 1 && cur.prensa === 0) {
+        nexts.push({ state: { mesa: 0, prensa: 1, est: cur.est, comp: cur.comp }, label: "t1: Selagem" });
+      }
+      if (cur.prensa === 1 && cur.comp > 0) {
+        nexts.push({ state: { mesa: 1, prensa: 0, est: cur.est + 1, comp: cur.comp - 1 }, label: "t2: Ejetar" });
+      }
+      if (cur.est > 0) {
+        nexts.push({ state: { mesa: cur.mesa, prensa: cur.prensa, est: cur.est - 1, comp: cur.comp + 1 }, label: "t3: Saída" });
+      }
+
+      for (const n of nexts) {
+        const nk = keyOf(n.state);
+        if (!seen.has(nk)) queue.push(n.state);
+        edges.push({ fromKey: k, toKey: nk, label: n.label });
+      }
+    }
+
+    const states = [...seen.values()];
+    const resolvedEdges = edges.map((e) => ({
+      from: seen.get(e.fromKey).id,
+      to: seen.get(e.toKey).id,
+      label: e.label
+    }));
+    const mutualExclusionOk = states.every((s) => !(s.mesa === 1 && s.prensa === 1));
+
+    return {
+      ok: true,
+      preview: true,
+      mode: "bounded",
+      hasOmega: false,
+      isBounded: true,
+      kMax,
+      deadlocks: 0,
+      mutualExclusionOk,
+      maxTokensEST500: kMax,
+      states,
+      edges: resolvedEdges
+    };
+  }
+
+  /* ============================================================================
+   * MODO 7 — AULA 25: BEHAVIOR TREE (BT) REATIVA MULTI-TICK
+   * ============================================================================ */
+
+  function tickBehaviorTree(inputState = {}) {
+    const s = {
+      hs004: false,
+      r06: false,
+      zs102Empty: false,
+      pit301Fail: false,
+      retryCount: 0,
+      tit401: 186,
+      zsc401: true,
+      tick: 1,
+      ...(inputState || {})
+    };
+
+    const safetyTriggered = Boolean(s.hs004) || Boolean(s.r06);
+    const cupMissing = !safetyTriggered && Boolean(s.zs102Empty);
+    const vacuumFail = !safetyTriggered && !cupMissing && Boolean(s.pit301Fail);
+    const coldSeal = !safetyTriggered && !cupMissing && !vacuumFail && Number(s.tit401) < 180;
+    const collisionRisk = !safetyTriggered && !cupMissing && !vacuumFail && !coldSeal && !Boolean(s.zsc401);
+
+    let rootStatus = "SUCCESS";
+    let activeBranch = "Ciclo_Produtivo";
+    let activeAction = "Indexar_Mesa_72_Graus (M-001)";
+    let nextRetryCount = s.retryCount;
+
+    let safetyStatus = "FAILURE";
+    let recStatus = "FAILURE";
+    let prodStatus = "IDLE";
+
+    if (safetyTriggered) {
+      safetyStatus = "SUCCESS";
+      rootStatus = "SUCCESS";
+      activeBranch = "Seguranca_Global";
+      activeAction = "Parada_Segura (M-001=0, M-002=0, HT-401=0, IL-002=1)";
+      nextRetryCount = 0;
+    } else if (cupMissing) {
+      recStatus = "RUNNING";
+      rootStatus = "RUNNING";
+      activeBranch = "Recuperacao_ZS102";
+      activeAction = "Pausar_e_Solicitar_MAG100";
+    } else if (vacuumFail) {
+      if (s.retryCount < 2) {
+        nextRetryCount = s.retryCount + 1;
+        recStatus = "RUNNING";
+        rootStatus = "RUNNING";
+        activeBranch = "Recuperacao_PIT301";
+        activeAction = `Retry_VAC301 (${nextRetryCount}/2)`;
+      } else {
+        recStatus = "FAILURE";
+        rootStatus = "FAILURE";
+        activeBranch = "Recuperacao_PIT301";
+        activeAction = "Alarme_R03_Vacuo_Persistente";
+      }
+    } else if (coldSeal) {
+      recStatus = "RUNNING";
+      rootStatus = "RUNNING";
+      activeBranch = "Pre_Aquecimento_HT401";
+      activeAction = `Aquecer_HT401 (${Number(s.tit401).toFixed(1)} °C < 180 °C)`;
+      nextRetryCount = 0;
+    } else if (collisionRisk) {
+      prodStatus = "FAILURE";
+      rootStatus = "FAILURE";
+      activeBranch = "Guarda_Colisao_R01";
+      activeAction = "Bloquear_Mesa (ZSC-401 = 0)";
+      nextRetryCount = 0;
+    } else {
+      prodStatus = s.tick % 2 === 1 ? "RUNNING" : "SUCCESS";
+      rootStatus = prodStatus;
+      activeBranch = "Ciclo_Produtivo";
+      activeAction = prodStatus === "RUNNING" ? "Selagem_E4_2s + Indexar_Mesa_72_Graus" : "Ciclo_E1_E5_Concluido";
+      nextRetryCount = 0;
+    }
+
+    const nodes = [
+      { id: "root", type: "Fallback", label: "? Raiz Aqua Index", status: rootStatus },
+      { id: "seg_seq", type: "Sequence", label: "→ Segurança Global", status: safetyStatus },
+      { id: "seg_cond", type: "Condition", label: "HS-004 ∨ R-06", status: safetyTriggered ? "SUCCESS" : "FAILURE" },
+      { id: "seg_act", type: "Action", label: "Parada_Segura", status: safetyTriggered ? "SUCCESS" : "IDLE" },
+      { id: "rec_fb", type: "Fallback", label: "? Recuperação", status: safetyTriggered ? "IDLE" : recStatus },
+      { id: "cup_seq", type: "Sequence", label: "¬ZS-102 → MAG-100", status: cupMissing ? "RUNNING" : safetyTriggered ? "IDLE" : "FAILURE" },
+      { id: "vac_retry", type: "Retry", label: "Retry(2) PIT-301", status: vacuumFail ? recStatus : safetyTriggered || cupMissing ? "IDLE" : "FAILURE" },
+      { id: "heat_seq", type: "Sequence", label: "TIT-401 < 180 → HT-401", status: coldSeal ? "RUNNING" : safetyTriggered || cupMissing || vacuumFail ? "IDLE" : "FAILURE" },
+      { id: "prod_seq", type: "Sequence", label: "→ Ciclo Produtivo", status: prodStatus },
+      { id: "prod_par", type: "Parallel", label: "⇉ E1..E5 (Selagem 2s)", status: prodStatus === "IDLE" ? "IDLE" : "SUCCESS" },
+      { id: "prod_guard", type: "Condition", label: "ZSC-401 == 1 (R-01)", status: prodStatus === "IDLE" ? "IDLE" : Boolean(s.zsc401) ? "SUCCESS" : "FAILURE" },
+      { id: "prod_act", type: "Action", label: "Indexar_Mesa_72°", status: prodStatus }
+    ];
+
+    return {
+      rootStatus,
+      activeBranch,
+      activeAction,
+      nextRetryCount,
+      tick: s.tick,
+      nodes
+    };
+  }
+
+  /* ============================================================================
+   * MODO 8 — AULA 26: KD-TREE 2D NO GALPÃO LOGÍSTICO (16 m × 12 m)
+   * ============================================================================ */
+
+  const KDTREE_POINTS = deepFreeze([
+    { id: "P01", label: "ESTOQUE_COPOS", x: 1.6, y: 1.8 },
+    { id: "P02", label: "Corredor SW", x: 2.4, y: 4.6 },
+    { id: "P03", label: "Bypass Oeste", x: 1.9, y: 7.8 },
+    { id: "P04", label: "Curva NW", x: 3.1, y: 10.4 },
+    { id: "P05", label: "PLC-001 Ref", x: 5.1, y: 9.9 },
+    { id: "P06", label: "Corredor Sul", x: 6.8, y: 2.1 },
+    { id: "P07", label: "Apoio E1", x: 6.4, y: 5.4 },
+    { id: "P08", label: "Corredor Norte", x: 8.3, y: 10.5 },
+    { id: "P09", label: "MESA-001 Ref", x: 9.2, y: 7.9 },
+    { id: "P10", label: "Acesso Leste", x: 11.4, y: 2.9 },
+    { id: "P11", label: "Doca E5", x: 12.1, y: 6.3 },
+    { id: "P12", label: "MAG-100", x: 13.2, y: 9.6 },
+    { id: "P13", label: "Buffer Leste", x: 14.3, y: 4.1 },
+    { id: "P14", label: "Saída EST-500", x: 14.1, y: 7.8 }
+  ]);
+
+  function buildKDTree2D(points = KDTREE_POINTS, depth = 0, bounds = { minX: 0, maxX: 16, minY: 0, maxY: 12 }) {
+    if (!Array.isArray(points) || points.length === 0) return null;
+    const axis = depth % 2;
+    const sorted = [...points].sort((a, b) => (axis === 0 ? a.x - b.x : a.y - b.y));
+    const mid = Math.floor(sorted.length / 2);
+    const point = sorted[mid];
+
+    const leftBounds = axis === 0 ? { ...bounds, maxX: point.x } : { ...bounds, maxY: point.y };
+    const rightBounds = axis === 0 ? { ...bounds, minX: point.x } : { ...bounds, minY: point.y };
+
+    return {
+      point,
+      axis,
+      depth,
+      bounds,
+      left: buildKDTree2D(sorted.slice(0, mid), depth + 1, leftBounds),
+      right: buildKDTree2D(sorted.slice(mid + 1), depth + 1, rightBounds)
+    };
+  }
+
+  function kdNearest(tree, query) {
+    let best = null;
+    let bestDistSq = Infinity;
+    let visitedNodes = 0;
+
+    function search(node) {
+      if (!node) return;
+      visitedNodes += 1;
+      const dx = query.x - node.point.x;
+      const dy = query.y - node.point.y;
+      const dSq = dx * dx + dy * dy;
+      if (dSq < bestDistSq) {
+        bestDistSq = dSq;
+        best = node.point;
+      }
+
+      const diff = node.axis === 0 ? query.x - node.point.x : query.y - node.point.y;
+      const near = diff < 0 ? node.left : node.right;
+      const far = diff < 0 ? node.right : node.left;
+
+      search(near);
+      if (diff * diff < bestDistSq) {
+        search(far);
+      }
+    }
+
+    search(tree);
+    return {
+      nearest: best,
+      distance: best ? round(Math.sqrt(bestDistSq), 4) : Infinity,
+      visitedNodes
+    };
+  }
+
+  function kdRangeSearch(tree, low, high) {
+    const matches = [];
+    let visitedNodes = 0;
+    const minX = Math.min(low.x, high.x);
+    const maxX = Math.max(low.x, high.x);
+    const minY = Math.min(low.y, high.y);
+    const maxY = Math.max(low.y, high.y);
+
+    function search(node) {
+      if (!node) return;
+      visitedNodes += 1;
+      const p = node.point;
+      if (p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY) {
+        matches.push(p);
+      }
+      const val = node.axis === 0 ? p.x : p.y;
+      const lo = node.axis === 0 ? minX : minY;
+      const hi = node.axis === 0 ? maxX : maxY;
+      if (lo <= val) search(node.left);
+      if (hi >= val) search(node.right);
+    }
+
+    search(tree);
+    return { matches, visitedNodes };
+  }
+
+  /* ============================================================================
+   * MODO 9 — AULA 27: ÁRVORE DE DECISÃO (CART / C4.5) NO SCADA
+   * ============================================================================ */
+
+  const DTREE_LABELS = deepFreeze([
+    "CICLO_CONFORME",
+    "RISCO_SELAGEM_FRACA",
+    "FALHA_TAMPA_VACUO",
+    "PARADA_ABASTECIMENTO_ATRASO"
+  ]);
+
+  const DTREE_DATASET = deepFreeze((() => {
+    const rng = mulberry32(2026);
+    const rows = [];
+    for (let i = 0; i < 60; i += 1) {
+      const r = rng();
+      let temp_TIT401_C = 185 + (rng() - 0.5) * 6;
+      let tempo_prensa_E4_s = 2.0 + (rng() - 0.5) * 0.2;
+      let tempo_vacuo_PIT301_ms = 240 + (rng() - 0.5) * 60;
+      let desvio_takt_SE001_ms = (rng() - 0.5) * 120;
+      let copo_ZS102 = 1;
+      let label = "CICLO_CONFORME";
+
+      if (r < 0.22) {
+        copo_ZS102 = 0;
+        desvio_takt_SE001_ms = 900 + rng() * 600;
+        label = "PARADA_ABASTECIMENTO_ATRASO";
+      } else if (r < 0.44) {
+        tempo_vacuo_PIT301_ms = 520 + rng() * 250;
+        label = "FALHA_TAMPA_VACUO";
+      } else if (r < 0.66) {
+        temp_TIT401_C = 166 + rng() * 11;
+        tempo_prensa_E4_s = 1.55 + rng() * 0.25;
+        label = "RISCO_SELAGEM_FRACA";
+      }
+
+      rows.push({
+        temp_TIT401_C: round(temp_TIT401_C, 1),
+        tempo_prensa_E4_s: round(tempo_prensa_E4_s, 2),
+        tempo_vacuo_PIT301_ms: round(tempo_vacuo_PIT301_ms, 0),
+        desvio_takt_SE001_ms: round(desvio_takt_SE001_ms, 0),
+        copo_ZS102,
+        label
+      });
+    }
+    return rows;
+  })());
+
+  const DTREE_FEATURES = [
+    "copo_ZS102",
+    "temp_TIT401_C",
+    "tempo_vacuo_PIT301_ms",
+    "tempo_prensa_E4_s",
+    "desvio_takt_SE001_ms"
+  ];
+
+  function impurity(rows, criterion = "gini") {
+    if (!rows.length) return 0;
+    const counts = new Map();
+    for (const r of rows) counts.set(r.label, (counts.get(r.label) || 0) + 1);
+    let score = criterion === "gini" ? 1 : 0;
+    for (const c of counts.values()) {
+      const p = c / rows.length;
+      if (criterion === "gini") score -= p * p;
+      else if (p > 0) score -= p * Math.log2(p);
+    }
+    return score;
+  }
+
+  function majorityLabel(rows) {
+    const counts = new Map();
+    for (const r of rows) counts.set(r.label, (counts.get(r.label) || 0) + 1);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0][0];
+  }
+
+  function trainDecisionTree(dataset = DTREE_DATASET, options = {}) {
+    const criterion = options.criterion === "entropy" ? "entropy" : "gini";
+    const maxDepth = Number.isFinite(Number(options.maxDepth)) ? Math.max(1, Number(options.maxDepth)) : 3;
+
+    function build(rows, depth) {
+      const baseImp = impurity(rows, criterion);
+      const pred = majorityLabel(rows);
+      if (depth >= maxDepth || baseImp < 1e-9 || rows.length < 4) {
+        return { isLeaf: true, label: pred, samples: rows.length, impurity: round(baseImp, 4) };
+      }
+
+      let bestGain = 0;
+      let bestSplit = null;
+
+      for (const feat of DTREE_FEATURES) {
+        const vals = [...new Set(rows.map((r) => r[feat]))].sort((a, b) => a - b);
+        for (let i = 0; i < vals.length - 1; i += 1) {
+          const thr = round((vals[i] + vals[i + 1]) / 2, 3);
+          const left = rows.filter((r) => r[feat] <= thr);
+          const right = rows.filter((r) => r[feat] > thr);
+          if (!left.length || !right.length) continue;
+          const gain = baseImp - (left.length / rows.length) * impurity(left, criterion) - (right.length / rows.length) * impurity(right, criterion);
+          if (gain > bestGain) {
+            bestGain = gain;
+            bestSplit = { feat, thr, left, right };
+          }
+        }
+      }
+
+      if (!bestSplit || bestGain <= 1e-6) {
+        return { isLeaf: true, label: pred, samples: rows.length, impurity: round(baseImp, 4) };
+      }
+
+      return {
+        isLeaf: false,
+        feature: bestSplit.feat,
+        threshold: bestSplit.thr,
+        gain: round(bestGain, 4),
+        samples: rows.length,
+        left: build(bestSplit.left, depth + 1),
+        right: build(bestSplit.right, depth + 1)
+      };
+    }
+
+    return {
+      criterion,
+      maxDepth,
+      root: build(dataset, 0)
+    };
+  }
+
+  function predictDecisionTree(tree, sample) {
+    let node = tree && tree.root ? tree.root : tree;
+    const path = [];
+    while (node && !node.isLeaf) {
+      const val = Number(sample[node.feature]);
+      const goLeft = val <= node.threshold;
+      path.push(`${node.feature} ${goLeft ? "<=" : ">"} ${node.threshold}`);
+      node = goLeft ? node.left : node.right;
+    }
+    return { prediction: node ? node.label : "CICLO_CONFORME", path };
+  }
+
+  function confusionMatrix(yTrue, yPred, labels = DTREE_LABELS) {
+    const idxMap = new Map(labels.map((l, i) => [l, i]));
+    const matrix = labels.map(() => labels.map(() => 0));
+    let correct = 0;
+    for (let i = 0; i < yTrue.length; i += 1) {
+      const r = idxMap.get(yTrue[i]);
+      const c = idxMap.get(yPred[i]);
+      if (r !== undefined && c !== undefined) matrix[r][c] += 1;
+      if (yTrue[i] === yPred[i]) correct += 1;
+    }
+    return {
+      labels: [...labels],
+      matrix,
+      total: yTrue.length,
+      correct,
+      accuracy: yTrue.length ? round((correct / yTrue.length) * 100, 1) : 0
+    };
+  }
+
+  /* ============================================================================
+   * MODO 10 — AULA 28: SIMULAÇÃO INTEGRADA DO MÓDULO 3
+   * ============================================================================ */
+
+  const INTEGRATED_SCENARIOS = deepFreeze({
+    nominal: {
+      id: "nominal",
+      label: "1. Turno Nominal Estável",
+      hs004: false,
+      zs102Empty: false,
+      backboneDown: false,
+      tit401: 186
+    },
+    cup_shortage: {
+      id: "cup_shortage",
+      label: "2. Falta de Copo (ZS-102)",
+      hs004: false,
+      zs102Empty: true,
+      backboneDown: false,
+      tit401: 186
+    },
+    backbone_cold: {
+      id: "backbone_cold",
+      label: "3. Falha Backbone RSTP + Selagem Fria",
+      hs004: false,
+      zs102Empty: false,
+      backboneDown: true,
+      tit401: 168
+    },
+    emergency: {
+      id: "emergency",
+      label: "4. Emergência Global (HS-004)",
+      hs004: true,
+      zs102Empty: true,
+      backboneDown: false,
+      tit401: 186
+    }
+  });
+
+  function runIntegratedScenario(scenarioId = "nominal") {
+    const sc = INTEGRATED_SCENARIOS[scenarioId] || INTEGRATED_SCENARIOS.nominal;
+    const mst = kruskalMST(MST_EDGES, MST_NODES);
+    const rstp = runRSTP({ scenario: sc.backboneDown ? "backbone_fail" : "nominal" });
+    const huff = buildHuffmanTree(HUFFMAN_STATES);
+    const sym = sc.hs004 ? "00001" : sc.zs102Empty ? "10000" : sc.tit401 < 180 ? "00010" : "00000";
+    const huffEnc = encodeHuffman([sym], huff.codes);
+    const bdt = evaluateBDT({
+      e1_HS004: sc.hs004,
+      reqGiro: !sc.hs004 && !sc.zs102Empty && sc.tit401 >= 180,
+      reqPrensa: sc.tit401 < 180,
+      posDispensa: sc.zs102Empty,
+      s1_ZS102: !sc.zs102Empty,
+      tempC_TIT401: sc.tit401
+    });
+    const petri = buildPetriCoverability("bounded");
+    const bt = tickBehaviorTree({
+      hs004: sc.hs004,
+      zs102Empty: sc.zs102Empty,
+      tit401: sc.tit401,
+      tick: 1
+    });
+    const kd = buildKDTree2D(KDTREE_POINTS);
+    const kdRes = kdNearest(kd, { x: 7.5, y: 9.8 });
+    const rrt = planRRT_SE2({
+      seed: 42,
+      zs102Empty: sc.zs102Empty,
+      hs004Emergency: sc.hs004,
+      palletObstacle: false
+    });
+    const dt = trainDecisionTree(DTREE_DATASET, { criterion: "gini", maxDepth: 3 });
+    const dtPred = predictDecisionTree(dt, {
+      copo_ZS102: sc.zs102Empty ? 0 : 1,
+      temp_TIT401_C: sc.tit401,
+      tempo_vacuo_PIT301_ms: 240,
+      tempo_prensa_E4_s: sc.tit401 < 180 ? 1.6 : 2.0,
+      desvio_takt_SE001_ms: sc.zs102Empty ? 1100 : 20
+    });
+
+    const stages = [
+      { id: "mst", aula: "A19 · MST", status: "ok", metric: `${mst.totalWeight} m (-${mst.reductionPct}%)` },
+      { id: "rstp", aula: "A23 · RSTP", status: sc.backboneDown ? "warn" : "ok", metric: `${rstp.rootBridge} · ${rstp.lostCyclesRSTP} ciclos perdidos` },
+      { id: "huffman", aula: "A20 · Huffman", status: "ok", metric: `${sym} → ${huffEnc.bitstring}` },
+      { id: "bdt", aula: "A21 · BDT+AVL", status: bdt.level === 0 ? "ok" : "danger", metric: bdt.action },
+      { id: "petri", aula: "A24 · Petri*", status: "ok", metric: `K_max=${petri.kMax} · 0 deadlocks` },
+      { id: "bt", aula: "A25 · BT", status: bt.rootStatus === "FAILURE" || sc.hs004 ? "danger" : bt.rootStatus === "RUNNING" ? "warn" : "ok", metric: bt.rootStatus },
+      { id: "kdtree", aula: "A26 · KD-Tree", status: "ok", metric: `${kdRes.nearest.id} (${kdRes.visitedNodes} nós)` },
+      { id: "rrt", aula: "A22 · RRT SE(2)", status: sc.hs004 ? "danger" : rrt.ok ? "ok" : "idle", metric: sc.hs004 ? "ABORTO Φ_SCADA" : rrt.ok ? `${rrt.pathLength.toFixed(1)} m` : "Standby" },
+      { id: "dtree", aula: "A27 · CART", status: dtPred.prediction === "CICLO_CONFORME" ? "ok" : "warn", metric: dtPred.prediction }
+    ];
+
+    return {
+      scenario: sc,
+      stages,
+      mst,
+      rstp,
+      huffEnc,
+      bdt,
+      petri,
+      bt,
+      kdRes,
+      rrt,
+      dtPred
+    };
+  }
+
+  /* ============================================================================
    * EXPORTAÇÃO DA API PURA (NODE.JS & BROWSER)
    * ============================================================================ */
 
@@ -1361,7 +2013,23 @@ const AquaIndexEtapa03 = (() => {
     AVLTree,
     RRT_WORKSPACE,
     mulberry32,
-    planRRT_SE2
+    planRRT_SE2,
+    RSTP_SWITCHES,
+    RSTP_LINKS,
+    runRSTP,
+    buildPetriCoverability,
+    tickBehaviorTree,
+    KDTREE_POINTS,
+    buildKDTree2D,
+    kdNearest,
+    kdRangeSearch,
+    DTREE_LABELS,
+    DTREE_DATASET,
+    trainDecisionTree,
+    predictDecisionTree,
+    confusionMatrix,
+    INTEGRATED_SCENARIOS,
+    runIntegratedScenario
   };
 
   if (typeof module !== "undefined" && module.exports) {
@@ -1580,6 +2248,12 @@ const AquaIndexEtapa03 = (() => {
 
   /* --- 4. Simulador Interativo ([data-etapa03-simulator]) --- */
   const MODE_META = {
+    integrated: {
+      code: "AULA 28 · FLUXO INTEGRADO",
+      title: "Avaliação Integrada do Módulo 3 — Cascata Aulas 19–27",
+      desc: "Encadeamento ponta a ponta de MST, RSTP, Huffman, BDT/AVL, Petri (prévia), Behavior Tree, KD-Tree, RRT SE(2) e CART.",
+      limit: "Escopo conceitual (PRODUCT.md): integra todas as camadas sem planta física construída; HS-004 opera hardwired."
+    },
     mst: {
       code: "AULA 19 · MST",
       title: "Kruskal e Prim — Infraestrutura SCADA e Pneumática",
@@ -1603,6 +2277,36 @@ const AquaIndexEtapa03 = (() => {
       title: "RRT Cinemático SE(2) — Reabastecimento Externo MAG-100",
       desc: "Planejamento não-holonômico de AGV entre ESTOQUE_COPOS e MAG-100 condicionado à barreira Φ_SCADA.",
       limit: "Limitação: RRT clássico é probabilisticamente completo, mas gera rotas subótimas sem suavização ou RRT*."
+    },
+    rstp: {
+      code: "AULA 23 · RSTP 802.1w",
+      title: "Redundância de Camada 2 (STP / RSTP) na Rede SCADA",
+      desc: "Eleição de Root Bridge e reconvergência rápida (< 1 s) entre SW-SCADA, SW-PLC e remotas SW-IO-*.",
+      limit: "Limitação: RSTP protege a rede Ethernet de supervisão; segurança física HS-004 permanece em malha hardwired."
+    },
+    petri: {
+      code: "AULA 24 · REDES DE PETRI (PRÉVIA)",
+      title: "Árvore de Cobertura e Limitação K_max = 3 na Esteira EST-500",
+      desc: "Comparação entre modelo ilimitado (símbolo ω) e modelo limitado por lugar complementar provando 0 deadlocks e exclusão mútua.",
+      limit: "Prévia sincronizável — aguardando sincronização com a entrega da Aula 24 (Redes de Petri) do integrante do grupo."
+    },
+    bt: {
+      code: "AULA 25 · BEHAVIOR TREE",
+      title: "Árvore de Comportamento Reativa Multi-Tick",
+      desc: "Composição modular com Fallback, Sequence, Parallel e Retry(2) suportando estados RUNNING e preempção por HS-004.",
+      limit: "Limitação: exige definição explícita de prioridades de ramos e contadores de Retry para evitar ciclos infinitos."
+    },
+    kdtree: {
+      code: "AULA 26 · KD-TREE 2D",
+      title: "Particionamento Ortogonal 2D (Aceleração NEAREST & Range Search)",
+      desc: "Busca do vizinho mais próximo e janela ortogonal no galpão 16 m × 12 m reduzindo nós visitados frente à busca linear.",
+      limit: "Limitação: eficiência de poda cai drasticamente em alta dimensão (maldição da dimensionalidade para k >> 20)."
+    },
+    dtree: {
+      code: "AULA 27 · ID3 / C4.5 / CART",
+      title: "Árvore de Decisão para Qualidade e Manutenção Preditiva",
+      desc: "Indução de regras SE...ENTÃO por Gini (CART) ou Entropia (C4.5) sobre ciclos da Aqua Index com matriz de confusão.",
+      limit: "Limitação: modelo preditivo estatístico auxilia manutenção, mas nunca substitui intertravamento determinístico ou HS-004."
     }
   };
 
@@ -1632,7 +2336,10 @@ const AquaIndexEtapa03 = (() => {
     };
 
     const state = {
-      mode: "mst",
+      mode: "integrated",
+      integrated: {
+        scenario: "nominal"
+      },
       mst: {
         algorithm: "kruskal",
         startNode: "PLC-001",
@@ -1658,6 +2365,36 @@ const AquaIndexEtapa03 = (() => {
         palletObstacle: false,
         seed: 42,
         goalBias: 0.16
+      },
+      rstp: {
+        scenario: "nominal"
+      },
+      petri: {
+        mode: "bounded"
+      },
+      bt: {
+        hs004: false,
+        zs102Empty: false,
+        pit301Fail: false,
+        retryCount: 0,
+        tit401: 186,
+        zsc401: true,
+        tick: 1
+      },
+      kdtree: {
+        qx: 7.5,
+        qy: 9.8,
+        rx1: 1.5,
+        rx2: 9.5,
+        ry1: 4.0,
+        ry2: 11.0
+      },
+      dtree: {
+        criterion: "gini",
+        maxDepth: 3,
+        sampleTemp: 186,
+        sampleVacMs: 240,
+        sampleCopo: 1
       },
       logs: []
     };
@@ -1963,6 +2700,179 @@ const AquaIndexEtapa03 = (() => {
         biasInput.addEventListener("input", () => {
           state.rrt.goalBias = Number(biasInput.value);
           biasWrap.firstChild.textContent = `Goal Bias (${Math.round(state.rrt.goalBias * 100)}%)`;
+          run();
+        });
+        return;
+      }
+
+      if (state.mode === "integrated") {
+        const row = addEl(controlsEl, "div", { class: "e03-control-row" });
+        const scWrap = addEl(row, "label", { class: "e03-field" }, "Cenário Integrado do Módulo 3");
+        const scSel = addEl(scWrap, "select", { "data-e03-int-scenario": "" });
+        Object.values(INTEGRATED_SCENARIOS).forEach((sc) => {
+          const opt = addEl(scSel, "option", { value: sc.id }, sc.label);
+          if (state.integrated.scenario === sc.id) opt.selected = true;
+        });
+        scSel.addEventListener("change", () => {
+          state.integrated.scenario = scSel.value;
+          run();
+        });
+        return;
+      }
+
+      if (state.mode === "rstp") {
+        const row = addEl(controlsEl, "div", { class: "e03-control-row" });
+        const scWrap = addEl(row, "label", { class: "e03-field" }, "Cenário de Topologia RSTP (IEEE 802.1w)");
+        const scSel = addEl(scWrap, "select", { "data-e03-rstp-scenario": "" });
+        [
+          ["nominal", "Operação Nominal (SW-SCADA Root · 4 Ativos / 2 AP)"],
+          ["backbone_fail", "Falha 1: Rompimento Backbone 10G (SW-SCADA ↔ SW-PLC)"],
+          ["scada_down", "Falha 2: Queda Total SW-SCADA (SW-PLC assume Root)"]
+        ].forEach(([val, lbl]) => {
+          const opt = addEl(scSel, "option", { value: val }, lbl);
+          if (state.rstp.scenario === val) opt.selected = true;
+        });
+        scSel.addEventListener("change", () => {
+          state.rstp.scenario = scSel.value;
+          run();
+        });
+        return;
+      }
+
+      if (state.mode === "petri") {
+        const subRow = addEl(controlsEl, "div", { class: "e03-subview-bar" });
+        [
+          ["bounded", "Cenário B: Limitado (Lugar Complementar K_max = 3)"],
+          ["unbounded", "Cenário A: Ilimitado (Símbolo ω na Esteira EST-500)"]
+        ].forEach(([key, label]) => {
+          const btn = addEl(
+            subRow,
+            "button",
+            {
+              type: "button",
+              class: `e03-subview-btn ${state.petri.mode === key ? "is-active" : ""}`,
+              "aria-pressed": String(state.petri.mode === key)
+            },
+            label
+          );
+          btn.addEventListener("click", () => {
+            state.petri.mode = key;
+            renderControls();
+            run();
+          });
+        });
+        return;
+      }
+
+      if (state.mode === "bt") {
+        const row = addEl(controlsEl, "div", { class: "e03-control-row" });
+        const tickBtn = addEl(row, "button", { type: "button", class: "e03-inline-btn" }, `Executar Tick #${state.bt.tick}`);
+        tickBtn.addEventListener("click", () => {
+          const res = tickBehaviorTree(state.bt);
+          state.bt.retryCount = res.nextRetryCount;
+          state.bt.tick += 1;
+          tickBtn.textContent = `Executar Tick #${state.bt.tick}`;
+          run();
+        });
+
+        const tempWrap = addEl(row, "label", { class: "e03-field" }, `TIT-401 (${state.bt.tit401} °C)`);
+        const tempInput = addEl(tempWrap, "input", { type: "range", min: 150, max: 205, step: 1, value: state.bt.tit401 });
+        tempInput.addEventListener("input", () => {
+          state.bt.tit401 = Number(tempInput.value);
+          tempWrap.firstChild.textContent = `TIT-401 (${state.bt.tit401} °C)`;
+          run();
+        });
+
+        const checks = addEl(controlsEl, "fieldset", { class: "e03-check-grid" });
+        addEl(checks, "legend", {}, "Condições de Intertravamento e Recuperação da Behavior Tree");
+        [
+          ["hs004", "HS-004 == 1 (Parada de Emergência Global)"],
+          ["zs102Empty", "¬ZS-102 (Falta de Copo R-04 → MAG-100)"],
+          ["pit301Fail", "¬PIT-301 (Falha Vácuo R-03 → Retry max=2)"]
+        ].forEach(([key, label]) => {
+          const lbl = addEl(checks, "label", { class: "e03-check-item" });
+          const cb = addEl(lbl, "input", { type: "checkbox" });
+          cb.checked = Boolean(state.bt[key]);
+          cb.addEventListener("change", () => {
+            state.bt[key] = cb.checked;
+            if (!cb.checked && key === "pit301Fail") state.bt.retryCount = 0;
+            run();
+          });
+          addEl(lbl, "span", {}, label);
+        });
+        return;
+      }
+
+      if (state.mode === "kdtree") {
+        const row = addEl(controlsEl, "div", { class: "e03-control-row" });
+        [
+          ["qx", "Consulta X (m)", 0, 16, 0.2],
+          ["qy", "Consulta Y (m)", 0, 12, 0.2],
+          ["rx1", "Janela X1", 0, 16, 0.5],
+          ["rx2", "Janela X2", 0, 16, 0.5],
+          ["ry1", "Janela Y1", 0, 12, 0.5],
+          ["ry2", "Janela Y2", 0, 12, 0.5]
+        ].forEach(([key, lbl, min, max, step]) => {
+          const wrap = addEl(row, "label", { class: "e03-field e03-field-compact" }, lbl);
+          const inp = addEl(wrap, "input", { type: "number", min, max, step, value: state.kdtree[key] });
+          inp.addEventListener("change", () => {
+            state.kdtree[key] = Number(inp.value);
+            run();
+          });
+        });
+        return;
+      }
+
+      if (state.mode === "dtree") {
+        const row = addEl(controlsEl, "div", { class: "e03-control-row" });
+        const critWrap = addEl(row, "label", { class: "e03-field" }, "Critério de Impureza");
+        const critSel = addEl(critWrap, "select", { "data-e03-dt-criterion": "" });
+        [
+          ["gini", "Gini (CART)"],
+          ["entropy", "Entropia (C4.5)"]
+        ].forEach(([val, lbl]) => {
+          const opt = addEl(critSel, "option", { value: val }, lbl);
+          if (state.dtree.criterion === val) opt.selected = true;
+        });
+        critSel.addEventListener("change", () => {
+          state.dtree.criterion = critSel.value;
+          run();
+        });
+
+        const depthWrap = addEl(row, "label", { class: "e03-field" }, `Profundidade Máx. (${state.dtree.maxDepth})`);
+        const depthInp = addEl(depthWrap, "input", { type: "range", min: 1, max: 5, step: 1, value: state.dtree.maxDepth });
+        depthInp.addEventListener("input", () => {
+          state.dtree.maxDepth = Number(depthInp.value);
+          depthWrap.firstChild.textContent = `Profundidade Máx. (${state.dtree.maxDepth})`;
+          run();
+        });
+
+        const testRow = addEl(controlsEl, "div", { class: "e03-control-row" });
+        const tWrap = addEl(testRow, "label", { class: "e03-field" }, "Teste ao vivo: TIT-401 (°C)");
+        const tInp = addEl(tWrap, "input", { type: "number", min: 150, max: 210, value: state.dtree.sampleTemp });
+        tInp.addEventListener("change", () => {
+          state.dtree.sampleTemp = Number(tInp.value);
+          run();
+        });
+
+        const vWrap = addEl(testRow, "label", { class: "e03-field" }, "Teste ao vivo: Vácuo PIT-301 (ms)");
+        const vInp = addEl(vWrap, "input", { type: "number", min: 100, max: 900, step: 20, value: state.dtree.sampleVacMs });
+        vInp.addEventListener("change", () => {
+          state.dtree.sampleVacMs = Number(vInp.value);
+          run();
+        });
+
+        const cWrap = addEl(testRow, "label", { class: "e03-field" }, "ZS-102 (Copo)");
+        const cSel = addEl(cWrap, "select", {});
+        [
+          [1, "1 (Presente)"],
+          [0, "0 (Falta de Copo)"]
+        ].forEach(([val, lbl]) => {
+          const opt = addEl(cSel, "option", { value: val }, lbl);
+          if (state.dtree.sampleCopo === val) opt.selected = true;
+        });
+        cSel.addEventListener("change", () => {
+          state.dtree.sampleCopo = Number(cSel.value);
           run();
         });
       }
@@ -2978,11 +3888,390 @@ const AquaIndexEtapa03 = (() => {
       );
     }
 
+    function toneColors(status) {
+      if (status === "ok" || status === "SUCCESS") return { fill: "var(--e03-ok, #15803d)", stroke: "var(--e03-ok, #15803d)", text: "#ffffff" };
+      if (status === "warn" || status === "RUNNING") return { fill: "var(--e03-warn, #d97706)", stroke: "var(--e03-warn, #d97706)", text: "#ffffff" };
+      if (status === "danger" || status === "FAILURE") return { fill: "var(--e03-danger, #dc2626)", stroke: "var(--e03-danger, #dc2626)", text: "#ffffff" };
+      return { fill: "var(--e03-panel, #f1f5f9)", stroke: "var(--e03-border, #94a3b8)", text: "var(--e03-ink, #0f172a)" };
+    }
+
+    function renderIntegratedView() {
+      const res = runIntegratedScenario(state.integrated.scenario);
+      resetSvg();
+
+      addEl(
+        svg,
+        "text",
+        { x: 480, y: 30, "text-anchor": "middle", fill: "var(--e03-muted, #64748b)", "font-size": 12.5, "font-weight": 700 },
+        `FLUXO INTEGRADO DO MÓDULO 3 · ${res.scenario.label.toUpperCase()}`,
+        true
+      );
+
+      const coords = [
+        { x: 150, y: 120 }, { x: 480, y: 120 }, { x: 810, y: 120 },
+        { x: 150, y: 270 }, { x: 480, y: 270 }, { x: 810, y: 270 },
+        { x: 150, y: 420 }, { x: 480, y: 420 }, { x: 810, y: 420 }
+      ];
+
+      for (let i = 0; i < res.stages.length - 1; i += 1) {
+        const a = coords[i];
+        const b = coords[i + 1];
+        if (i === 2 || i === 5) {
+          const d = `M ${a.x} ${a.y + 42} L ${a.x} ${a.y + 74} L ${b.x} ${a.y + 74} L ${b.x} ${b.y - 42}`;
+          addEl(svg, "path", { d, fill: "none", stroke: "var(--e03-accent, #0f766e)", "stroke-width": 2, "marker-end": "url(#e03-arrow)" }, "", true);
+        } else {
+          addEl(svg, "line", { x1: a.x + 115, y1: a.y, x2: b.x - 115, y2: b.y, stroke: "var(--e03-accent, #0f766e)", "stroke-width": 2.2, "marker-end": "url(#e03-arrow)" }, "", true);
+        }
+      }
+
+      res.stages.forEach((st, idx) => {
+        const { x, y } = coords[idx];
+        const c = toneColors(st.status);
+        addEl(svg, "rect", { x: x - 112, y: y - 40, width: 224, height: 80, rx: 10, fill: "var(--e03-surface, #ffffff)", stroke: c.stroke, "stroke-width": 2.4 }, "", true);
+        addEl(svg, "rect", { x: x - 112, y: y - 40, width: 224, height: 24, rx: 8, fill: c.fill }, "", true);
+        addEl(svg, "text", { x, y: y - 24, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: c.text }, st.aula, true);
+        addEl(svg, "text", { x, y: y + 12, "text-anchor": "middle", "font-size": 11.5, "font-weight": 700, fill: "var(--e03-ink, #0f172a)" }, st.metric, true);
+      });
+
+      renderMetrics([
+        { label: "BDT (A21)", value: res.bdt.action, tone: res.bdt.level === 0 ? "ok" : "danger" },
+        { label: "RSTP (A23)", value: `${res.rstp.rootBridge} · ${res.rstp.lostCyclesRSTP} perdidos`, tone: "ok" },
+        { label: "Behavior Tree (A25)", value: res.bt.rootStatus, sub: res.bt.activeAction },
+        { label: "CART (A27)", value: res.dtPred.prediction, sub: `RRT: ${res.scenario.hs004 ? "ABORTO" : res.rrt.ok ? `${formatPt(res.rrt.pathLength, 1)} m` : "Standby"}` }
+      ]);
+
+      if (outputEl) {
+        outputEl.replaceChildren();
+        addEl(outputEl, "p", { class: "e03-out-summary" }, `Cascata integrada (${res.scenario.label}): BDT=${res.bdt.action}, BT=${res.bt.activeAction}, CART=${res.dtPred.prediction}.`);
+        addEl(outputEl, "p", { class: "e03-mono" }, `MST=${res.mst.totalWeight} m | Huffman=${res.huffEnc.bitstring} | Petri K_max=${res.petri.kMax} | KD-Tree=${res.kdRes.nearest.id}`);
+      }
+
+      pushLog(`Integrado (${res.scenario.id}): BDT=${res.bdt.action} | BT=${res.bt.rootStatus} | CART=${res.dtPred.prediction}.`);
+    }
+
+    function renderRSTPView() {
+      const res = runRSTP({ scenario: state.rstp.scenario });
+      resetSvg();
+      const swMap = new Map(RSTP_SWITCHES.map((s) => [s.id, s]));
+      const fwdSet = new Set(res.forwardingLinks);
+      const discSet = new Set(res.discardingLinks);
+      const downSet = new Set(res.downLinks);
+
+      addEl(svg, "text", { x: 480, y: 30, "text-anchor": "middle", fill: "var(--e03-muted, #64748b)", "font-size": 12, "font-weight": 700 }, `TOPOLOGIA RSTP (IEEE 802.1w) · ROOT BRIDGE: ${res.rootBridge}`, true);
+
+      RSTP_LINKS.forEach((link) => {
+        const a = swMap.get(link.from);
+        const b = swMap.get(link.to);
+        const isDown = downSet.has(link.id);
+        const isFwd = fwdSet.has(link.id);
+        const isDisc = discSet.has(link.id);
+
+        addEl(svg, "line", {
+          x1: a.x,
+          y1: a.y,
+          x2: b.x,
+          y2: b.y,
+          stroke: isDown ? "var(--e03-danger, #dc2626)" : isFwd ? "var(--e03-accent, #0f766e)" : "var(--e03-warn, #d97706)",
+          "stroke-width": isFwd ? 4 : 2.2,
+          "stroke-dasharray": isFwd ? "" : "6 5",
+          opacity: isDown ? 0.45 : 1
+        }, "", true);
+
+        const mx = (a.x + b.x) / 2;
+        const my = (a.y + b.y) / 2;
+        addEl(svg, "rect", { x: mx - 46, y: my - 11, width: 92, height: 22, rx: 5, fill: "var(--e03-surface, #ffffff)", stroke: "var(--e03-border, #cbd5e1)", "stroke-width": 1 }, "", true);
+        addEl(svg, "text", { x: mx, y: my + 4, "text-anchor": "middle", "font-size": 10, "font-weight": 700, fill: isDown ? "var(--e03-danger, #dc2626)" : isFwd ? "var(--e03-accent, #0f766e)" : "var(--e03-warn, #d97706)" }, `${link.id} · ${isDown ? "DOWN" : isFwd ? "FWD" : "AP/DISC"}`, true);
+      });
+
+      RSTP_SWITCHES.forEach((sw) => {
+        const down = !res.activeSwitches.includes(sw.id);
+        const isRoot = res.rootBridge === sw.id;
+        addEl(svg, "rect", {
+          x: sw.x - 84,
+          y: sw.y - 30,
+          width: 168,
+          height: 60,
+          rx: 9,
+          fill: down ? "var(--e03-panel, #f1f5f9)" : isRoot ? "var(--e03-accent, #0f766e)" : "var(--e03-surface, #ffffff)",
+          stroke: down ? "var(--e03-danger, #dc2626)" : isRoot ? "var(--e03-accent, #0f766e)" : "var(--e03-border, #64748b)",
+          "stroke-width": isRoot ? 2.6 : 1.8,
+          opacity: down ? 0.5 : 1
+        }, "", true);
+        addEl(svg, "text", { x: sw.x, y: sw.y - 6, "text-anchor": "middle", "font-size": 12, "font-weight": 700, fill: isRoot ? "#ffffff" : "var(--e03-ink, #0f172a)" }, sw.id, true);
+        addEl(svg, "text", { x: sw.x, y: sw.y + 12, "text-anchor": "middle", "font-size": 10, fill: isRoot ? "#e2f5f2" : "var(--e03-muted, #475569)" }, down ? "FALHA TOTAL" : `Prio ${sw.priority} · Custo ${res.pathCosts[sw.id] ?? 0}`, true);
+      });
+
+      renderMetrics([
+        { label: "Root Bridge Eleito", value: res.rootBridge, tone: "ok" },
+        { label: "Enlaces Forwarding / AP", value: `${res.forwardingLinks.length} / ${res.discardingLinks.length}`, sub: `Down: ${res.downLinks.length}` },
+        { label: "Ciclos Perdidos (RSTP)", value: `${res.lostCyclesRSTP}`, sub: `Conv: ${formatPt(res.rstpConvergenceSec, 2)} s (< 1 s)`, tone: "ok" },
+        { label: "Ciclos Perdidos (STP 802.1D)", value: `${res.lostCyclesSTP}`, sub: `Conv: ${res.stpConvergenceSec} s (takt 3,6 s)`, tone: res.lostCyclesSTP > 0 ? "danger" : "ok" }
+      ]);
+
+      if (outputEl) {
+        outputEl.replaceChildren();
+        addEl(outputEl, "p", { class: "e03-out-summary" }, `RSTP (${res.scenario}): Root=${res.rootBridge}, Forwarding=[${res.forwardingLinks.join(", ")}], Alternate(Discarding)=[${res.discardingLinks.join(", ")}].`);
+      }
+      pushLog(`RSTP (${res.scenario}): Root=${res.rootBridge}, ${res.lostCyclesRSTP} ciclos perdidos vs ${res.lostCyclesSTP} no STP.`);
+    }
+
+    function renderPetriView() {
+      const res = buildPetriCoverability(state.petri.mode);
+      resetSvg();
+
+      addEl(svg, "text", { x: 480, y: 30, "text-anchor": "middle", fill: "var(--e03-muted, #64748b)", "font-size": 12, "font-weight": 700 }, `PRÉVIA AULA 24 · REDES DE PETRI (${res.isBounded ? "LIMITADA K_max = 3" : "ILIMITADA COM ω"})`, true);
+
+      const maxShow = Math.min(res.states.length, 8);
+      const startX = 110;
+      const stepX = maxShow > 1 ? 740 / (maxShow - 1) : 0;
+
+      for (let i = 0; i < maxShow; i += 1) {
+        const st = res.states[i];
+        const x = startX + i * stepX;
+        const y = i % 2 === 0 ? 190 : 340;
+        if (i < maxShow - 1) {
+          const nx = startX + (i + 1) * stepX;
+          const ny = (i + 1) % 2 === 0 ? 190 : 340;
+          addEl(svg, "line", { x1: x, y1: y, x2: nx, y2: ny, stroke: "var(--e03-accent, #0f766e)", "stroke-width": 2, "marker-end": "url(#e03-arrow)" }, "", true);
+        }
+        addEl(svg, "rect", {
+          x: x - 68,
+          y: y - 34,
+          width: 136,
+          height: 68,
+          rx: 9,
+          fill: st.hasOmega ? "var(--e03-danger, #dc2626)" : "var(--e03-surface, #ffffff)",
+          stroke: st.hasOmega ? "var(--e03-danger, #dc2626)" : "var(--e03-accent, #0f766e)",
+          "stroke-width": 2.2
+        }, "", true);
+        addEl(svg, "text", { x, y: y - 8, "text-anchor": "middle", "font-size": 12, "font-weight": 700, fill: st.hasOmega ? "#ffffff" : "var(--e03-ink, #0f172a)" }, st.id, true);
+        addEl(svg, "text", { x, y: y + 12, "text-anchor": "middle", "font-size": 9.5, fill: st.hasOmega ? "#fee2e2" : "var(--e03-muted, #475569)" }, st.label, true);
+      }
+
+      renderMetrics([
+        { label: "Limitação (Boundedness)", value: res.isBounded ? `Limitada (K_max=${res.kMax})` : "Ilimitada (ω)", tone: res.isBounded ? "ok" : "danger" },
+        { label: "Estados Alcançáveis", value: String(res.states.length), sub: `Deadlocks: ${res.deadlocks}`, tone: "ok" },
+        { label: "Exclusão Mesa×Prensa", value: res.mutualExclusionOk ? "Garantida" : "Violada", tone: res.mutualExclusionOk ? "ok" : "danger" },
+        { label: "Capacidade EST-500", value: String(res.maxTokensEST500), sub: "Prévia Aula 24" }
+      ]);
+
+      if (outputEl) {
+        outputEl.replaceChildren();
+        addEl(outputEl, "p", { class: "e03-out-summary" }, `Prévia sincronizável (Aula 24): ${res.isBounded ? "Lugar complementar K_max=3 garante finitude e 0 deadlocks." : "Sem lugar complementar ocorre acúmulo ilimitado (ω) na esteira EST-500."}`);
+      }
+      pushLog(`Petri (${res.mode}): ${res.states.length} estados, hasOmega=${res.hasOmega}, deadlocks=${res.deadlocks}.`);
+    }
+
+    function renderBTView() {
+      const res = tickBehaviorTree(state.bt);
+      resetSvg();
+
+      addEl(svg, "text", { x: 480, y: 30, "text-anchor": "middle", fill: "var(--e03-muted, #64748b)", "font-size": 12, "font-weight": 700 }, `BEHAVIOR TREE REATIVA (TICK #${res.tick}) · STATUS RAIZ: ${res.rootStatus}`, true);
+
+      const posMap = {
+        root: { x: 480, y: 78 },
+        seg_seq: { x: 165, y: 185 },
+        rec_fb: { x: 480, y: 185 },
+        prod_seq: { x: 795, y: 185 },
+        seg_cond: { x: 95, y: 310 },
+        seg_act: { x: 235, y: 310 },
+        cup_seq: { x: 380, y: 310 },
+        vac_retry: { x: 480, y: 310 },
+        heat_seq: { x: 580, y: 310 },
+        prod_par: { x: 710, y: 310 },
+        prod_guard: { x: 800, y: 425 },
+        prod_act: { x: 890, y: 310 }
+      };
+
+      const links = [
+        ["root", "seg_seq"], ["root", "rec_fb"], ["root", "prod_seq"],
+        ["seg_seq", "seg_cond"], ["seg_seq", "seg_act"],
+        ["rec_fb", "cup_seq"], ["rec_fb", "vac_retry"], ["rec_fb", "heat_seq"],
+        ["prod_seq", "prod_par"], ["prod_seq", "prod_guard"], ["prod_seq", "prod_act"]
+      ];
+
+      links.forEach(([u, v]) => {
+        addEl(svg, "line", { x1: posMap[u].x, y1: posMap[u].y + 24, x2: posMap[v].x, y2: posMap[v].y - 24, stroke: "var(--e03-border, #94a3b8)", "stroke-width": 1.8 }, "", true);
+      });
+
+      res.nodes.forEach((node) => {
+        const p = posMap[node.id];
+        if (!p) return;
+        const c = toneColors(node.status);
+        addEl(svg, "rect", { x: p.x - 66, y: p.y - 24, width: 132, height: 48, rx: 8, fill: c.fill, stroke: c.stroke, "stroke-width": 2 }, "", true);
+        addEl(svg, "text", { x: p.x, y: p.y - 4, "text-anchor": "middle", "font-size": 10.5, "font-weight": 700, fill: c.text }, node.label, true);
+        addEl(svg, "text", { x: p.x, y: p.y + 13, "text-anchor": "middle", "font-size": 9.5, fill: c.text }, `${node.type} · ${node.status}`, true);
+      });
+
+      renderMetrics([
+        { label: "Status Raiz", value: res.rootStatus, tone: res.rootStatus === "SUCCESS" ? "ok" : res.rootStatus === "RUNNING" ? "warn" : "danger" },
+        { label: "Ramo Ativo", value: res.activeBranch },
+        { label: "Ação Atual", value: res.activeAction },
+        { label: "Retry PIT-301", value: `${state.bt.retryCount} / 2`, sub: `Tick #${res.tick}` }
+      ]);
+
+      if (outputEl) {
+        outputEl.replaceChildren();
+        addEl(outputEl, "p", { class: "e03-out-summary" }, `BT Tick #${res.tick} → ${res.rootStatus}: ${res.activeAction}`);
+      }
+      pushLog(`BT Tick #${res.tick}: ${res.rootStatus} (${res.activeAction}).`);
+    }
+
+    function renderKDTreeView() {
+      const tree = buildKDTree2D(KDTREE_POINTS);
+      const query = { x: state.kdtree.qx, y: state.kdtree.qy };
+      const nearest = kdNearest(tree, query);
+      const range = kdRangeSearch(tree, { x: state.kdtree.rx1, y: state.kdtree.ry1 }, { x: state.kdtree.rx2, y: state.kdtree.ry2 });
+      const matchIds = new Set(range.matches.map((m) => m.id));
+
+      resetSvg();
+      const padL = 64;
+      const padT = 46;
+      const mapW = 832;
+      const mapH = 452;
+      const sx = (x) => padL + (x / 16) * mapW;
+      const sy = (y) => padT + mapH - (y / 12) * mapH;
+
+      addEl(svg, "text", { x: 480, y: 26, "text-anchor": "middle", fill: "var(--e03-muted, #64748b)", "font-size": 12, "font-weight": 700 }, `KD-TREE 2D (GALPÃO 16 m × 12 m) · VIZINHO MAIS PRÓXIMO: ${nearest.nearest.id}`, true);
+      addEl(svg, "rect", { x: padL, y: padT, width: mapW, height: mapH, rx: 6, fill: "var(--e03-panel, #f8fafc)", stroke: "var(--e03-border, #cbd5e1)", "stroke-width": 1.5 }, "", true);
+
+      function drawSplits(node) {
+        if (!node) return;
+        if (node.axis === 0) {
+          addEl(svg, "line", { x1: sx(node.point.x), y1: sy(node.bounds.minY), x2: sx(node.point.x), y2: sy(node.bounds.maxY), stroke: "var(--e03-accent-2, #0284c7)", "stroke-width": 1.3, "stroke-dasharray": "4 3", opacity: 0.65 }, "", true);
+        } else {
+          addEl(svg, "line", { x1: sx(node.bounds.minX), y1: sy(node.point.y), x2: sx(node.bounds.maxX), y2: sy(node.point.y), stroke: "var(--e03-warn, #d97706)", "stroke-width": 1.3, "stroke-dasharray": "4 3", opacity: 0.65 }, "", true);
+        }
+        drawSplits(node.left);
+        drawSplits(node.right);
+      }
+      drawSplits(tree);
+
+      const minX = Math.min(state.kdtree.rx1, state.kdtree.rx2);
+      const maxX = Math.max(state.kdtree.rx1, state.kdtree.rx2);
+      const minY = Math.min(state.kdtree.ry1, state.kdtree.ry2);
+      const maxY = Math.max(state.kdtree.ry1, state.kdtree.ry2);
+      addEl(svg, "rect", {
+        x: sx(minX),
+        y: sy(maxY),
+        width: sx(maxX) - sx(minX),
+        height: sy(minY) - sy(maxY),
+        fill: "var(--e03-accent, #0f766e)",
+        "fill-opacity": 0.14,
+        stroke: "var(--e03-accent, #0f766e)",
+        "stroke-width": 2
+      }, "", true);
+
+      KDTREE_POINTS.forEach((pt) => {
+        const isBest = nearest.nearest && nearest.nearest.id === pt.id;
+        const inRange = matchIds.has(pt.id);
+        addEl(svg, "circle", {
+          cx: sx(pt.x),
+          cy: sy(pt.y),
+          r: isBest ? 9 : 6,
+          fill: isBest ? "var(--e03-ok, #15803d)" : inRange ? "var(--e03-accent, #0f766e)" : "var(--e03-surface, #ffffff)",
+          stroke: isBest ? "#ffffff" : "var(--e03-ink, #0f172a)",
+          "stroke-width": 2
+        }, "", true);
+        addEl(svg, "text", { x: sx(pt.x), y: sy(pt.y) - 10, "text-anchor": "middle", "font-size": 9.5, "font-weight": 700, fill: "var(--e03-ink, #0f172a)" }, pt.id, true);
+      });
+
+      addEl(svg, "line", { x1: sx(query.x), y1: sy(query.y), x2: sx(nearest.nearest.x), y2: sy(nearest.nearest.y), stroke: "var(--e03-danger, #dc2626)", "stroke-width": 2, "stroke-dasharray": "4 3" }, "", true);
+      addEl(svg, "circle", { cx: sx(query.x), cy: sy(query.y), r: 7, fill: "var(--e03-danger, #dc2626)", stroke: "#ffffff", "stroke-width": 2 }, "", true);
+
+      renderMetrics([
+        { label: "Vizinho Mais Próximo", value: `${nearest.nearest.id} (${nearest.nearest.label})`, tone: "ok" },
+        { label: "Distância Euclidiana", value: `${formatPt(nearest.distance, 2)} m` },
+        { label: "Nós Visitados (k-NN)", value: `${nearest.visitedNodes} vs ${KDTREE_POINTS.length} linear`, tone: "ok" },
+        { label: "Na Janela Ortogonal", value: `${range.matches.length} pontos`, sub: `Visitados: ${range.visitedNodes}` }
+      ]);
+
+      if (outputEl) {
+        outputEl.replaceChildren();
+        addEl(outputEl, "p", { class: "e03-out-summary" }, `Consulta (${formatPt(query.x, 1)}, ${formatPt(query.y, 1)}): vizinho ${nearest.nearest.id} a ${formatPt(nearest.distance, 2)} m; ${range.matches.length} ponto(s) na janela.`);
+      }
+      pushLog(`KD-Tree: nearest=${nearest.nearest.id} (${nearest.visitedNodes} nós vs ${KDTREE_POINTS.length} linear).`);
+    }
+
+    function renderDTreeView() {
+      const tree = trainDecisionTree(DTREE_DATASET, { criterion: state.dtree.criterion, maxDepth: state.dtree.maxDepth });
+      const yTrue = DTREE_DATASET.map((r) => r.label);
+      const yPred = DTREE_DATASET.map((r) => predictDecisionTree(tree, r).prediction);
+      const cm = confusionMatrix(yTrue, yPred);
+      const livePred = predictDecisionTree(tree, {
+        copo_ZS102: state.dtree.sampleCopo,
+        temp_TIT401_C: state.dtree.sampleTemp,
+        tempo_vacuo_PIT301_ms: state.dtree.sampleVacMs,
+        tempo_prensa_E4_s: state.dtree.sampleTemp < 180 ? 1.6 : 2.0,
+        desvio_takt_SE001_ms: state.dtree.sampleCopo === 0 ? 1000 : 20
+      });
+
+      resetSvg();
+      addEl(svg, "text", { x: 480, y: 28, "text-anchor": "middle", fill: "var(--e03-muted, #64748b)", "font-size": 12, "font-weight": 700 }, `ÁRVORE DE DECISÃO (${state.dtree.criterion.toUpperCase()} · PROF=${state.dtree.maxDepth}) · ACURÁCIA ${formatPt(cm.accuracy, 1)}%`, true);
+
+      function drawTree(node, x, y, span) {
+        if (!node) return;
+        if (!node.isLeaf) {
+          const ny = y + 95;
+          const lx = x - span;
+          const rx = x + span;
+          addEl(svg, "line", { x1: x, y1: y + 20, x2: lx, y2: ny - 20, stroke: "var(--e03-accent, #0f766e)", "stroke-width": 1.8 }, "", true);
+          addEl(svg, "line", { x1: x, y1: y + 20, x2: rx, y2: ny - 20, stroke: "var(--e03-border, #64748b)", "stroke-width": 1.8 }, "", true);
+          drawTree(node.left, lx, ny, span * 0.5);
+          drawTree(node.right, rx, ny, span * 0.5);
+        }
+        addEl(svg, "rect", {
+          x: x - 78,
+          y: y - 20,
+          width: 156,
+          height: 40,
+          rx: 7,
+          fill: node.isLeaf ? "var(--e03-accent, #0f766e)" : "var(--e03-surface, #ffffff)",
+          stroke: node.isLeaf ? "var(--e03-accent, #0f766e)" : "var(--e03-border, #64748b)",
+          "stroke-width": 1.8
+        }, "", true);
+        const title = node.isLeaf ? node.label.replace(/_/g, " ") : `${node.feature} <= ${node.threshold}`;
+        addEl(svg, "text", { x, y: y + 4, "text-anchor": "middle", "font-size": 9.5, "font-weight": 700, fill: node.isLeaf ? "#ffffff" : "var(--e03-ink, #0f172a)" }, title.slice(0, 26), true);
+      }
+      drawTree(tree.root, 330, 74, 150);
+
+      // Matriz de confusão resumida à direita
+      addEl(svg, "rect", { x: 660, y: 60, width: 270, height: 220, rx: 10, fill: "var(--e03-panel, #f8fafc)", stroke: "var(--e03-border, #cbd5e1)", "stroke-width": 1.5 }, "", true);
+      addEl(svg, "text", { x: 795, y: 84, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: "var(--e03-ink, #0f172a)" }, "MATRIZ DE CONFUSÃO (4×4)", true);
+      cm.matrix.forEach((row, r) => {
+        row.forEach((val, c) => {
+          const cx = 710 + c * 52;
+          const cy = 115 + r * 36;
+          addEl(svg, "rect", { x: cx - 22, y: cy - 14, width: 44, height: 28, rx: 4, fill: r === c ? "var(--e03-accent, #0f766e)" : "var(--e03-surface, #ffffff)", stroke: "var(--e03-border, #cbd5e1)" }, "", true);
+          addEl(svg, "text", { x: cx, y: cy + 4, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: r === c ? "#ffffff" : "var(--e03-ink, #0f172a)" }, String(val), true);
+        });
+      });
+
+      renderMetrics([
+        { label: "Critério / Prof.", value: `${state.dtree.criterion.toUpperCase()} · d=${state.dtree.maxDepth}` },
+        { label: "Acurácia no Dataset", value: `${formatPt(cm.accuracy, 1)}%`, sub: `${cm.correct}/${cm.total} ciclos`, tone: cm.accuracy >= 90 ? "ok" : "warn" },
+        { label: "Predição ao Vivo", value: livePred.prediction, tone: livePred.prediction === "CICLO_CONFORME" ? "ok" : "warn" },
+        { label: "Regra Aplicada", value: `${livePred.path.length} passo(s)` }
+      ]);
+
+      if (outputEl) {
+        outputEl.replaceChildren();
+        addEl(outputEl, "p", { class: "e03-out-summary" }, `Regra: SE ${livePred.path.join(" E ")} ENTÃO ${livePred.prediction}.`);
+      }
+      pushLog(`DecisionTree (${state.dtree.criterion}, d=${state.dtree.maxDepth}): acc=${cm.accuracy}%, pred=${livePred.prediction}.`);
+    }
+
     function run() {
-      if (state.mode === "mst") renderMSTView();
+      if (state.mode === "integrated") renderIntegratedView();
+      else if (state.mode === "mst") renderMSTView();
       else if (state.mode === "huffman") renderHuffmanView();
       else if (state.mode === "binary") renderBinaryView();
       else if (state.mode === "rrt") renderRRTView();
+      else if (state.mode === "rstp") renderRSTPView();
+      else if (state.mode === "petri") renderPetriView();
+      else if (state.mode === "bt") renderBTView();
+      else if (state.mode === "kdtree") renderKDTreeView();
+      else if (state.mode === "dtree") renderDTreeView();
     }
 
     function changeMode(modeId, focus = false) {
@@ -3026,7 +4315,9 @@ const AquaIndexEtapa03 = (() => {
 
     if (resetBtn) {
       resetBtn.addEventListener("click", () => {
-        if (state.mode === "mst") {
+        if (state.mode === "integrated") {
+          state.integrated.scenario = "nominal";
+        } else if (state.mode === "mst") {
           state.mst.algorithm = "kruskal";
           state.mst.startNode = "PLC-001";
           state.mst.blockedEdges.clear();
@@ -3040,6 +4331,16 @@ const AquaIndexEtapa03 = (() => {
           state.binary.rangeEnd = 1055;
         } else if (state.mode === "rrt") {
           state.rrt = { zs102Empty: true, hs004Emergency: false, palletObstacle: false, seed: 42, goalBias: 0.16 };
+        } else if (state.mode === "rstp") {
+          state.rstp.scenario = "nominal";
+        } else if (state.mode === "petri") {
+          state.petri.mode = "bounded";
+        } else if (state.mode === "bt") {
+          state.bt = { hs004: false, zs102Empty: false, pit301Fail: false, retryCount: 0, tit401: 186, zsc401: true, tick: 1 };
+        } else if (state.mode === "kdtree") {
+          state.kdtree = { qx: 7.5, qy: 9.8, rx1: 1.5, rx2: 9.5, ry1: 4.0, ry2: 11.0 };
+        } else if (state.mode === "dtree") {
+          state.dtree = { criterion: "gini", maxDepth: 3, sampleTemp: 186, sampleVacMs: 240, sampleCopo: 1 };
         }
         pushLog(`Estado do modo ${state.mode.toUpperCase()} restaurado.`);
         renderControls();
@@ -3047,7 +4348,8 @@ const AquaIndexEtapa03 = (() => {
       });
     }
 
-    changeMode("mst");
+    const defaultMode = modeButtons.some((b) => b.dataset.e03Mode === "integrated") ? "integrated" : "mst";
+    changeMode(defaultMode);
   }
 
   function init() {

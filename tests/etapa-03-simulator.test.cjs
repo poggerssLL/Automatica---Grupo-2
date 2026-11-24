@@ -344,3 +344,148 @@ test("RRT SE(2) respeita barreira booleana Φ_SCADA (HS-004 bloqueia) e standby 
   assert.equal(standby.edges.length, 0);
   assert.equal(standby.path.length, 0);
 });
+
+/* ============================================================================
+ * 5. MODO RSTP — AULA 23 (PROTOCOLO IEEE 802.1w)
+ * ============================================================================ */
+
+test("RSTP (IEEE 802.1w) elege SW-SCADA como Root nominal e reconverge com 0 ciclos perdidos", () => {
+  assert.ok(Object.isFrozen(sim.RSTP_SWITCHES));
+  assert.ok(Object.isFrozen(sim.RSTP_LINKS));
+  assert.equal(sim.RSTP_SWITCHES.length, 5);
+  assert.equal(sim.RSTP_LINKS.length, 6);
+
+  const nom = sim.runRSTP({ scenario: "nominal" });
+  assert.equal(nom.ok, true);
+  assert.equal(nom.rootBridge, "SW-SCADA");
+  assert.equal(nom.forwardingLinks.length, 4);
+  assert.equal(nom.discardingLinks.length, 2);
+  assert.equal(nom.lostCyclesRSTP, 0);
+
+  const bFail = sim.runRSTP({ scenario: "backbone_fail" });
+  assert.equal(bFail.ok, true);
+  assert.equal(bFail.rootBridge, "SW-SCADA");
+  assert.ok(bFail.downLinks.includes("L1"));
+  assert.equal(bFail.forwardingLinks.length, 4);
+  assert.equal(bFail.lostCyclesRSTP, 0);
+  assert.ok(bFail.lostCyclesSTP >= 8);
+
+  const sDown = sim.runRSTP({ scenario: "scada_down" });
+  assert.equal(sDown.ok, true);
+  assert.equal(sDown.rootBridge, "SW-PLC");
+  assert.equal(sDown.forwardingLinks.length, 3);
+  assert.equal(sDown.lostCyclesRSTP, 0);
+});
+
+/* ============================================================================
+ * 6. MODO PETRI — AULA 24 (PRÉVIA SINCRONIZÁVEL)
+ * ============================================================================ */
+
+test("Petri prévia: cenário ilimitado apresenta ω e cenário K_max=3 prova finitude e 0 deadlocks", () => {
+  const unb = sim.buildPetriCoverability("unbounded");
+  assert.equal(unb.ok, true);
+  assert.equal(unb.preview, true);
+  assert.equal(unb.hasOmega, true);
+  assert.equal(unb.isBounded, false);
+  assert.equal(unb.maxTokensEST500, "ω");
+
+  const bnd = sim.buildPetriCoverability("bounded");
+  assert.equal(bnd.ok, true);
+  assert.equal(bnd.preview, true);
+  assert.equal(bnd.hasOmega, false);
+  assert.equal(bnd.isBounded, true);
+  assert.equal(bnd.kMax, 3);
+  assert.equal(bnd.deadlocks, 0);
+  assert.equal(bnd.mutualExclusionOk, true);
+  assert.ok(bnd.states.length >= 4);
+});
+
+/* ============================================================================
+ * 7. MODO BEHAVIOR TREE — AULA 25
+ * ============================================================================ */
+
+test("Behavior Tree: preempção HS-004, aquecimento RUNNING e Retry(max=2) em PIT-301", () => {
+  const nom = sim.tickBehaviorTree({ tick: 1 });
+  assert.equal(nom.rootStatus, "RUNNING");
+  assert.equal(nom.activeBranch, "Ciclo_Produtivo");
+
+  const cold = sim.tickBehaviorTree({ tit401: 168, tick: 1 });
+  assert.equal(cold.rootStatus, "RUNNING");
+  assert.equal(cold.activeBranch, "Pre_Aquecimento_HT401");
+
+  const retry1 = sim.tickBehaviorTree({ pit301Fail: true, retryCount: 0, tick: 1 });
+  assert.equal(retry1.rootStatus, "RUNNING");
+  assert.equal(retry1.nextRetryCount, 1);
+
+  const retryFail = sim.tickBehaviorTree({ pit301Fail: true, retryCount: 2, tick: 3 });
+  assert.equal(retryFail.rootStatus, "FAILURE");
+  assert.match(retryFail.activeAction, /R03/);
+
+  const emg = sim.tickBehaviorTree({ hs004: true, tit401: 160, pit301Fail: true, tick: 2 });
+  assert.equal(emg.rootStatus, "SUCCESS");
+  assert.equal(emg.activeBranch, "Seguranca_Global");
+  assert.match(emg.activeAction, /Parada_Segura/);
+});
+
+/* ============================================================================
+ * 8. MODO KD-TREE — AULA 26
+ * ============================================================================ */
+
+test("KD-Tree 2D: vizinho mais próximo e range search concordam 100% com força bruta", () => {
+  const tree = sim.buildKDTree2D(sim.KDTREE_POINTS);
+  const query = { x: 7.5, y: 9.8 };
+  const kdRes = sim.kdNearest(tree, query);
+
+  const bruteBest = [...sim.KDTREE_POINTS].sort(
+    (a, b) => Math.hypot(a.x - query.x, a.y - query.y) - Math.hypot(b.x - query.x, b.y - query.y)
+  )[0];
+  assert.equal(kdRes.nearest.id, bruteBest.id);
+  assert.ok(kdRes.visitedNodes <= sim.KDTREE_POINTS.length);
+
+  const low = { x: 1.5, y: 4.0 };
+  const high = { x: 9.5, y: 11.0 };
+  const rangeRes = sim.kdRangeSearch(tree, low, high);
+  const bruteRange = sim.KDTREE_POINTS.filter(
+    (p) => p.x >= low.x && p.x <= high.x && p.y >= low.y && p.y <= high.y
+  );
+  assert.deepEqual(
+    rangeRes.matches.map((m) => m.id).sort(),
+    bruteRange.map((m) => m.id).sort()
+  );
+});
+
+/* ============================================================================
+ * 9. MODO DECISION TREE — AULA 27 (CART / C4.5)
+ * ============================================================================ */
+
+test("Decision Tree (Gini/CART e Entropia/C4.5) atinge > 90% de acurácia e gera matriz de confusão", () => {
+  for (const criterion of ["gini", "entropy"]) {
+    const tree = sim.trainDecisionTree(sim.DTREE_DATASET, { criterion, maxDepth: 3 });
+    const yTrue = sim.DTREE_DATASET.map((r) => r.label);
+    const yPred = sim.DTREE_DATASET.map((r) => sim.predictDecisionTree(tree, r).prediction);
+    const cm = sim.confusionMatrix(yTrue, yPred);
+    assert.equal(cm.total, sim.DTREE_DATASET.length);
+    assert.ok(cm.accuracy >= 90, `Acurácia ${criterion} abaixo de 90%: ${cm.accuracy}`);
+  }
+});
+
+/* ============================================================================
+ * 10. MODO INTEGRATED — AULA 28 (FLUXO INTEGRADO DE 9 ESTÁGIOS)
+ * ============================================================================ */
+
+test("Simulação Integrada (Aula 28) encadeia 9 estágios nos 4 cenários operacionais", () => {
+  for (const id of ["nominal", "cup_shortage", "backbone_cold", "emergency"]) {
+    const res = sim.runIntegratedScenario(id);
+    assert.equal(res.stages.length, 9);
+    assert.equal(res.mst.totalWeight, 9.9);
+    assert.equal(res.rstp.lostCyclesRSTP, 0);
+  }
+
+  const cup = sim.runIntegratedScenario("cup_shortage");
+  assert.equal(cup.bdt.action, "ALARME_REABASTECIMENTO");
+  assert.equal(cup.rrt.ok, true);
+
+  const emg = sim.runIntegratedScenario("emergency");
+  assert.equal(emg.bdt.action, "TRIP_EMERGENCIA");
+  assert.equal(emg.rrt.ok, false);
+});
