@@ -119,12 +119,22 @@ test("CART e entropia: nós e matriz separados em todas as profundidades selecio
       const boxes = rects(ui.svg, el => +el.attrs.width === 156 || +el.attrs.width === 270);
       assertSeparated(boxes);
       const [, , width, height] = ui.svg.attrs.viewBox.split(" ").map(Number);
-      assert.equal(ui.svg.style.minWidth, `${width}px`);
+      assert.ok(!ui.svg.style.minWidth, "A árvore deve caber no palco sem largura mínima em pixels");
       for (const b of boxes) assert.ok(b.x >= 0 && b.y >= 0 && b.x + b.w <= width && b.y + b.h <= height);
     }
   }
   ui.mode("mst");
-  assert.equal(ui.svg.style.minWidth, "", "Largura da árvore não deve vazar para outro modo");
+  assert.ok(!ui.svg.style.minWidth, "Largura da árvore não deve vazar para outro modo");
+});
+
+test("SVG se ajusta ao palco, sem larguras mínimas fixas nem proporção forçada", () => {
+  const svgRule = css.match(/:scope \.e03-svg\s*\{([^}]+)\}/)[1];
+  assert.match(svgRule, /width:\s*100%/);
+  assert.match(svgRule, /max-width:\s*100%/);
+  assert.match(svgRule, /min-width:\s*0/);
+  assert.match(svgRule, /height:\s*auto/);
+  assert.doesNotMatch(svgRule, /aspect-ratio:/);
+  assert.doesNotMatch(css, /min-width:\s*(?:960|1280)px/);
 });
 
 test("Todos os tokens de cor utilizados pelo renderizador estão definidos no CSS", () => {

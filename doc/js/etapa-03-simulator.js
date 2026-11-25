@@ -2478,7 +2478,6 @@ const AquaIndexEtapa03 = (() => {
       svg.setAttribute("width", "960");
       svg.setAttribute("height", "540");
       svg.setAttribute("data-e03-view", state.mode);
-      svg.style.minWidth = "";
       svg.replaceChildren();
       const defs = addEl(svg, "defs", {}, "", true);
       const marker = addEl(
@@ -4849,7 +4848,6 @@ const AquaIndexEtapa03 = (() => {
       svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
       svg.setAttribute("width", String(width));
       svg.setAttribute("height", String(height));
-      svg.style.minWidth = `${width}px`;
       addEl(svg, "text", { x: width / 2, y: 28, "text-anchor": "middle", fill: "var(--e03-muted, #64748b)", "font-size": 12, "font-weight": 700 }, `ÁRVORE DE DECISÃO (${state.dtree.criterion.toUpperCase()} · PROF=${state.dtree.maxDepth}) · ACURÁCIA ${formatPt(cm.accuracy, 1)}%`, true);
 
       function drawTree(node) {

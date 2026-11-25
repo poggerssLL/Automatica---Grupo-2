@@ -906,6 +906,8 @@
 
   :scope .e03-stage-wrap {
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
     border: 1px solid var(--e03-line);
     border-radius: 2px;
     background: var(--e03-stage-bg);
@@ -915,13 +917,10 @@
   :scope .e03-svg {
     display: block;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     height: auto;
-    min-width: 960px;
     font-family: var(--e03-sans);
-  }
-
-  :scope .e03-svg[data-e03-view="integrated"] {
-    min-width: 1280px;
   }
 
   :scope .e03-sim-grid:has(.e03-svg[data-e03-view="integrated"]),
