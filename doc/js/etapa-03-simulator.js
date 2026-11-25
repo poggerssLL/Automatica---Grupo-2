@@ -1888,6 +1888,29 @@ const AquaIndexEtapa03 = (() => {
    * MODO 10 — AULA 28: SIMULAÇÃO INTEGRADA DO MÓDULO 3
    * ============================================================================ */
 
+  const E03_ZONES = deepFreeze([
+    { id: "mst", aula: "A19 · MST", title: "Árvore Geradora Mínima", x: 36, y: 72, width: 464, height: 270, col: 0, row: 0 },
+    { id: "rstp", aula: "A23 · RSTP", title: "Anel Ethernet IEEE 802.1w", x: 578, y: 72, width: 464, height: 270, col: 1, row: 0 },
+    { id: "huffman", aula: "A20 · Huffman", title: "Compressão Telemetria CoS", x: 1120, y: 72, width: 464, height: 270, col: 2, row: 0 },
+    { id: "binary", aula: "A21 · BDT+AVL", title: "Intertravamento & Historiador", x: 36, y: 410, width: 464, height: 270, col: 0, row: 1 },
+    { id: "bt", aula: "A25 · BT", title: "Behavior Tree Reativa", x: 578, y: 410, width: 464, height: 270, col: 1, row: 1 },
+    { id: "petri", aula: "A24 · Petri*", title: "Redes de Petri (Prévia)", x: 1120, y: 410, width: 464, height: 270, col: 2, row: 1 },
+    { id: "rrt", aula: "A22 · RRT SE(2)", title: "Navegação AGV → MAG-100", x: 36, y: 748, width: 464, height: 270, col: 0, row: 2 },
+    { id: "kdtree", aula: "A26 · KD-Tree", title: "Busca Espacial NEAREST", x: 578, y: 748, width: 464, height: 270, col: 1, row: 2 },
+    { id: "dtree", aula: "A27 · CART", title: "Diagnóstico ML de Ciclos", x: 1120, y: 748, width: 464, height: 270, col: 2, row: 2 }
+  ]);
+
+  const E03_COUPLING_LINKS = deepFreeze([
+    { id: "c1", from: "mst", to: "rstp", bidirectional: true, label: "Cabeamento 9,9 m ↔ Anel L2" },
+    { id: "c2", from: "huffman", to: "binary", bidirectional: false, label: "Telemetria CoS → AVL" },
+    { id: "c3", from: "binary", to: "rrt", bidirectional: false, label: "ZS-102 / HS-004 → MAG-100" },
+    { id: "c4", from: "kdtree", to: "rrt", bidirectional: false, label: "NEAREST O(log n)" },
+    { id: "c5", from: "kdtree", to: "binary", bidirectional: true, label: "Historiador R³ ↔ AVL 1D" },
+    { id: "c6", from: "binary", to: "bt", bidirectional: true, label: "BDT O(1) ↔ BT Multi-tick" },
+    { id: "c7", from: "petri", to: "bt", bidirectional: true, label: "Exclusão Mútua ↔ Parallel E1–E5" },
+    { id: "c8", from: "binary", to: "dtree", bidirectional: false, label: "Ciclos SCADA → CART/ID3" }
+  ]);
+
   const INTEGRATED_SCENARIOS = deepFreeze({
     nominal: {
       id: "nominal",
@@ -1974,17 +1997,30 @@ const AquaIndexEtapa03 = (() => {
       { id: "dtree", aula: "A27 · CART", status: dtPred.prediction === "CICLO_CONFORME" ? "ok" : "warn", metric: dtPred.prediction }
     ];
 
+    const activeCouplingsMap = {
+      nominal: ["c1", "c2", "c5", "c6", "c7", "c8"],
+      cup_shortage: ["c2", "c3", "c4", "c6", "c8"],
+      backbone_cold: ["c1", "c2", "c6", "c8"],
+      emergency: ["c2", "c3", "c6", "c7", "c8"]
+    };
+    const activeCouplings = activeCouplingsMap[sc.id] || activeCouplingsMap.nominal;
+
     return {
       scenario: sc,
       stages,
+      activeCouplings,
       mst,
       rstp,
+      huff,
+      huffSym: sym,
       huffEnc,
       bdt,
       petri,
       bt,
+      kdTree: kd,
       kdRes,
       rrt,
+      dtTree: dt,
       dtPred
     };
   }
@@ -2028,6 +2064,8 @@ const AquaIndexEtapa03 = (() => {
     trainDecisionTree,
     predictDecisionTree,
     confusionMatrix,
+    E03_ZONES,
+    E03_COUPLING_LINKS,
     INTEGRATED_SCENARIOS,
     runIntegratedScenario
   };
@@ -2338,7 +2376,8 @@ const AquaIndexEtapa03 = (() => {
     const state = {
       mode: "integrated",
       integrated: {
-        scenario: "nominal"
+        scenario: "nominal",
+        showCouplings: true
       },
       mst: {
         algorithm: "kruskal",
@@ -2715,6 +2754,15 @@ const AquaIndexEtapa03 = (() => {
         });
         scSel.addEventListener("change", () => {
           state.integrated.scenario = scSel.value;
+          run();
+        });
+
+        const coupWrap = addEl(row, "label", { class: "e03-toggle" });
+        const coupChk = addEl(coupWrap, "input", { type: "checkbox", "data-e03-int-couplings": "" });
+        coupChk.checked = Boolean(state.integrated.showCouplings);
+        addEl(coupWrap, "span", {}, "Mostrar interligações entre vistas (8 elos)");
+        coupChk.addEventListener("change", () => {
+          state.integrated.showCouplings = coupChk.checked;
           run();
         });
         return;
@@ -3897,56 +3945,608 @@ const AquaIndexEtapa03 = (() => {
 
     function renderIntegratedView() {
       const res = runIntegratedScenario(state.integrated.scenario);
-      resetSvg();
+      const defs = resetSvg();
+      if (!svg) return;
+      svg.setAttribute("viewBox", "0 0 1620 1040");
+
+      if (defs) {
+        const makeArrow = (id, fill) => {
+          const m = addEl(
+            defs,
+            "marker",
+            { id, viewBox: "0 0 10 10", refX: 8.5, refY: 5, markerWidth: 7.5, markerHeight: 7.5, orient: "auto-start-reverse" },
+            "",
+            true
+          );
+          addEl(m, "path", { d: "M 0 1 L 10 5 L 0 9 z", fill }, "", true);
+        };
+        makeArrow("e03-coup-active", "var(--e03-accent, #0f766e)");
+        makeArrow("e03-coup-danger", "var(--e03-danger, #dc2626)");
+        makeArrow("e03-coup-idle", "var(--e03-border, #94a3b8)");
+      }
 
       addEl(
         svg,
         "text",
-        { x: 480, y: 30, "text-anchor": "middle", fill: "var(--e03-muted, #64748b)", "font-size": 12.5, "font-weight": 700 },
-        `FLUXO INTEGRADO DO MÓDULO 3 · ${res.scenario.label.toUpperCase()}`,
+        { x: 810, y: 28, "text-anchor": "middle", fill: "var(--e03-ink, #0f172a)", "font-size": 16, "font-weight": 800, "letter-spacing": "0.04em" },
+        `VISTA PANORÂMICA INTERLIGADA · MÓDULO 3 · ${res.scenario.label.toUpperCase()}`,
+        true
+      );
+      addEl(
+        svg,
+        "text",
+        { x: 810, y: 50, "text-anchor": "middle", fill: "var(--e03-muted, #64748b)", "font-size": 12.5, "font-weight": 600 },
+        "9 Sub-redes e Árvores da Célula Aqua Index · Clique em qualquer quadrante para abrir a vista detalhada",
         true
       );
 
-      const coords = [
-        { x: 150, y: 120 }, { x: 480, y: 120 }, { x: 810, y: 120 },
-        { x: 150, y: 270 }, { x: 480, y: 270 }, { x: 810, y: 270 },
-        { x: 150, y: 420 }, { x: 480, y: 420 }, { x: 810, y: 420 }
-      ];
+      const zoneLayer = addEl(svg, "g", { class: "e03-pan-zones" }, "", true);
+      const couplingLayer = addEl(svg, "g", { class: "e03-pan-couplings" }, "", true);
 
-      for (let i = 0; i < res.stages.length - 1; i += 1) {
-        const a = coords[i];
-        const b = coords[i + 1];
-        if (i === 2 || i === 5) {
-          const d = `M ${a.x} ${a.y + 42} L ${a.x} ${a.y + 74} L ${b.x} ${a.y + 74} L ${b.x} ${b.y - 42}`;
-          addEl(svg, "path", { d, fill: "none", stroke: "var(--e03-accent, #0f766e)", "stroke-width": 2, "marker-end": "url(#e03-arrow)" }, "", true);
-        } else {
-          addEl(svg, "line", { x1: a.x + 115, y1: a.y, x2: b.x - 115, y2: b.y, stroke: "var(--e03-accent, #0f766e)", "stroke-width": 2.2, "marker-end": "url(#e03-arrow)" }, "", true);
-        }
+      const stageById = new Map(
+        res.stages.map((st) => [st.id === "bdt" ? "binary" : st.id, st])
+      );
+
+      function drawMiniMST(g, z) {
+        const ix = z.x + 20;
+        const iy = z.y + 52;
+        const iw = z.width - 40;
+        const ih = z.height - 68;
+        const nodeMap = new Map(MST_NODES.map((n) => [n.id, n]));
+        const mstSet = new Set(res.mst.edgeIds);
+        const sx = (nx) => ix + ((nx - 70) / 830) * iw;
+        const sy = (ny) => iy + ((ny - 60) / 410) * ih;
+
+        MST_EDGES.forEach((e) => {
+          const a = nodeMap.get(e.from);
+          const b = nodeMap.get(e.to);
+          if (!a || !b) return;
+          const on = mstSet.has(e.id);
+          addEl(g, "line", {
+            x1: sx(a.x),
+            y1: sy(a.y),
+            x2: sx(b.x),
+            y2: sy(b.y),
+            stroke: on ? "var(--e03-accent, #0f766e)" : "var(--e03-border, #cbd5e1)",
+            "stroke-width": on ? 3 : 1,
+            "stroke-dasharray": on ? "" : "3 3",
+            opacity: on ? 1 : 0.55
+          }, "", true);
+        });
+
+        MST_NODES.forEach((n) => {
+          const cx = sx(n.x);
+          const cy = sy(n.y);
+          addEl(g, "circle", { cx, cy, r: 9, fill: "var(--e03-surface, #ffffff)", stroke: "var(--e03-accent, #0f766e)", "stroke-width": 2 }, "", true);
+          addEl(g, "text", { x: cx, y: cy + 3, "text-anchor": "middle", "font-size": 7.5, "font-weight": 700, fill: "var(--e03-ink, #0f172a)" }, n.code, true);
+        });
       }
 
-      res.stages.forEach((st, idx) => {
-        const { x, y } = coords[idx];
+      function drawMiniRSTP(g, z) {
+        const ix = z.x + 30;
+        const iy = z.y + 58;
+        const iw = z.width - 60;
+        const ih = z.height - 76;
+        const swMap = new Map(RSTP_SWITCHES.map((s) => [s.id, s]));
+        const fwdSet = new Set(res.rstp.forwardingLinks);
+        const discSet = new Set(res.rstp.discardingLinks);
+        const downSet = new Set(res.rstp.downLinks);
+        const sx = (nx) => ix + ((nx - 140) / 690) * iw;
+        const sy = (ny) => iy + ((ny - 90) / 350) * ih;
+
+        RSTP_LINKS.forEach((l) => {
+          const a = swMap.get(l.from);
+          const b = swMap.get(l.to);
+          if (!a || !b) return;
+          const isDown = downSet.has(l.id);
+          const isDisc = discSet.has(l.id);
+          const stroke = isDown
+            ? "var(--e03-danger, #dc2626)"
+            : isDisc
+              ? "var(--e03-warn, #d97706)"
+              : fwdSet.has(l.id)
+                ? "var(--e03-ok, #15803d)"
+                : "var(--e03-border, #94a3b8)";
+          addEl(g, "line", {
+            x1: sx(a.x),
+            y1: sy(a.y),
+            x2: sx(b.x),
+            y2: sy(b.y),
+            stroke,
+            "stroke-width": isDown || isDisc ? 2.2 : 3,
+            "stroke-dasharray": isDown ? "4 3" : isDisc ? "6 4" : ""
+          }, "", true);
+          if (isDown) {
+            const mx = (sx(a.x) + sx(b.x)) / 2;
+            const my = (sy(a.y) + sy(b.y)) / 2;
+            addEl(g, "text", { x: mx, y: my + 4, "text-anchor": "middle", "font-size": 12, "font-weight": 800, fill: "var(--e03-danger, #dc2626)" }, "✕", true);
+          }
+        });
+
+        RSTP_SWITCHES.forEach((sw) => {
+          const cx = sx(sw.x);
+          const cy = sy(sw.y);
+          const isRoot = res.rstp.rootBridge === sw.id;
+          addEl(g, "rect", {
+            x: cx - 34,
+            y: cy - 13,
+            width: 68,
+            height: 26,
+            rx: 6,
+            fill: isRoot ? "var(--e03-accent, #0f766e)" : "var(--e03-surface, #ffffff)",
+            stroke: isRoot ? "var(--e03-warn, #d97706)" : "var(--e03-border, #64748b)",
+            "stroke-width": isRoot ? 2.5 : 1.6
+          }, "", true);
+          addEl(g, "text", {
+            x: cx,
+            y: cy + 3.5,
+            "text-anchor": "middle",
+            "font-size": 8.5,
+            "font-weight": 700,
+            fill: isRoot ? "#ffffff" : "var(--e03-ink, #0f172a)"
+          }, sw.id.replace("SW-", ""), true);
+        });
+      }
+
+      function drawMiniHuffman(g, z) {
+        const activeCode = res.huff.codes[res.huffSym] || "1";
+        const cx = z.x + z.width / 2;
+        const ry = z.y + 70;
+        const nodes = [
+          { id: "", x: cx, y: ry, lbl: "Σ=1.0" },
+          { id: "0", x: cx - 95, y: ry + 42, lbl: "0" },
+          { id: "1", x: cx + 95, y: ry + 42, lbl: "00000 (1)", leaf: true },
+          { id: "00", x: cx - 150, y: ry + 86, lbl: "10000 (00)", leaf: true },
+          { id: "01", x: cx - 40, y: ry + 86, lbl: "01" },
+          { id: "010", x: cx - 95, y: ry + 130, lbl: "00100", leaf: true },
+          { id: "011", x: cx + 25, y: ry + 130, lbl: "011" },
+          { id: "0110", x: cx - 25, y: ry + 172, lbl: "00001", leaf: true },
+          { id: "0111", x: cx + 80, y: ry + 172, lbl: "00010", leaf: true }
+        ];
+        const edges = [
+          ["", "0"], ["", "1"], ["0", "00"], ["0", "01"],
+          ["01", "010"], ["01", "011"], ["011", "0110"], ["011", "0111"]
+        ];
+        const byId = new Map(nodes.map((n) => [n.id, n]));
+        edges.forEach(([u, v]) => {
+          const a = byId.get(u);
+          const b = byId.get(v);
+          const on = activeCode.startsWith(v);
+          addEl(g, "line", {
+            x1: a.x,
+            y1: a.y + 10,
+            x2: b.x,
+            y2: b.y - 10,
+            stroke: on ? "var(--e03-accent, #0f766e)" : "var(--e03-border, #94a3b8)",
+            "stroke-width": on ? 3 : 1.4
+          }, "", true);
+        });
+        nodes.forEach((n) => {
+          const on = n.id === "" ? true : activeCode === n.id || activeCode.startsWith(n.id);
+          const isTarget = n.leaf && activeCode === n.id;
+          addEl(g, "rect", {
+            x: n.x - (n.leaf ? 38 : 22),
+            y: n.y - 11,
+            width: n.leaf ? 76 : 44,
+            height: 22,
+            rx: 5,
+            fill: isTarget ? "var(--e03-accent, #0f766e)" : on ? "var(--e03-panel, #e2e8f0)" : "var(--e03-surface, #ffffff)",
+            stroke: on ? "var(--e03-accent, #0f766e)" : "var(--e03-border, #94a3b8)",
+            "stroke-width": isTarget ? 2.2 : 1.3
+          }, "", true);
+          addEl(g, "text", {
+            x: n.x,
+            y: n.y + 3.5,
+            "text-anchor": "middle",
+            "font-size": 8.5,
+            "font-weight": 700,
+            fill: isTarget ? "#ffffff" : "var(--e03-ink, #0f172a)"
+          }, n.lbl, true);
+        });
+      }
+
+      function drawMiniBinary(g, z) {
+        const bx = z.x + 20;
+        const by = z.y + 56;
+        const levels = [
+          { lv: 1, lbl: "N1 HS-004 (Emerg.)" },
+          { lv: 2, lbl: "N2 R-06 (Mag.)" },
+          { lv: 3, lbl: "N3 R-01 (Colisão)" },
+          { lv: 5, lbl: "N5 TIT-401 (<180°C)" },
+          { lv: 7, lbl: "N7 ZS-102 (Copo)" },
+          { lv: 0, lbl: "OK OPERAÇÃO NOMINAL" }
+        ];
+        levels.forEach((item, idx) => {
+          const yPos = by + idx * 32;
+          const active = res.bdt.level === item.lv;
+          const c = active ? toneColors(item.lv === 0 ? "ok" : "danger") : null;
+          addEl(g, "rect", {
+            x: bx,
+            y: yPos,
+            width: 220,
+            height: 24,
+            rx: 5,
+            fill: active ? c.fill : "var(--e03-panel, #f8fafc)",
+            stroke: active ? c.stroke : "var(--e03-border, #cbd5e1)",
+            "stroke-width": active ? 2 : 1.2
+          }, "", true);
+          addEl(g, "text", {
+            x: bx + 10,
+            y: yPos + 15.5,
+            "font-size": 9.5,
+            "font-weight": active ? 800 : 600,
+            fill: active ? c.text : "var(--e03-ink, #0f172a)"
+          }, item.lbl, true);
+        });
+
+        // Mini AVL à direita
+        const ax = z.x + 355;
+        const ay = z.y + 84;
+        addEl(g, "text", { x: ax, y: z.y + 62, "text-anchor": "middle", "font-size": 9.5, "font-weight": 700, fill: "var(--e03-muted, #64748b)" }, "AVL Historiador (|BF|≤1)", true);
+        const avlNodes = [
+          { x: ax, y: ay, t: "1030" },
+          { x: ax - 54, y: ay + 52, t: "1015" },
+          { x: ax + 54, y: ay + 52, t: "1045" },
+          { x: ax - 80, y: ay + 104, t: "1005" },
+          { x: ax - 28, y: ay + 104, t: "1020" },
+          { x: ax + 28, y: ay + 104, t: "1040" },
+          { x: ax + 80, y: ay + 104, t: "1055" }
+        ];
+        [[0, 1], [0, 2], [1, 3], [1, 4], [2, 5], [2, 6]].forEach(([u, v]) => {
+          addEl(g, "line", { x1: avlNodes[u].x, y1: avlNodes[u].y + 10, x2: avlNodes[v].x, y2: avlNodes[v].y - 10, stroke: "var(--e03-accent-2, #0284c7)", "stroke-width": 1.6 }, "", true);
+        });
+        avlNodes.forEach((n) => {
+          addEl(g, "circle", { cx: n.x, cy: n.y, r: 14, fill: "var(--e03-surface, #ffffff)", stroke: "var(--e03-accent-2, #0284c7)", "stroke-width": 1.8 }, "", true);
+          addEl(g, "text", { x: n.x, y: n.y + 3.5, "text-anchor": "middle", "font-size": 8.5, "font-weight": 700, fill: "var(--e03-ink, #0f172a)" }, n.t, true);
+        });
+      }
+
+      function drawMiniBT(g, z) {
+        const cx = z.x + z.width / 2;
+        const ry = z.y + 72;
+        const pos = {
+          root: { x: cx, y: ry, w: 120, lbl: "? Root" },
+          seg_seq: { x: cx - 140, y: ry + 64, w: 112, lbl: "→ Segurança" },
+          rec_fb: { x: cx, y: ry + 64, w: 112, lbl: "? Recuperação" },
+          prod_seq: { x: cx + 140, y: ry + 64, w: 118, lbl: "⇉ Parallel E1–E5" },
+          seg_act: { x: cx - 140, y: ry + 128, w: 112, lbl: "Parada HS-004" },
+          heat_seq: { x: cx, y: ry + 128, w: 112, lbl: "Pré-Aq. HT-401" },
+          prod_act: { x: cx + 140, y: ry + 128, w: 118, lbl: "Ciclo Produtivo" }
+        };
+        const statusById = new Map((res.bt.nodes || []).map((n) => [n.id, n.status]));
+        [
+          ["root", "seg_seq"], ["root", "rec_fb"], ["root", "prod_seq"],
+          ["seg_seq", "seg_act"], ["rec_fb", "heat_seq"], ["prod_seq", "prod_act"]
+        ].forEach(([u, v]) => {
+          addEl(g, "line", { x1: pos[u].x, y1: pos[u].y + 14, x2: pos[v].x, y2: pos[v].y - 14, stroke: "var(--e03-border, #94a3b8)", "stroke-width": 1.8 }, "", true);
+        });
+        Object.entries(pos).forEach(([id, p]) => {
+          const st = statusById.get(id) || (id === "root" ? res.bt.rootStatus : "IDLE");
+          const c = toneColors(st);
+          addEl(g, "rect", { x: p.x - p.w / 2, y: p.y - 15, width: p.w, height: 30, rx: 6, fill: c.fill, stroke: c.stroke, "stroke-width": 1.8 }, "", true);
+          addEl(g, "text", { x: p.x, y: p.y + 4, "text-anchor": "middle", "font-size": 9.5, "font-weight": 700, fill: c.text }, p.lbl, true);
+        });
+      }
+
+      function drawMiniPetri(g, z) {
+        const cx = z.x + z.width / 2;
+        const cy = z.y + 150;
+        const places = [
+          { x: cx - 155, y: cy - 42, lbl: "Mesa Livre", tokens: 1 },
+          { x: cx - 155, y: cy + 44, lbl: "Prensa Livre", tokens: 1 },
+          { x: cx + 145, y: cy, lbl: `EST-500 (K=${res.petri.kMax})`, tokens: res.petri.kMax }
+        ];
+        const trans = [
+          { x: cx - 35, y: cy - 42, lbl: "T1 Girar" },
+          { x: cx - 35, y: cy + 44, lbl: "T2 Selar" },
+          { x: cx + 55, y: cy, lbl: "T3 Ejetar" }
+        ];
+        addEl(g, "line", { x1: places[0].x + 22, y1: places[0].y, x2: trans[0].x - 8, y2: trans[0].y, stroke: "var(--e03-accent, #0f766e)", "stroke-width": 2, "marker-end": "url(#e03-arrow)" }, "", true);
+        addEl(g, "line", { x1: places[1].x + 22, y1: places[1].y, x2: trans[1].x - 8, y2: trans[1].y, stroke: "var(--e03-accent, #0f766e)", "stroke-width": 2, "marker-end": "url(#e03-arrow)" }, "", true);
+        addEl(g, "line", { x1: trans[0].x + 8, y1: trans[0].y + 8, x2: trans[2].x - 8, y2: trans[2].y - 6, stroke: "var(--e03-border, #64748b)", "stroke-width": 1.6, "marker-end": "url(#e03-arrow)" }, "", true);
+        addEl(g, "line", { x1: trans[1].x + 8, y1: trans[1].y - 8, x2: trans[2].x - 8, y2: trans[2].y + 6, stroke: "var(--e03-border, #64748b)", "stroke-width": 1.6, "marker-end": "url(#e03-arrow)" }, "", true);
+        addEl(g, "line", { x1: trans[2].x + 8, y1: trans[2].y, x2: places[2].x - 24, y2: places[2].y, stroke: "var(--e03-accent, #0f766e)", "stroke-width": 2, "marker-end": "url(#e03-arrow)" }, "", true);
+
+        places.forEach((pl) => {
+          addEl(g, "circle", { cx: pl.x, cy: pl.y, r: 22, fill: "var(--e03-surface, #ffffff)", stroke: "var(--e03-accent, #0f766e)", "stroke-width": 2.2 }, "", true);
+          for (let i = 0; i < Math.min(pl.tokens, 3); i += 1) {
+            const dx = pl.tokens === 1 ? 0 : (i - 1) * 9;
+            addEl(g, "circle", { cx: pl.x + dx, cy: pl.y, r: 3.8, fill: "var(--e03-ink, #0f172a)" }, "", true);
+          }
+          addEl(g, "text", { x: pl.x, y: pl.y + 34, "text-anchor": "middle", "font-size": 9, "font-weight": 700, fill: "var(--e03-ink, #0f172a)" }, pl.lbl, true);
+        });
+        trans.forEach((tr) => {
+          addEl(g, "rect", { x: tr.x - 6, y: tr.y - 16, width: 12, height: 32, rx: 2, fill: "var(--e03-ink, #0f172a)" }, "", true);
+          addEl(g, "text", { x: tr.x, y: tr.y + 28, "text-anchor": "middle", "font-size": 8.5, "font-weight": 600, fill: "var(--e03-muted, #64748b)" }, tr.lbl, true);
+        });
+      }
+
+      function drawMiniRRT(g, z) {
+        const ix = z.x + 22;
+        const iy = z.y + 54;
+        const iw = z.width - 44;
+        const ih = z.height - 72;
+        const sx = (wx) => ix + (wx / RRT_WORKSPACE.width) * iw;
+        const sy = (wy) => iy + ih - (wy / RRT_WORKSPACE.height) * ih;
+
+        addEl(g, "rect", { x: ix, y: iy, width: iw, height: ih, rx: 6, fill: "var(--e03-panel, #f8fafc)", stroke: "var(--e03-border, #cbd5e1)", "stroke-width": 1.4 }, "", true);
+        RRT_WORKSPACE.baseObstacles.forEach((obs) => {
+          addEl(g, "rect", {
+            x: sx(obs.x),
+            y: sy(obs.y + obs.height),
+            width: (obs.width / RRT_WORKSPACE.width) * iw,
+            height: (obs.height / RRT_WORKSPACE.height) * ih,
+            rx: 4,
+            fill: "var(--e03-border, #94a3b8)",
+            "fill-opacity": 0.45,
+            stroke: "var(--e03-muted, #64748b)",
+            "stroke-width": 1.2
+          }, "", true);
+        });
+
+        if (res.rrt.ok) {
+          res.rrt.edges.slice(0, 120).forEach(([u, v]) => {
+            const nu = res.rrt.nodes[u];
+            const nv = res.rrt.nodes[v];
+            if (!nu || !nv) return;
+            addEl(g, "line", { x1: sx(nu.x), y1: sy(nu.y), x2: sx(nv.x), y2: sy(nv.y), stroke: "var(--e03-accent-2, #0284c7)", "stroke-width": 1, opacity: 0.45 }, "", true);
+          });
+          const pts = res.rrt.path.map((p) => `${sx(p.x)},${sy(p.y)}`).join(" ");
+          addEl(g, "polyline", { points: pts, fill: "none", stroke: "var(--e03-ok, #15803d)", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" }, "", true);
+        } else if (res.scenario.hs004) {
+          addEl(g, "text", { x: ix + iw / 2, y: iy + ih / 2 + 5, "text-anchor": "middle", "font-size": 14, "font-weight": 800, fill: "var(--e03-danger, #dc2626)" }, "✕ ABORTO Φ_SCADA (HS-004)", true);
+        } else {
+          addEl(g, "text", { x: ix + iw / 2, y: iy + ih / 2 + 5, "text-anchor": "middle", "font-size": 12, "font-weight": 700, fill: "var(--e03-muted, #64748b)" }, "AGV EM STANDBY (ZS-102 OK)", true);
+        }
+
+        addEl(g, "circle", { cx: sx(RRT_WORKSPACE.start.x), cy: sy(RRT_WORKSPACE.start.y), r: 6, fill: "var(--e03-accent, #0f766e)" }, "", true);
+        addEl(g, "circle", { cx: sx(RRT_WORKSPACE.goal.x), cy: sy(RRT_WORKSPACE.goal.y), r: 9, fill: "none", stroke: "var(--e03-ok, #15803d)", "stroke-width": 2 }, "", true);
+      }
+
+      function drawMiniKDTree(g, z) {
+        const ix = z.x + 22;
+        const iy = z.y + 54;
+        const iw = z.width - 44;
+        const ih = z.height - 72;
+        const sx = (kx) => ix + (kx / 16) * iw;
+        const sy = (ky) => iy + ih - (ky / 12) * ih;
+
+        addEl(g, "rect", { x: ix, y: iy, width: iw, height: ih, rx: 6, fill: "var(--e03-panel, #f8fafc)", stroke: "var(--e03-border, #cbd5e1)", "stroke-width": 1.4 }, "", true);
+        function drawSplits(node) {
+          if (!node) return;
+          if (node.axis === 0) {
+            addEl(g, "line", { x1: sx(node.point.x), y1: sy(node.bounds.minY), x2: sx(node.point.x), y2: sy(node.bounds.maxY), stroke: "var(--e03-accent-2, #0284c7)", "stroke-width": 1.1, "stroke-dasharray": "3 2", opacity: 0.6 }, "", true);
+          } else {
+            addEl(g, "line", { x1: sx(node.bounds.minX), y1: sy(node.point.y), x2: sx(node.bounds.maxX), y2: sy(node.point.y), stroke: "var(--e03-warn, #d97706)", "stroke-width": 1.1, "stroke-dasharray": "3 2", opacity: 0.6 }, "", true);
+          }
+          drawSplits(node.left);
+          drawSplits(node.right);
+        }
+        drawSplits(res.kdTree);
+
+        const q = { x: 7.5, y: 9.8 };
+        const best = res.kdRes.nearest;
+        KDTREE_POINTS.forEach((pt) => {
+          const isBest = best && best.id === pt.id;
+          addEl(g, "circle", {
+            cx: sx(pt.x),
+            cy: sy(pt.y),
+            r: isBest ? 6.5 : 3.8,
+            fill: isBest ? "var(--e03-ok, #15803d)" : "var(--e03-surface, #ffffff)",
+            stroke: "var(--e03-ink, #0f172a)",
+            "stroke-width": 1.4
+          }, "", true);
+        });
+        if (best) {
+          addEl(g, "line", { x1: sx(q.x), y1: sy(q.y), x2: sx(best.x), y2: sy(best.y), stroke: "var(--e03-danger, #dc2626)", "stroke-width": 1.8, "stroke-dasharray": "3 2" }, "", true);
+        }
+        addEl(g, "circle", { cx: sx(q.x), cy: sy(q.y), r: 5.5, fill: "var(--e03-danger, #dc2626)", stroke: "#ffffff", "stroke-width": 1.5 }, "", true);
+      }
+
+      function drawMiniDTree(g, z) {
+        const cx = z.x + z.width / 2;
+        const ry = z.y + 72;
+        const pathSet = new Set(res.dtPred.path || []);
+
+        function drawMiniNode(node, nx, ny, span, depth) {
+          if (!node || depth > 2) return;
+          if (!node.isLeaf && depth < 2) {
+            const childY = ny + 54;
+            const leftCond = `${node.feature} <= ${node.threshold}`;
+            const rightCond = `${node.feature} > ${node.threshold}`;
+            const goL = pathSet.has(leftCond);
+            const goR = pathSet.has(rightCond);
+            addEl(g, "line", { x1: nx, y1: ny + 13, x2: nx - span, y2: childY - 13, stroke: goL ? "var(--e03-accent, #0f766e)" : "var(--e03-border, #94a3b8)", "stroke-width": goL ? 2.6 : 1.3 }, "", true);
+            addEl(g, "line", { x1: nx, y1: ny + 13, x2: nx + span, y2: childY - 13, stroke: goR ? "var(--e03-accent, #0f766e)" : "var(--e03-border, #94a3b8)", "stroke-width": goR ? 2.6 : 1.3 }, "", true);
+            drawMiniNode(node.left, nx - span, childY, span * 0.52, depth + 1);
+            drawMiniNode(node.right, nx + span, childY, span * 0.52, depth + 1);
+          }
+          const isPred = node.isLeaf && node.label === res.dtPred.prediction;
+          addEl(g, "rect", {
+            x: nx - 58,
+            y: ny - 13,
+            width: 116,
+            height: 26,
+            rx: 5,
+            fill: isPred ? "var(--e03-accent, #0f766e)" : node.isLeaf ? "var(--e03-panel, #e2e8f0)" : "var(--e03-surface, #ffffff)",
+            stroke: isPred ? "var(--e03-accent, #0f766e)" : "var(--e03-border, #64748b)",
+            "stroke-width": isPred ? 2.2 : 1.3
+          }, "", true);
+          const lbl = node.isLeaf ? node.label.replace(/_/g, " ").slice(0, 18) : `${node.feature.split("_")[0]}≤${node.threshold}`;
+          addEl(g, "text", {
+            x: nx,
+            y: ny + 3.5,
+            "text-anchor": "middle",
+            "font-size": 8.5,
+            "font-weight": 700,
+            fill: isPred ? "#ffffff" : "var(--e03-ink, #0f172a)"
+          }, lbl, true);
+        }
+        drawMiniNode(res.dtTree.root, cx, ry, 102, 0);
+      }
+
+      const miniDrawers = {
+        mst: drawMiniMST,
+        rstp: drawMiniRSTP,
+        huffman: drawMiniHuffman,
+        binary: drawMiniBinary,
+        bt: drawMiniBT,
+        petri: drawMiniPetri,
+        rrt: drawMiniRRT,
+        kdtree: drawMiniKDTree,
+        dtree: drawMiniDTree
+      };
+
+      E03_ZONES.forEach((z) => {
+        const st = stageById.get(z.id) || { status: "ok", metric: "" };
         const c = toneColors(st.status);
-        addEl(svg, "rect", { x: x - 112, y: y - 40, width: 224, height: 80, rx: 10, fill: "var(--e03-surface, #ffffff)", stroke: c.stroke, "stroke-width": 2.4 }, "", true);
-        addEl(svg, "rect", { x: x - 112, y: y - 40, width: 224, height: 24, rx: 8, fill: c.fill }, "", true);
-        addEl(svg, "text", { x, y: y - 24, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: c.text }, st.aula, true);
-        addEl(svg, "text", { x, y: y + 12, "text-anchor": "middle", "font-size": 11.5, "font-weight": 700, fill: "var(--e03-ink, #0f172a)" }, st.metric, true);
+        const zg = addEl(
+          zoneLayer,
+          "g",
+          {
+            class: "e03-pan-zone",
+            "data-e03-zone": z.id,
+            role: "button",
+            tabindex: "0",
+            style: "cursor:pointer",
+            "aria-label": `Abrir vista detalhada: ${z.aula} — ${z.title}`
+          },
+          "",
+          true
+        );
+
+        addEl(zg, "rect", {
+          x: z.x,
+          y: z.y,
+          width: z.width,
+          height: z.height,
+          rx: 12,
+          fill: "var(--e03-surface, #ffffff)",
+          stroke: c.stroke,
+          "stroke-width": 2.2
+        }, "", true);
+
+        addEl(zg, "rect", {
+          x: z.x,
+          y: z.y,
+          width: z.width,
+          height: 38,
+          rx: 10,
+          fill: "var(--e03-panel, #f1f5f9)"
+        }, "", true);
+
+        addEl(zg, "text", {
+          x: z.x + 14,
+          y: z.y + 24,
+          "font-size": 12.5,
+          "font-weight": 800,
+          fill: "var(--e03-ink, #0f172a)"
+        }, `${z.aula} · ${z.title}`, true);
+
+        const badgeW = Math.min(185, Math.max(82, st.metric.length * 6.5 + 18));
+        addEl(zg, "rect", {
+          x: z.x + z.width - badgeW - 10,
+          y: z.y + 7,
+          width: badgeW,
+          height: 24,
+          rx: 12,
+          fill: c.fill
+        }, "", true);
+        addEl(zg, "text", {
+          x: z.x + z.width - badgeW / 2 - 10,
+          y: z.y + 22.5,
+          "text-anchor": "middle",
+          "font-size": 10,
+          "font-weight": 700,
+          fill: c.text
+        }, st.metric.slice(0, 24), true);
+
+        if (miniDrawers[z.id]) miniDrawers[z.id](zg, z);
+
+        const openZone = () => changeMode(z.id, true);
+        zg.addEventListener("click", openZone);
+        zg.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openZone();
+          }
+        });
       });
+
+      if (state.integrated.showCouplings) {
+        const activeSet = new Set(res.activeCouplings);
+        const routes = {
+          c1: { d: "M 400 342 L 400 358 L 660 358 L 660 342", lx: 530, ly: 358 },
+          c2: { d: "M 1360 342 L 1360 394 L 240 394 L 240 410", lx: 860, ly: 394 },
+          c3: { d: "M 140 680 L 140 714 L 300 714 L 300 748", lx: 220, ly: 714 },
+          c4: { d: "M 640 748 L 640 730 L 440 730 L 440 748", lx: 540, ly: 730 },
+          c5: { d: "M 820 748 L 820 698 L 410 698 L 410 680", lx: 680, ly: 698 },
+          c6: { d: "M 450 410 L 450 376 L 680 376 L 680 410", lx: 565, ly: 376 },
+          c7: { d: "M 1220 410 L 1220 358 L 930 358 L 930 410", lx: 1075, ly: 358 },
+          c8: { d: "M 340 680 L 340 714 L 1350 714 L 1350 748", lx: 1160, ly: 714 }
+        };
+
+        E03_COUPLING_LINKS.forEach((link) => {
+          const r = routes[link.id];
+          if (!r) return;
+          const isActive = activeSet.has(link.id);
+          const isDanger = isActive && res.scenario.hs004 && (link.id === "c3" || link.id === "c6" || link.id === "c7");
+          const stroke = isDanger
+            ? "var(--e03-danger, #dc2626)"
+            : isActive
+              ? "var(--e03-accent, #0f766e)"
+              : "var(--e03-border, #94a3b8)";
+          const markerId = isDanger ? "e03-coup-danger" : isActive ? "e03-coup-active" : "e03-coup-idle";
+
+          const pathAttrs = {
+            d: r.d,
+            fill: "none",
+            stroke,
+            "stroke-width": isActive ? 2.6 : 1.5,
+            "stroke-dasharray": isActive ? "" : "5 4",
+            opacity: isActive ? 1 : 0.7,
+            "marker-end": `url(#${markerId})`,
+            "data-e03-coupling": link.id
+          };
+          if (link.bidirectional) pathAttrs["marker-start"] = `url(#${markerId})`;
+          addEl(couplingLayer, "path", pathAttrs, "", true);
+
+          const pillW = Math.max(110, link.label.length * 6.2 + 18);
+          addEl(couplingLayer, "rect", {
+            x: r.lx - pillW / 2,
+            y: r.ly - 10,
+            width: pillW,
+            height: 20,
+            rx: 10,
+            fill: "var(--e03-surface, #ffffff)",
+            stroke,
+            "stroke-width": isActive ? 1.6 : 1
+          }, "", true);
+          addEl(couplingLayer, "text", {
+            x: r.lx,
+            y: r.ly + 3.5,
+            "text-anchor": "middle",
+            "font-size": 9.5,
+            "font-weight": isActive ? 700 : 600,
+            fill: isActive ? "var(--e03-ink, #0f172a)" : "var(--e03-muted, #64748b)"
+          }, link.label, true);
+        });
+      }
 
       renderMetrics([
         { label: "BDT (A21)", value: res.bdt.action, tone: res.bdt.level === 0 ? "ok" : "danger" },
         { label: "RSTP (A23)", value: `${res.rstp.rootBridge} · ${res.rstp.lostCyclesRSTP} perdidos`, tone: "ok" },
         { label: "Behavior Tree (A25)", value: res.bt.rootStatus, sub: res.bt.activeAction },
-        { label: "CART (A27)", value: res.dtPred.prediction, sub: `RRT: ${res.scenario.hs004 ? "ABORTO" : res.rrt.ok ? `${formatPt(res.rrt.pathLength, 1)} m` : "Standby"}` }
+        { label: "CART (A27)", value: res.dtPred.prediction, sub: `Elos ativos: ${res.activeCouplings.length}/8` }
       ]);
 
       if (outputEl) {
         outputEl.replaceChildren();
-        addEl(outputEl, "p", { class: "e03-out-summary" }, `Cascata integrada (${res.scenario.label}): BDT=${res.bdt.action}, BT=${res.bt.activeAction}, CART=${res.dtPred.prediction}.`);
-        addEl(outputEl, "p", { class: "e03-mono" }, `MST=${res.mst.totalWeight} m | Huffman=${res.huffEnc.bitstring} | Petri K_max=${res.petri.kMax} | KD-Tree=${res.kdRes.nearest.id}`);
+        addEl(outputEl, "p", { class: "e03-out-summary" }, `Vista panorâmica (${res.scenario.label}): BDT=${res.bdt.action}, BT=${res.bt.activeAction}, CART=${res.dtPred.prediction}.`);
+        addEl(outputEl, "p", { class: "e03-mono" }, `MST=${res.mst.totalWeight} m | Huffman=${res.huffEnc.bitstring} | Petri K_max=${res.petri.kMax} | KD-Tree=${res.kdRes.nearest.id} | Elos=${res.activeCouplings.join(",")}`);
       }
 
-      pushLog(`Integrado (${res.scenario.id}): BDT=${res.bdt.action} | BT=${res.bt.rootStatus} | CART=${res.dtPred.prediction}.`);
+      pushLog(`Panorâmica (${res.scenario.id}): ${res.activeCouplings.length}/8 elos ativos | BDT=${res.bdt.action} | CART=${res.dtPred.prediction}.`);
     }
 
     function renderRSTPView() {
@@ -4317,6 +4917,7 @@ const AquaIndexEtapa03 = (() => {
       resetBtn.addEventListener("click", () => {
         if (state.mode === "integrated") {
           state.integrated.scenario = "nominal";
+          state.integrated.showCouplings = true;
         } else if (state.mode === "mst") {
           state.mst.algorithm = "kruskal";
           state.mst.startNode = "PLC-001";

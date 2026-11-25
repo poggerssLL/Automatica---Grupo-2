@@ -489,3 +489,47 @@ test("Simulação Integrada (Aula 28) encadeia 9 estágios nos 4 cenários opera
   assert.equal(emg.bdt.action, "TRIP_EMERGENCIA");
   assert.equal(emg.rrt.ok, false);
 });
+
+test("E03_ZONES e E03_COUPLING_LINKS são congelados, íntegros e cobrem as 9 aulas e 8 elos na vista 1620x1040", () => {
+  assert.ok(Object.isFrozen(sim.E03_ZONES));
+  assert.ok(Object.isFrozen(sim.E03_COUPLING_LINKS));
+  assert.equal(sim.E03_ZONES.length, 9);
+  assert.equal(sim.E03_COUPLING_LINKS.length, 8);
+
+  const expectedIds = ["mst", "rstp", "huffman", "binary", "bt", "petri", "rrt", "kdtree", "dtree"];
+  assert.deepEqual(sim.E03_ZONES.map((z) => z.id), expectedIds);
+
+  const zoneIds = new Set(sim.E03_ZONES.map((z) => z.id));
+  for (const z of sim.E03_ZONES) {
+    assert.ok(Object.isFrozen(z));
+    assert.equal(typeof z.aula, "string");
+    assert.equal(typeof z.title, "string");
+    assert.ok(z.x >= 0 && z.x + z.width <= 1620);
+    assert.ok(z.y >= 0 && z.y + z.height <= 1040);
+    assert.ok(z.col >= 0 && z.col <= 2);
+    assert.ok(z.row >= 0 && z.row <= 2);
+  }
+
+  for (const link of sim.E03_COUPLING_LINKS) {
+    assert.ok(Object.isFrozen(link));
+    assert.ok(zoneIds.has(link.from), `Origem inválida: ${link.from}`);
+    assert.ok(zoneIds.has(link.to), `Destino inválido: ${link.to}`);
+    assert.equal(typeof link.label, "string");
+    assert.ok(link.label.length > 0);
+  }
+
+  const linkIds = new Set(sim.E03_COUPLING_LINKS.map((l) => l.id));
+  for (const id of ["nominal", "cup_shortage", "backbone_cold", "emergency"]) {
+    const res = sim.runIntegratedScenario(id);
+    assert.ok(Array.isArray(res.activeCouplings));
+    assert.ok(res.activeCouplings.length >= 4);
+    for (const cid of res.activeCouplings) {
+      assert.ok(linkIds.has(cid), `Elo ativo desconhecido ${cid} no cenário ${id}`);
+    }
+  }
+
+  assert.deepEqual(sim.runIntegratedScenario("cup_shortage").activeCouplings, ["c2", "c3", "c4", "c6", "c8"]);
+  assert.deepEqual(sim.runIntegratedScenario("backbone_cold").activeCouplings, ["c1", "c2", "c6", "c8"]);
+  assert.deepEqual(sim.runIntegratedScenario("emergency").activeCouplings, ["c2", "c3", "c6", "c7", "c8"]);
+  assert.deepEqual(sim.runIntegratedScenario("nominal").activeCouplings, ["c1", "c2", "c5", "c6", "c7", "c8"]);
+});
