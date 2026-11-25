@@ -11,6 +11,13 @@
     --e03-focus: #a72b22;
     --e03-ok: #1f6a52;
     --e03-warn: #8f5d12;
+    --e03-danger: #b42318;
+    --e03-accent-2: #0369a1;
+    --e03-panel: var(--e03-paper);
+    --e03-border: var(--e03-line);
+    --e03-ok-ink: #ffffff;
+    --e03-warn-ink: #ffffff;
+    --e03-danger-ink: #ffffff;
     --e03-tint: color-mix(in srgb, #c62f24 6%, #ffffff);
     --e03-stage-bg: #ffffff;
     --e03-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
@@ -33,6 +40,11 @@
     --e03-focus: #ff9d8f;
     --e03-ok: #5bc4a1;
     --e03-warn: #f0b65a;
+    --e03-danger: #ff887c;
+    --e03-accent-2: #75c8f0;
+    --e03-ok-ink: #101a21;
+    --e03-warn-ink: #101a21;
+    --e03-danger-ink: #101a21;
     --e03-tint: color-mix(in srgb, #ff7666 11%, #1b2932);
     --e03-stage-bg: #142028;
   }
@@ -234,7 +246,7 @@
     line-height: 1.55;
   }
 
-  /* Aba 1: Deck editorial de 6 slides */
+  /* Aba 1: Deck editorial de 11 slides */
   :scope .e03-deck {
     position: relative;
     border: 1px solid var(--e03-line);
@@ -330,7 +342,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    flex: 1 1 auto;
+    flex: 1 0 auto;
     max-width: 1440px;
     margin: 0 auto;
     width: 100%;
@@ -362,7 +374,7 @@
 
   :scope .e03-deck:fullscreen .e03-lesson-figure,
   :scope .e03-deck.is-fullscreen .e03-lesson-figure {
-    max-height: calc(100vh - 290px);
+    max-height: none;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -370,8 +382,8 @@
 
   :scope .e03-deck:fullscreen .e03-lesson-figure svg,
   :scope .e03-deck.is-fullscreen .e03-lesson-figure svg {
-    max-height: calc(100vh - 350px);
-    width: auto;
+    max-height: max(180px, calc(100vh - 350px));
+    width: 100%;
     margin: 0 auto;
   }
 
@@ -380,6 +392,11 @@
     margin-top: auto;
     padding-top: 12px;
     border-top: 1px solid var(--e03-line);
+  }
+
+  :scope .e03-deck.is-fullscreen > :not(.e03-slide),
+  :scope .e03-deck:fullscreen > :not(.e03-slide) {
+    flex-shrink: 0;
   }
 
   :scope .e03-slide-index {
@@ -892,15 +909,34 @@
     border: 1px solid var(--e03-line);
     border-radius: 2px;
     background: var(--e03-stage-bg);
-    overflow: hidden;
+    overflow: auto;
   }
 
   :scope .e03-svg {
     display: block;
     width: 100%;
     height: auto;
-    aspect-ratio: 16 / 9;
+    min-width: 960px;
     font-family: var(--e03-sans);
+  }
+
+  :scope .e03-svg[data-e03-view="integrated"] {
+    min-width: 1280px;
+  }
+
+  :scope .e03-sim-grid:has(.e03-svg[data-e03-view="integrated"]),
+  :scope .e03-sim-grid:has(.e03-svg[data-e03-view="dtree"]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :scope .e03-sim-grid:has(.e03-svg[data-e03-view="integrated"]) .e03-control-col,
+  :scope .e03-sim-grid:has(.e03-svg[data-e03-view="dtree"]) .e03-control-col {
+    border-left: 0;
+    border-top: 1px solid var(--e03-line);
+  }
+
+  :scope .e03-pan-couplings {
+    pointer-events: none;
   }
 
   :scope .e03-stage-hint {

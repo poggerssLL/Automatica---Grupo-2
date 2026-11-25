@@ -2100,6 +2100,19 @@ const AquaIndexEtapa03 = (() => {
     return Number(num).toFixed(digits).replace(".", ",");
   }
 
+  function wrappedSvgText(parent, label, x, y, maxChars, fill, fontSize) {
+    const text = addEl(parent, "text", {
+      x, y, "text-anchor": "middle", "font-size": fontSize, "font-weight": 700, fill
+    }, "", true);
+    addEl(text, "title", {}, label, true);
+    // Quebra também identificadores longos; nenhum nome é truncado.
+    const words = label.match(new RegExp(`.{1,${maxChars}}(?:\\s|$)|.{1,${maxChars}}`, "g")) || [label];
+    words.forEach((line, index) => {
+      addEl(text, "tspan", { x, dy: index ? fontSize + 2 : 0 }, line.trim(), true);
+    });
+    return text;
+  }
+
   /* --- 1. Navegação de Abas da Página ([data-etapa03-tabs]) --- */
   function initTabs() {
     const box = $(document, "[data-etapa03-tabs]");
@@ -2462,6 +2475,10 @@ const AquaIndexEtapa03 = (() => {
     function resetSvg() {
       if (!svg) return null;
       svg.setAttribute("viewBox", "0 0 960 540");
+      svg.setAttribute("width", "960");
+      svg.setAttribute("height", "540");
+      svg.setAttribute("data-e03-view", state.mode);
+      svg.style.minWidth = "";
       svg.replaceChildren();
       const defs = addEl(svg, "defs", {}, "", true);
       const marker = addEl(
@@ -3047,7 +3064,7 @@ const AquaIndexEtapa03 = (() => {
             "text-anchor": "middle",
             "font-size": 10.5,
             "font-weight": isMst ? 700 : 500,
-            fill: isMst ? "#ffffff" : isBlocked ? "var(--e03-danger, #dc2626)" : "var(--e03-muted, #475569)"
+            fill: isMst ? "var(--e03-accent-ink, #ffffff)" : isBlocked ? "var(--e03-danger, #dc2626)" : "var(--e03-muted, #475569)"
           },
           `${formatPt(edge.weight, 1)}m`,
           true
@@ -3083,7 +3100,7 @@ const AquaIndexEtapa03 = (() => {
             "text-anchor": "middle",
             "font-size": 12,
             "font-weight": 700,
-            fill: isRoot ? "#ffffff" : "var(--e03-ink, #0f172a)"
+            fill: isRoot ? "var(--e03-accent-ink, #ffffff)" : "var(--e03-ink, #0f172a)"
           },
           node.id,
           true
@@ -3096,7 +3113,7 @@ const AquaIndexEtapa03 = (() => {
             y: node.y + 13,
             "text-anchor": "middle",
             "font-size": 10,
-            fill: isRoot ? "#e2f5f2" : "var(--e03-muted, #64748b)"
+            fill: isRoot ? "var(--e03-accent-ink, #ffffff)" : "var(--e03-muted, #64748b)"
           },
           `${node.code} · ${node.sector}`,
           true
@@ -3511,7 +3528,7 @@ const AquaIndexEtapa03 = (() => {
               "text-anchor": "middle",
               "font-size": 11,
               "font-weight": 700,
-              fill: tookYes ? "#ffffff" : "var(--e03-muted, #64748b)"
+              fill: tookYes ? "var(--e03-danger-ink, #ffffff)" : "var(--e03-muted, #64748b)"
             },
             node.yesAction,
             true
@@ -3545,7 +3562,7 @@ const AquaIndexEtapa03 = (() => {
             "text-anchor": "middle",
             "font-size": 11.5,
             "font-weight": 700,
-            fill: isNormal ? "#ffffff" : "var(--e03-muted, #64748b)"
+            fill: isNormal ? "var(--e03-ok-ink, #ffffff)" : "var(--e03-muted, #64748b)"
           },
           "OPERACAO_NORMAL",
           true
@@ -3633,14 +3650,14 @@ const AquaIndexEtapa03 = (() => {
         addEl(
           svg,
           "text",
-          { x: cx, y: cy - 6, "text-anchor": "middle", "font-size": 12, "font-weight": 700, fill: hit ? "#ffffff" : "var(--e03-ink, #0f172a)" },
+          { x: cx, y: cy - 6, "text-anchor": "middle", "font-size": 12, "font-weight": 700, fill: hit ? "var(--e03-accent-ink, #ffffff)" : "var(--e03-ink, #0f172a)" },
           `${n.timestamp}`,
           true
         );
         addEl(
           svg,
           "text",
-          { x: cx, y: cy + 9, "text-anchor": "middle", "font-size": 10, fill: hit ? "#e2f5f2" : "var(--e03-muted, #475569)" },
+          { x: cx, y: cy + 9, "text-anchor": "middle", "font-size": 10, fill: hit ? "var(--e03-accent-ink, #ffffff)" : "var(--e03-muted, #475569)" },
           `${n.payload.tag || "TAG"} · BF=${n.bf > 0 ? `+${n.bf}` : n.bf}`,
           true
         );
@@ -3891,14 +3908,14 @@ const AquaIndexEtapa03 = (() => {
         addEl(
           svg,
           "text",
-          { x: 480, y: 266, "text-anchor": "middle", "font-size": 15, "font-weight": 700, fill: "#ffffff" },
+          { x: 480, y: 266, "text-anchor": "middle", "font-size": 15, "font-weight": 700, fill: "var(--e03-danger-ink, #ffffff)" },
           "BLOQUEIO Φ_SCADA · EMERGÊNCIA HS-004 ATIVA",
           true
         );
         addEl(
           svg,
           "text",
-          { x: 480, y: 288, "text-anchor": "middle", "font-size": 11.5, fill: "#fee2e2" },
+          { x: 480, y: 288, "text-anchor": "middle", "font-size": 11.5, fill: "var(--e03-danger-ink, #ffffff)" },
           "Expansão da árvore RRT abortada por intertravamento de segurança.",
           true
         );
@@ -3937,9 +3954,9 @@ const AquaIndexEtapa03 = (() => {
     }
 
     function toneColors(status) {
-      if (status === "ok" || status === "SUCCESS") return { fill: "var(--e03-ok, #15803d)", stroke: "var(--e03-ok, #15803d)", text: "#ffffff" };
-      if (status === "warn" || status === "RUNNING") return { fill: "var(--e03-warn, #d97706)", stroke: "var(--e03-warn, #d97706)", text: "#ffffff" };
-      if (status === "danger" || status === "FAILURE") return { fill: "var(--e03-danger, #dc2626)", stroke: "var(--e03-danger, #dc2626)", text: "#ffffff" };
+      if (status === "ok" || status === "SUCCESS") return { fill: "var(--e03-ok, #15803d)", stroke: "var(--e03-ok, #15803d)", text: "var(--e03-ok-ink, #ffffff)" };
+      if (status === "warn" || status === "RUNNING") return { fill: "var(--e03-warn, #d97706)", stroke: "var(--e03-warn, #d97706)", text: "var(--e03-warn-ink, #ffffff)" };
+      if (status === "danger" || status === "FAILURE") return { fill: "var(--e03-danger, #dc2626)", stroke: "var(--e03-danger, #dc2626)", text: "var(--e03-danger-ink, #ffffff)" };
       return { fill: "var(--e03-panel, #f1f5f9)", stroke: "var(--e03-border, #94a3b8)", text: "var(--e03-ink, #0f172a)" };
     }
 
@@ -3948,6 +3965,8 @@ const AquaIndexEtapa03 = (() => {
       const defs = resetSvg();
       if (!svg) return;
       svg.setAttribute("viewBox", "0 0 1620 1040");
+      svg.setAttribute("width", "1620");
+      svg.setAttribute("height", "1040");
 
       if (defs) {
         const makeArrow = (id, fill) => {
@@ -4083,7 +4102,7 @@ const AquaIndexEtapa03 = (() => {
             "text-anchor": "middle",
             "font-size": 8.5,
             "font-weight": 700,
-            fill: isRoot ? "#ffffff" : "var(--e03-ink, #0f172a)"
+            fill: isRoot ? "var(--e03-accent-ink, #ffffff)" : "var(--e03-ink, #0f172a)"
           }, sw.id.replace("SW-", ""), true);
         });
       }
@@ -4140,7 +4159,7 @@ const AquaIndexEtapa03 = (() => {
             "text-anchor": "middle",
             "font-size": 8.5,
             "font-weight": 700,
-            fill: isTarget ? "#ffffff" : "var(--e03-ink, #0f172a)"
+            fill: isTarget ? "var(--e03-accent-ink, #ffffff)" : "var(--e03-ink, #0f172a)"
           }, n.lbl, true);
         });
       }
@@ -4379,7 +4398,7 @@ const AquaIndexEtapa03 = (() => {
             "text-anchor": "middle",
             "font-size": 8.5,
             "font-weight": 700,
-            fill: isPred ? "#ffffff" : "var(--e03-ink, #0f172a)"
+            fill: isPred ? "var(--e03-accent-ink, #ffffff)" : "var(--e03-ink, #0f172a)"
           }, lbl, true);
         }
         drawMiniNode(res.dtTree.root, cx, ry, 102, 0);
@@ -4437,11 +4456,16 @@ const AquaIndexEtapa03 = (() => {
 
         addEl(zg, "text", {
           x: z.x + 14,
-          y: z.y + 24,
-          "font-size": 12.5,
+          y: z.y + 15,
+          "font-size": 10,
           "font-weight": 800,
           fill: "var(--e03-ink, #0f172a)"
-        }, `${z.aula} · ${z.title}`, true);
+        }, z.aula, true);
+        addEl(zg, "text", {
+          x: z.x + 14, y: z.y + 31,
+          "font-size": 12, "font-weight": 700,
+          fill: "var(--e03-ink, #0f172a)"
+        }, z.title, true);
 
         const badgeW = Math.min(185, Math.max(82, st.metric.length * 6.5 + 18));
         addEl(zg, "rect", {
@@ -4597,8 +4621,8 @@ const AquaIndexEtapa03 = (() => {
           "stroke-width": isRoot ? 2.6 : 1.8,
           opacity: down ? 0.5 : 1
         }, "", true);
-        addEl(svg, "text", { x: sw.x, y: sw.y - 6, "text-anchor": "middle", "font-size": 12, "font-weight": 700, fill: isRoot ? "#ffffff" : "var(--e03-ink, #0f172a)" }, sw.id, true);
-        addEl(svg, "text", { x: sw.x, y: sw.y + 12, "text-anchor": "middle", "font-size": 10, fill: isRoot ? "#e2f5f2" : "var(--e03-muted, #475569)" }, down ? "FALHA TOTAL" : `Prio ${sw.priority} · Custo ${res.pathCosts[sw.id] ?? 0}`, true);
+        addEl(svg, "text", { x: sw.x, y: sw.y - 6, "text-anchor": "middle", "font-size": 12, "font-weight": 700, fill: isRoot ? "var(--e03-accent-ink, #ffffff)" : "var(--e03-ink, #0f172a)" }, sw.id, true);
+        addEl(svg, "text", { x: sw.x, y: sw.y + 12, "text-anchor": "middle", "font-size": 10, fill: isRoot ? "var(--e03-accent-ink, #ffffff)" : "var(--e03-muted, #475569)" }, down ? "FALHA TOTAL" : `Prio ${sw.priority} · Custo ${res.pathCosts[sw.id] ?? 0}`, true);
       });
 
       renderMetrics([
@@ -4644,8 +4668,8 @@ const AquaIndexEtapa03 = (() => {
           stroke: st.hasOmega ? "var(--e03-danger, #dc2626)" : "var(--e03-accent, #0f766e)",
           "stroke-width": 2.2
         }, "", true);
-        addEl(svg, "text", { x, y: y - 8, "text-anchor": "middle", "font-size": 12, "font-weight": 700, fill: st.hasOmega ? "#ffffff" : "var(--e03-ink, #0f172a)" }, st.id, true);
-        addEl(svg, "text", { x, y: y + 12, "text-anchor": "middle", "font-size": 9.5, fill: st.hasOmega ? "#fee2e2" : "var(--e03-muted, #475569)" }, st.label, true);
+        addEl(svg, "text", { x, y: y - 8, "text-anchor": "middle", "font-size": 12, "font-weight": 700, fill: st.hasOmega ? "var(--e03-danger-ink, #ffffff)" : "var(--e03-ink, #0f172a)" }, st.id, true);
+        addEl(svg, "text", { x, y: y + 12, "text-anchor": "middle", "font-size": 9.5, fill: st.hasOmega ? "var(--e03-danger-ink, #ffffff)" : "var(--e03-muted, #475569)" }, st.label, true);
       }
 
       renderMetrics([
@@ -4669,18 +4693,18 @@ const AquaIndexEtapa03 = (() => {
       addEl(svg, "text", { x: 480, y: 30, "text-anchor": "middle", fill: "var(--e03-muted, #64748b)", "font-size": 12, "font-weight": 700 }, `BEHAVIOR TREE REATIVA (TICK #${res.tick}) · STATUS RAIZ: ${res.rootStatus}`, true);
 
       const posMap = {
-        root: { x: 480, y: 78 },
-        seg_seq: { x: 165, y: 185 },
-        rec_fb: { x: 480, y: 185 },
-        prod_seq: { x: 795, y: 185 },
-        seg_cond: { x: 95, y: 310 },
-        seg_act: { x: 235, y: 310 },
-        cup_seq: { x: 380, y: 310 },
-        vac_retry: { x: 480, y: 310 },
-        heat_seq: { x: 580, y: 310 },
-        prod_par: { x: 710, y: 310 },
-        prod_guard: { x: 800, y: 425 },
-        prod_act: { x: 890, y: 310 }
+        root: { x: 488, y: 78 },
+        seg_seq: { x: 148, y: 185 },
+        rec_fb: { x: 488, y: 185 },
+        prod_seq: { x: 828, y: 185 },
+        seg_cond: { x: 80, y: 310 },
+        seg_act: { x: 216, y: 310 },
+        cup_seq: { x: 352, y: 310 },
+        vac_retry: { x: 488, y: 310 },
+        heat_seq: { x: 624, y: 310 },
+        prod_par: { x: 760, y: 310 },
+        prod_guard: { x: 828, y: 425 },
+        prod_act: { x: 896, y: 310 }
       };
 
       const links = [
@@ -4691,16 +4715,16 @@ const AquaIndexEtapa03 = (() => {
       ];
 
       links.forEach(([u, v]) => {
-        addEl(svg, "line", { x1: posMap[u].x, y1: posMap[u].y + 24, x2: posMap[v].x, y2: posMap[v].y - 24, stroke: "var(--e03-border, #94a3b8)", "stroke-width": 1.8 }, "", true);
+        addEl(svg, "line", { x1: posMap[u].x, y1: posMap[u].y + 32, x2: posMap[v].x, y2: posMap[v].y - 32, stroke: "var(--e03-border, #94a3b8)", "stroke-width": 1.8 }, "", true);
       });
 
       res.nodes.forEach((node) => {
         const p = posMap[node.id];
         if (!p) return;
         const c = toneColors(node.status);
-        addEl(svg, "rect", { x: p.x - 66, y: p.y - 24, width: 132, height: 48, rx: 8, fill: c.fill, stroke: c.stroke, "stroke-width": 2 }, "", true);
-        addEl(svg, "text", { x: p.x, y: p.y - 4, "text-anchor": "middle", "font-size": 10.5, "font-weight": 700, fill: c.text }, node.label, true);
-        addEl(svg, "text", { x: p.x, y: p.y + 13, "text-anchor": "middle", "font-size": 9.5, fill: c.text }, `${node.type} · ${node.status}`, true);
+        addEl(svg, "rect", { x: p.x - 60, y: p.y - 32, width: 120, height: 64, rx: 8, fill: c.fill, stroke: c.stroke, "stroke-width": 2 }, "", true);
+        wrappedSvgText(svg, node.label, p.x, p.y - 12, 18, c.text, 10.5);
+        addEl(svg, "text", { x: p.x, y: p.y + 22, "text-anchor": "middle", "font-size": 9, fill: c.text }, `${node.type} · ${node.status}`, true);
       });
 
       renderMetrics([
@@ -4807,43 +4831,61 @@ const AquaIndexEtapa03 = (() => {
       });
 
       resetSvg();
-      addEl(svg, "text", { x: 480, y: 28, "text-anchor": "middle", fill: "var(--e03-muted, #64748b)", "font-size": 12, "font-weight": 700 }, `ÁRVORE DE DECISÃO (${state.dtree.criterion.toUpperCase()} · PROF=${state.dtree.maxDepth}) · ACURÁCIA ${formatPt(cm.accuracy, 1)}%`, true);
+      const positions = new Map();
+      let leafCount = 0;
+      let depth = 0;
+      function positionTree(node, level = 0) {
+        if (!node) return 0;
+        depth = Math.max(depth, level);
+        const x = node.isLeaf ? 100 + leafCount++ * 184
+          : (positionTree(node.left, level + 1) + positionTree(node.right, level + 1)) / 2;
+        positions.set(node, { x, y: 84 + level * 95 });
+        return x;
+      }
+      positionTree(tree.root);
+      const matrixX = Math.max(660, 100 + (leafCount - 1) * 184 + 110);
+      const width = matrixX + 300;
+      const height = Math.max(540, 140 + depth * 95);
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      svg.setAttribute("width", String(width));
+      svg.setAttribute("height", String(height));
+      svg.style.minWidth = `${width}px`;
+      addEl(svg, "text", { x: width / 2, y: 28, "text-anchor": "middle", fill: "var(--e03-muted, #64748b)", "font-size": 12, "font-weight": 700 }, `ÁRVORE DE DECISÃO (${state.dtree.criterion.toUpperCase()} · PROF=${state.dtree.maxDepth}) · ACURÁCIA ${formatPt(cm.accuracy, 1)}%`, true);
 
-      function drawTree(node, x, y, span) {
+      function drawTree(node) {
         if (!node) return;
+        const { x, y } = positions.get(node);
         if (!node.isLeaf) {
-          const ny = y + 95;
-          const lx = x - span;
-          const rx = x + span;
-          addEl(svg, "line", { x1: x, y1: y + 20, x2: lx, y2: ny - 20, stroke: "var(--e03-accent, #0f766e)", "stroke-width": 1.8 }, "", true);
-          addEl(svg, "line", { x1: x, y1: y + 20, x2: rx, y2: ny - 20, stroke: "var(--e03-border, #64748b)", "stroke-width": 1.8 }, "", true);
-          drawTree(node.left, lx, ny, span * 0.5);
-          drawTree(node.right, rx, ny, span * 0.5);
+          for (const child of [node.left, node.right]) {
+            const p = positions.get(child);
+            addEl(svg, "line", { x1: x, y1: y + 30, x2: p.x, y2: p.y - 30, stroke: child === node.left ? "var(--e03-accent, #0f766e)" : "var(--e03-border, #64748b)", "stroke-width": 1.8 }, "", true);
+            drawTree(child);
+          }
         }
         addEl(svg, "rect", {
           x: x - 78,
-          y: y - 20,
+          y: y - 30,
           width: 156,
-          height: 40,
+          height: 60,
           rx: 7,
           fill: node.isLeaf ? "var(--e03-accent, #0f766e)" : "var(--e03-surface, #ffffff)",
           stroke: node.isLeaf ? "var(--e03-accent, #0f766e)" : "var(--e03-border, #64748b)",
           "stroke-width": 1.8
         }, "", true);
         const title = node.isLeaf ? node.label.replace(/_/g, " ") : `${node.feature} <= ${node.threshold}`;
-        addEl(svg, "text", { x, y: y + 4, "text-anchor": "middle", "font-size": 9.5, "font-weight": 700, fill: node.isLeaf ? "#ffffff" : "var(--e03-ink, #0f172a)" }, title.slice(0, 26), true);
+        wrappedSvgText(svg, title, x, y - 10, 23, node.isLeaf ? "var(--e03-accent-ink, #ffffff)" : "var(--e03-ink, #0f172a)", 10);
       }
-      drawTree(tree.root, 330, 74, 150);
+      drawTree(tree.root);
 
       // Matriz de confusão resumida à direita
-      addEl(svg, "rect", { x: 660, y: 60, width: 270, height: 220, rx: 10, fill: "var(--e03-panel, #f8fafc)", stroke: "var(--e03-border, #cbd5e1)", "stroke-width": 1.5 }, "", true);
-      addEl(svg, "text", { x: 795, y: 84, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: "var(--e03-ink, #0f172a)" }, "MATRIZ DE CONFUSÃO (4×4)", true);
+      addEl(svg, "rect", { x: matrixX, y: 60, width: 270, height: 220, rx: 10, fill: "var(--e03-panel, #f8fafc)", stroke: "var(--e03-border, #cbd5e1)", "stroke-width": 1.5 }, "", true);
+      addEl(svg, "text", { x: matrixX + 135, y: 84, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: "var(--e03-ink, #0f172a)" }, "MATRIZ DE CONFUSÃO (4×4)", true);
       cm.matrix.forEach((row, r) => {
         row.forEach((val, c) => {
-          const cx = 710 + c * 52;
+          const cx = matrixX + 50 + c * 52;
           const cy = 115 + r * 36;
           addEl(svg, "rect", { x: cx - 22, y: cy - 14, width: 44, height: 28, rx: 4, fill: r === c ? "var(--e03-accent, #0f766e)" : "var(--e03-surface, #ffffff)", stroke: "var(--e03-border, #cbd5e1)" }, "", true);
-          addEl(svg, "text", { x: cx, y: cy + 4, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: r === c ? "#ffffff" : "var(--e03-ink, #0f172a)" }, String(val), true);
+          addEl(svg, "text", { x: cx, y: cy + 4, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: r === c ? "var(--e03-accent-ink, #ffffff)" : "var(--e03-ink, #0f172a)" }, String(val), true);
         });
       });
 
